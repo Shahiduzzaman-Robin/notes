@@ -285,7 +285,7 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
             <CirclePlay size={15} />
           </ToolbarButton>
         </div>
-      </div>
+      </div>)}
 
       <Modal
         isOpen={isYoutubeModalOpen}
@@ -346,7 +346,7 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
             }}
           />
         </div>
-      </Modal>)}
+      </Modal>
 
       {/* Slash Command Menu */}
       {slashMenuOpen && filteredItems.length > 0 && (
