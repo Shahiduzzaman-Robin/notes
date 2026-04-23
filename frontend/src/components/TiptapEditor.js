@@ -19,39 +19,10 @@ import {
   Minus, SquareCode, Type, Subscript as SubIcon, Superscript as SupIcon,
   CirclePlay, Highlighter
 } from 'lucide-react';
+import Modal from './Modal';
 
 // Slash menu items
-const SLASH_ITEMS = [
-  { title: 'Text', description: 'Plain text paragraph', icon: Type, 
-    command: (editor) => editor.chain().focus().setParagraph().run() },
-  { title: 'Heading 1', description: 'Large heading', icon: Heading1, 
-    command: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run() },
-  { title: 'Heading 2', description: 'Medium heading', icon: Heading2, 
-    command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run() },
-  { title: 'Heading 3', description: 'Small heading', icon: Heading3, 
-    command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run() },
-  { title: 'Bullet List', description: 'Unordered list', icon: List, 
-    command: (editor) => editor.chain().focus().toggleBulletList().run() },
-  { title: 'Numbered List', description: 'Ordered list', icon: ListOrdered, 
-    command: (editor) => editor.chain().focus().toggleOrderedList().run() },
-  { title: 'To-do List', description: 'Task checklist', icon: CheckSquare, 
-    command: (editor) => editor.chain().focus().toggleTaskList().run() },
-  { title: 'Quote', description: 'Blockquote', icon: Quote, 
-    command: (editor) => editor.chain().focus().toggleBlockquote().run() },
-  { title: 'Code Block', description: 'Code snippet', icon: SquareCode, 
-    command: (editor) => editor.chain().focus().toggleCodeBlock().run() },
-  { title: 'Divider', description: 'Horizontal line', icon: Minus, 
-    command: (editor) => editor.chain().focus().setHorizontalRule().run() },
-  { title: 'Highlight', description: 'Highlight text', icon: Highlighter, 
-    command: (editor) => editor.chain().focus().toggleHighlight().run() },
-  { title: 'Table', description: '3×3 table', icon: Grid3X3, 
-    command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() },
-  { title: 'YouTube', description: 'Embed a video', icon: CirclePlay,
-    command: (editor) => {
-      const url = prompt('Paste YouTube URL:');
-      if (url) editor.commands.setYoutubeVideo({ src: url });
-    }},
-];
+// SLASH_ITEMS moved inside component to access state
 
 export default function TiptapEditor({ noteId, initialContent, onChange, onSave }) {
   const [showTableMenu, setShowTableMenu] = useState(false);
@@ -63,7 +34,38 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
   const [slashMenuPos, setSlashMenuPos] = useState({ top: 0, left: 0 });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [slashStartPos, setSlashStartPos] = useState(null);
+  const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
+  const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
   const menuRef = useRef(null);
+
+  const SLASH_ITEMS = [
+    { title: 'Text', description: 'Plain text paragraph', icon: Type, 
+      command: (editor) => editor.chain().focus().setParagraph().run() },
+    { title: 'Heading 1', description: 'Large heading', icon: Heading1, 
+      command: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run() },
+    { title: 'Heading 2', description: 'Medium heading', icon: Heading2, 
+      command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run() },
+    { title: 'Heading 3', description: 'Small heading', icon: Heading3, 
+      command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run() },
+    { title: 'Bullet List', description: 'Unordered list', icon: List, 
+      command: (editor) => editor.chain().focus().toggleBulletList().run() },
+    { title: 'Numbered List', description: 'Ordered list', icon: ListOrdered, 
+      command: (editor) => editor.chain().focus().toggleOrderedList().run() },
+    { title: 'To-do List', description: 'Task checklist', icon: CheckSquare, 
+      command: (editor) => editor.chain().focus().toggleTaskList().run() },
+    { title: 'Quote', description: 'Blockquote', icon: Quote, 
+      command: (editor) => editor.chain().focus().toggleBlockquote().run() },
+    { title: 'Code Block', description: 'Code snippet', icon: Code, 
+      command: (editor) => editor.chain().focus().toggleCodeBlock().run() },
+    { title: 'Divider', description: 'Horizontal line', icon: Minus, 
+      command: (editor) => editor.chain().focus().setHorizontalRule().run() },
+    { title: 'Highlight', description: 'Highlight text', icon: Highlighter, 
+      command: (editor) => editor.chain().focus().toggleHighlight().run() },
+    { title: 'Table', description: '3×3 table', icon: Grid3X3, 
+      command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() },
+    { title: 'YouTube', description: 'Embed a video', icon: CirclePlay,
+      command: () => setIsYoutubeModalOpen(true) },
+  ];
 
   const editor = useEditor({
     extensions: [
@@ -279,11 +281,72 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
           <ToolbarButton onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} isActive={editor.isActive('table')} title="Insert Table">
             <Grid3X3 size={15} />
           </ToolbarButton>
-          <ToolbarButton onClick={() => { const url = prompt('Paste YouTube URL:'); if (url) editor.commands.setYoutubeVideo({ src: url }); }} title="YouTube Embed">
+          <ToolbarButton onClick={() => setIsYoutubeModalOpen(true)} title="YouTube Embed">
             <CirclePlay size={15} />
           </ToolbarButton>
         </div>
-      </div>)}
+      </div>
+
+      <Modal
+        isOpen={isYoutubeModalOpen}
+        onClose={() => {
+          setIsYoutubeModalOpen(false);
+          setYoutubeUrlInput('');
+        }}
+        title="Embed YouTube Video"
+        footer={
+          <button
+            onClick={() => {
+              if (youtubeUrlInput) {
+                editor.commands.setYoutubeVideo({ src: youtubeUrlInput });
+                setIsYoutubeModalOpen(false);
+                setYoutubeUrlInput('');
+              }
+            }}
+            style={{ 
+              padding: '8px 20px', 
+              borderRadius: '6px', 
+              background: 'var(--primary)', 
+              color: 'white', 
+              border: 'none', 
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Embed Video
+          </button>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
+            Paste a link from YouTube to embed it in your note.
+          </p>
+          <input 
+            autoFocus
+            type="text"
+            placeholder="https://www.youtube.com/watch?v=..."
+            value={youtubeUrlInput}
+            onChange={(e) => setYoutubeUrlInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && youtubeUrlInput) {
+                editor.commands.setYoutubeVideo({ src: youtubeUrlInput });
+                setIsYoutubeModalOpen(false);
+                setYoutubeUrlInput('');
+              }
+            }}
+            style={{ 
+              width: '100%', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              background: 'var(--hover-bg)', 
+              border: '1px solid var(--border-color)', 
+              color: 'var(--text-color)',
+              fontSize: '14px',
+              outline: 'none'
+            }}
+          />
+        </div>
+      </Modal>)}
 
       {/* Slash Command Menu */}
       {slashMenuOpen && filteredItems.length > 0 && (
