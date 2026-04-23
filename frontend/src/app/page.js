@@ -205,30 +205,31 @@ export default function Home() {
         </div>
 
         <nav style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div className={styles.sectionLabel}>Notes</div>
           <div 
             className={`${styles.navItem} ${activeTab === 'notes' ? styles.active : ''}`}
             onClick={() => handleTabChange('notes')}
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <FileText size={20} />
-              <span>Notes</span>
+              <FileText size={18} />
+              <span>Personal Notes</span>
             </div>
             {activeTab === 'notes' && (
               <div style={{ display: 'flex', gap: '4px' }}>
                 <button 
-                  onClick={handleAddFolder}
+                  onClick={(e) => { e.stopPropagation(); handleAddFolder(); }}
                   style={{ padding: '4px', borderRadius: '4px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
                   title="New Folder"
                 >
-                  <FolderPlus size={16} />
+                  <FolderPlus size={14} />
                 </button>
                 <button 
-                  onClick={handleAddNote}
+                  onClick={(e) => { e.stopPropagation(); handleAddNote(); }}
                   style={{ padding: '4px', borderRadius: '4px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
                   title="New Note"
                 >
-                  <Plus size={16} />
+                  <Plus size={14} />
                 </button>
               </div>
             )}
@@ -241,35 +242,38 @@ export default function Home() {
             </div>
           )}
 
+          <div className={styles.sidebarDivider} />
+          
+          <div className={styles.sectionLabel}>Management</div>
           <div 
             className={`${styles.navItem} ${activeTab === 'boards' ? styles.active : ''}`}
             onClick={() => handleTabChange('boards')}
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Kanban size={20} />
+              <Kanban size={18} />
               <span>Workflow Tracker</span>
             </div>
             {activeTab === 'boards' && (
               <div style={{ display: 'flex', gap: '4px' }}>
                 <button 
-                  onClick={handleAddFolder}
+                  onClick={(e) => { e.stopPropagation(); handleAddFolder(); }}
                   style={{ padding: '4px', borderRadius: '4px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
                   title="New Folder"
                 >
-                  <FolderPlus size={16} />
+                  <FolderPlus size={14} />
                 </button>
                 <button 
-                  onClick={() => setIsBoardModalOpen(true)}
+                  onClick={(e) => { e.stopPropagation(); setIsBoardModalOpen(true); }}
                   style={{ padding: '4px', borderRadius: '4px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
                   title="New Board"
                 >
-                  <Plus size={16} />
+                  <Plus size={14} />
                 </button>
               </div>
             )}
           </div>
-          
+
           {/* Hierarchical Folder Tree for Boards */}
           {activeTab === 'boards' && (
             <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
