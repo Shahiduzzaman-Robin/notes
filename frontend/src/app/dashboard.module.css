@@ -153,44 +153,69 @@
 
 @media (max-width: 768px) {
   .dashboard {
-    flex-direction: column-reverse;
-  }
-  .sidebar {
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    border-right: none;
-    border-top: 1px solid var(--border-color);
-    padding: 4px 8px;
-    z-index: 100;
-  }
-  .brand {
-    display: none;
-  }
-  .sidebar > nav {
-    display: flex;
-    flex-direction: row;
-    flex: 1;
-    justify-content: center;
-  }
-  .navItem {
     flex-direction: column;
-    font-size: 11px;
-    padding: 6px 12px;
-    margin: 0 4px;
-    gap: 4px;
-    border-radius: 8px;
   }
-  .userProfile {
-    margin: 0;
-    padding: 8px;
+  
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -240px;
+    height: 100vh;
+    width: 240px;
+    z-index: 1000;
+    background: var(--sidebar-bg);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+    transition: left 0.3s ease;
   }
-  .userInfo {
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .sidebarOverlay {
     display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 999;
+    backdrop-filter: blur(2px);
   }
+
+  .sidebarOverlay.active {
+    display: block;
+  }
+
+  .brand {
+    padding-top: 48px;
+  }
+
   .contentArea {
-    padding: 20px 16px !important;
+    padding: 16px 12px !important;
   }
+
+  .topbar {
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .menuBtn {
+    display: flex !important;
+  }
+}
+
+.menuBtn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 8px;
+  border-radius: 4px;
+}
+
+.menuBtn:hover {
+  background: var(--hover-bg);
 }

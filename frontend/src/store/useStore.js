@@ -1,7 +1,15 @@
 import { create } from 'zustand';
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5005/api';
+const getApiUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== 'undefined') {
+    return `http://${window.location.hostname}:5005/api`;
+  }
+  return 'http://127.0.0.1:5005/api';
+};
+
+const API_URL = getApiUrl();
 
 const useStore = create((set, get) => ({
   notes: [],

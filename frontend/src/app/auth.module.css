@@ -114,3 +114,9 @@
   padding: 8px;
   border-radius: 4px;
 }
+
+@media (max-width: 480px) {
+  .input {
+    font-size: 16px;
+  }
+}

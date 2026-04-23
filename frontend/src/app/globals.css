@@ -553,3 +553,35 @@ h1, h2, h3, h4 {
   background-color: #854d0e;
   color: #fef08a;
 }
+
+@media (max-width: 768px) {
+  .tiptap-toolbar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding: 8px 4px;
+    gap: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .tiptap-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .toolbar-group {
+    flex-shrink: 0;
+  }
+  
+  .tiptap-wrapper .tiptap {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+  }
+
+  .notes-editor-inner {
+    padding: 20px 16px !important;
+  }
+
+  input[type="text"], 
+  textarea {
+    font-size: 16px !important;
+  }
+}

@@ -351,7 +351,7 @@ export default function KanbanBoard() {
   return (
     <div className="animate-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Breadcrumbs for Board */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px', overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <Kanban size={14} />
           <span>Workflow</span>

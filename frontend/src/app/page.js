@@ -13,7 +13,9 @@ import {
   Search,
   Bell,
   Plus,
-  FolderPlus
+  FolderPlus,
+  Menu,
+  X
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import useStore from '../store/useStore';
@@ -37,6 +39,7 @@ export default function Home() {
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [newBoardName, setNewBoardName] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -182,10 +185,23 @@ export default function Home() {
           />
         </div>
       </Modal>
-      <div className={styles.sidebar}>
-        <div className={styles.brand}>
-          <Layout className="text-primary" />
-          <span>Workspace</span>
+      <div 
+        className={`${styles.sidebarOverlay} ${isSidebarOpen ? styles.active : ''}`} 
+        onClick={() => setIsSidebarOpen(false)} 
+      />
+      <div className={`${styles.sidebar} ${isSidebarOpen ? styles.open : ''}`}>
+        <div className={styles.brand} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Layout className="text-primary" />
+            <span>Workspace</span>
+          </div>
+          <button 
+            className={styles.menuBtn} 
+            onClick={() => setIsSidebarOpen(false)}
+            style={{ marginRight: 0 }}
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -275,7 +291,11 @@ export default function Home() {
 
       <div className={styles.mainContent}>
         <header className={styles.topbar}>
-          <div style={{ display: 'flex', alignItems: 'center', padding: '4px 12px', borderRadius: '4px', width: '240px', border: '1px solid var(--border-color)', background: 'var(--hover-bg)' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button className={styles.menuBtn} onClick={() => setIsSidebarOpen(true)}>
+              <Menu size={20} />
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', padding: '4px 12px', borderRadius: '4px', width: '240px', border: '1px solid var(--border-color)', background: 'var(--hover-bg)' }}>
             <Search size={16} style={{ color: 'var(--text-secondary)', marginRight: '8px' }} />
             <input 
               type="text" 
@@ -284,6 +304,7 @@ export default function Home() {
               onChange={(e) => setGlobalSearchQuery(e.target.value)}
               style={{ border: 'none', background: 'transparent', width: '100%', color: 'var(--text-color)', fontSize: '13px', outline: 'none' }} 
             />
+          </div>
           </div>
 
           <div className={styles.headerActions}>
