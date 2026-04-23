@@ -366,16 +366,30 @@ export default function KanbanBoard() {
               currentId = folder.parentFolder;
             } else break;
           }
-          return path.map(f => (
-            <div key={f._id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ChevronRight size={12} style={{ opacity: 0.5 }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Settings size={14} style={{ color: 'var(--primary)', opacity: 0.8 }} />
-                <span>{f.name}</span>
+          return (
+            <>
+              {path.map(f => (
+                <div key={f._id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ChevronRight size={12} style={{ opacity: 0.5 }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Settings size={14} style={{ color: 'var(--primary)', opacity: 0.8 }} />
+                    <span>{f.name}</span>
+                  </div>
+                </div>
+              ))}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ChevronRight size={12} style={{ opacity: 0.5 }} />
+                <span style={{ color: 'var(--text-color)', fontWeight: 500 }}>{activeBoard.name}</span>
               </div>
-            </div>
-          ));
+            </>
+          );
         })()}
+        {!activeBoard?.folder && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ChevronRight size={12} style={{ opacity: 0.5 }} />
+            <span style={{ color: 'var(--text-color)', fontWeight: 500 }}>{activeBoard?.name}</span>
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', position: 'relative', zIndex: 50 }}>
