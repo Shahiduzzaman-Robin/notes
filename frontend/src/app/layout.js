@@ -3,7 +3,7 @@ import { AuthProvider } from '../context/AuthContext';
 import './globals.css';
 
 export const metadata = {
-  title: 'Antigravity Workspace',
+  title: 'Notes by Robin',
   description: 'Modern note-taking and productivity app',
   icons: {
     icon: '/favicon.png',

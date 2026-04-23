@@ -193,7 +193,7 @@ export default function Home() {
         <div className={styles.brand} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Layout className="text-primary" />
-            <span>Workspace</span>
+            <span>Notes by Robin</span>
           </div>
           <button 
             className={styles.menuBtn} 
