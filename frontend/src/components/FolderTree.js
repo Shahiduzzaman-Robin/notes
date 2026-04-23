@@ -8,6 +8,7 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
   const { 
     activeNoteId, setActiveNoteId, addNote, 
     activeBoardId, setActiveBoardId, createBoard,
+    activeFolderId, setActiveFolderId,
     addFolder, updateFolder, deleteFolder, globalSearchQuery 
   } = useStore();
   
