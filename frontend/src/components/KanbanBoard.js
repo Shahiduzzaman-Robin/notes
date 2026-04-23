@@ -20,7 +20,7 @@ function debounce(func, wait) {
 }
 
 export default function KanbanBoard() {
-  const { boards, tasks, activeBoardId, fetchBoards, createBoard, updateBoard, deleteBoard, setActiveBoardId, addTask, updateTask, deleteTask, reorderTasks, globalSearchQuery, isLoadingBoards } = useStore();
+  const { boards, tasks, activeBoardId, fetchBoards, createBoard, updateBoard, deleteBoard, setActiveBoardId, addTask, updateTask, deleteTask, reorderTasks, globalSearchQuery, isLoadingBoards, boardFolders } = useStore();
   const [newTaskText, setNewTaskText] = useState({});
   const [editingBoardId, setEditingBoardId] = useState(null);
   const [editingBoardName, setEditingBoardName] = useState('');
@@ -344,14 +344,40 @@ export default function KanbanBoard() {
     await updateBoard(editingBoardId, editingBoardName);
     setEditingBoardId(null);
   };
-
   const handleDeleteBoard = (id, name) => {
     setBoardToDelete({ id, name });
     setShowBoardMenu(null);
   };
-
   return (
     <div className="animate-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Breadcrumbs for Board */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <Kanban size={14} />
+          <span>Workflow</span>
+        </div>
+        {activeBoard?.folder && (() => {
+          const path = [];
+          let currentId = activeBoard.folder;
+          while (currentId) {
+            const folder = boardFolders.find(f => f._id === currentId);
+            if (folder) {
+              path.unshift(folder);
+              currentId = folder.parentFolder;
+            } else break;
+          }
+          return path.map(f => (
+            <div key={f._id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ChevronRight size={12} style={{ opacity: 0.5 }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Settings size={14} style={{ color: 'var(--primary)', opacity: 0.8 }} />
+                <span>{f.name}</span>
+              </div>
+            </div>
+          ));
+        })()}
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', position: 'relative', zIndex: 50 }}>
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
           {activeBoard && (

@@ -22,7 +22,8 @@ const createBoard = async (req, res) => {
     const board = new Board({
       user: req.user._id,
       name: name || 'New Board',
-      columns: columns || defaultColumns
+      columns: columns || defaultColumns,
+      folder: req.body.folder || null
     });
     
     const createdBoard = await board.save();
@@ -40,6 +41,7 @@ const updateBoard = async (req, res) => {
 
     board.name = req.body.name || board.name;
     if (req.body.columns) board.columns = req.body.columns;
+    if (req.body.folder !== undefined) board.folder = req.body.folder;
 
     const updatedBoard = await board.save();
     res.json(updatedBoard);

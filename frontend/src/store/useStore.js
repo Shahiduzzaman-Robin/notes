@@ -7,13 +7,86 @@ const useStore = create((set, get) => ({
   notes: [],
   boards: [],
   tasks: [],
+  noteFolders: [],
+  boardFolders: [],
   activeBoardId: null,
   activeNoteId: null,
   isLoadingBoards: true,
+  isLoadingFolders: true,
   globalSearchQuery: '',
   
   setGlobalSearchQuery: (query) => set({ globalSearchQuery: query }),
   setActiveNoteId: (id) => set({ activeNoteId: id }),
+  
+  // Folder Actions
+  fetchFolders: async () => {
+    try {
+      set({ isLoadingFolders: true });
+      const user = JSON.parse(localStorage.getItem('user'));
+      
+      const [notesRes, boardsRes] = await Promise.all([
+        axios.get(`${API_URL}/folders?type=notes`, {
+          headers: { Authorization: `Bearer ${user.token}` }
+        }),
+        axios.get(`${API_URL}/folders?type=boards`, {
+          headers: { Authorization: `Bearer ${user.token}` }
+        })
+      ]);
+
+      set({ 
+        noteFolders: notesRes.data, 
+        boardFolders: boardsRes.data, 
+        isLoadingFolders: false 
+      });
+    } catch (error) {
+      console.error(error);
+      set({ isLoadingFolders: false });
+    }
+  },
+  addFolder: async (folderData) => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const res = await axios.post(`${API_URL}/folders`, folderData, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      const type = folderData.type || 'notes';
+      const key = type === 'notes' ? 'noteFolders' : 'boardFolders';
+      set((state) => ({ [key]: [...state[key], res.data] }));
+      return res.data;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  updateFolder: async (id, updates, type = 'notes') => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const res = await axios.put(`${API_URL}/folders/${id}`, updates, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      const key = type === 'notes' ? 'noteFolders' : 'boardFolders';
+      set((state) => ({
+        [key]: state[key].map(f => f._id === id ? res.data : f)
+      }));
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  deleteFolder: async (id, type = 'notes') => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      await axios.delete(`${API_URL}/folders/${id}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      const key = type === 'notes' ? 'noteFolders' : 'boardFolders';
+      set((state) => ({ 
+        [key]: state[key].filter(f => f._id !== id),
+      }));
+      get().fetchNotes();
+      get().fetchBoards();
+    } catch (error) {
+      console.error(error);
+    }
+  },
   
   // Note Actions
   fetchNotes: async () => {
@@ -82,10 +155,10 @@ const useStore = create((set, get) => ({
       set({ isLoadingBoards: false });
     }
   },
-  createBoard: async (name) => {
+  createBoard: async (name, folderId = null) => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
-      const res = await axios.post(`${API_URL}/boards`, { name }, {
+      const res = await axios.post(`${API_URL}/boards`, { name, folder: folderId }, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       set((state) => ({ boards: [...state.boards, res.data] }));

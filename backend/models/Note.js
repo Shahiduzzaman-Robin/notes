@@ -6,7 +6,7 @@ const noteSchema = new mongoose.Schema({
   content: { type: String, default: '' },
   isPinned: { type: Boolean, default: false },
   tags: [{ type: String }],
-  folder: { type: String, default: 'Notes' }
+  folder: { type: mongoose.Schema.Types.ObjectId, ref: 'Folder', default: null }
 }, { timestamps: true });
 
 noteSchema.index({ title: 'text', content: 'text', tags: 'text' });

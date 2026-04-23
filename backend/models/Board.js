@@ -7,7 +7,8 @@ const boardSchema = new mongoose.Schema({
     id: { type: String, required: true },
     title: { type: String, required: true },
     order: { type: Number, default: 0 }
-  }]
+  }],
+  folder: { type: mongoose.Schema.Types.ObjectId, ref: 'Folder', default: null }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Board', boardSchema);

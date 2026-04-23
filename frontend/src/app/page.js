@@ -12,27 +12,40 @@ import {
   Sun,
   Search,
   Bell,
-  Plus
+  Plus,
+  FolderPlus
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import useStore from '../store/useStore';
 import Notes from '../components/Notes';
 import KanbanBoard from '../components/KanbanBoard';
+import FolderTree from '../components/FolderTree';
+import Modal from '../components/Modal';
 
 export default function Home() {
   const { user, loading, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const { globalSearchQuery, setGlobalSearchQuery, boards, activeBoardId, setActiveBoardId, notes, fetchNotes, activeNoteId, setActiveNoteId, addNote } = useStore();
+  const { 
+    globalSearchQuery, setGlobalSearchQuery, 
+    boards, activeBoardId, setActiveBoardId, 
+    notes, fetchNotes, activeNoteId, setActiveNoteId, addNote,
+    noteFolders, boardFolders, fetchFolders, addFolder
+  } = useStore();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('notes');
+  const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
+  const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [newBoardName, setNewBoardName] = useState('');
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
     } else if (user) {
       fetchNotes();
+      fetchFolders();
     }
-  }, [user, loading, router, fetchNotes]);
+  }, [user, loading, router, fetchNotes, fetchFolders]);
 
   useEffect(() => {
     const savedTab = localStorage.getItem('activeTab');
@@ -53,12 +66,122 @@ export default function Home() {
     }
   };
 
+  const handleAddFolder = (e) => {
+    e.stopPropagation();
+    setIsFolderModalOpen(true);
+  };
+
+  const handleFolderCreateSubmit = async () => {
+    if (newFolderName.trim()) {
+      await addFolder({ name: newFolderName, type: activeTab === 'notes' ? 'notes' : 'boards' });
+      setNewFolderName('');
+      setIsFolderModalOpen(false);
+    }
+  };
+
+  const handleBoardCreateSubmit = async () => {
+    if (newBoardName.trim()) {
+      const newBoard = await createBoard(newBoardName);
+      if (newBoard) {
+        setActiveBoardId(newBoard._id);
+        setActiveTab('boards');
+      }
+      setNewBoardName('');
+      setIsBoardModalOpen(false);
+    }
+  };
+
   if (loading || !user) {
     return <div className="flex-center" style={{ height: '100vh' }}>Loading...</div>;
   }
 
   return (
     <div className={styles.dashboard}>
+      <Modal 
+        isOpen={isFolderModalOpen} 
+        onClose={() => setIsFolderModalOpen(false)}
+        title="Create New Folder"
+        footer={
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button 
+              onClick={() => setIsFolderModalOpen(false)}
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: 'var(--text-secondary)', background: 'transparent' }}
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handleFolderCreateSubmit}
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: '#fff', background: 'var(--primary)', border: 'none', fontWeight: 500, cursor: 'pointer' }}
+            >
+              Create
+            </button>
+          </div>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Folder Name</label>
+          <input 
+            autoFocus
+            type="text"
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleFolderCreateSubmit(); }}
+            placeholder="Enter name..."
+            style={{ 
+              padding: '10px 12px', 
+              borderRadius: '8px', 
+              background: 'var(--hover-bg)', 
+              border: '1px solid var(--border-color)', 
+              color: 'var(--text-color)',
+              outline: 'none',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+      </Modal>
+
+      <Modal 
+        isOpen={isBoardModalOpen} 
+        onClose={() => setIsBoardModalOpen(false)}
+        title="Create New Board"
+        footer={
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button 
+              onClick={() => setIsBoardModalOpen(false)}
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: 'var(--text-secondary)', background: 'transparent' }}
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handleBoardCreateSubmit}
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: '#fff', background: 'var(--primary)', border: 'none', fontWeight: 500, cursor: 'pointer' }}
+            >
+              Create
+            </button>
+          </div>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Board Name</label>
+          <input 
+            autoFocus
+            type="text"
+            value={newBoardName}
+            onChange={(e) => setNewBoardName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleBoardCreateSubmit(); }}
+            placeholder="Enter board name..."
+            style={{ 
+              padding: '10px 12px', 
+              borderRadius: '8px', 
+              background: 'var(--hover-bg)', 
+              border: '1px solid var(--border-color)', 
+              color: 'var(--text-color)',
+              outline: 'none',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+      </Modal>
       <div className={styles.sidebar}>
         <div className={styles.brand}>
           <Layout className="text-primary" />
@@ -76,84 +199,65 @@ export default function Home() {
               <span>Notes</span>
             </div>
             {activeTab === 'notes' && (
-              <button 
-                onClick={handleAddNote}
-                style={{ padding: '4px', borderRadius: '4px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
-                onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-color)'}
-                onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
-              >
-                <Plus size={16} />
-              </button>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button 
+                  onClick={handleAddFolder}
+                  style={{ padding: '4px', borderRadius: '4px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
+                  title="New Folder"
+                >
+                  <FolderPlus size={16} />
+                </button>
+                <button 
+                  onClick={handleAddNote}
+                  style={{ padding: '4px', borderRadius: '4px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
+                  title="New Note"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
             )}
           </div>
 
-          {/* Sub-list of Notes */}
-          {activeTab === 'notes' && notes && notes.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginLeft: '32px', marginTop: '4px', marginBottom: '8px' }}>
-              {notes.filter(n => {
-                if (!globalSearchQuery) return true;
-                const query = globalSearchQuery.toLowerCase();
-                const inTitle = (n.title || '').toLowerCase().includes(query);
-                const inContent = (n.content || '').toLowerCase().includes(query);
-                const inTags = (n.tags || []).some(t => t.toLowerCase().includes(query));
-                return inTitle || inContent || inTags;
-              }).map(n => (
-                <div 
-                  key={n._id}
-                  onClick={() => setActiveNoteId(n._id)}
-                  style={{
-                    fontSize: '13px',
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    color: n._id === activeNoteId ? 'var(--text-color)' : 'var(--text-secondary)',
-                    fontWeight: n._id === activeNoteId ? 600 : 400,
-                    background: n._id === activeNoteId ? 'var(--hover-bg)' : 'transparent',
-                    transition: 'background 0.1s',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}
-                  onMouseOver={(e) => { if (n._id !== activeNoteId) e.currentTarget.style.background = 'var(--hover-bg)' }}
-                  onMouseOut={(e) => { if (n._id !== activeNoteId) e.currentTarget.style.background = 'transparent' }}
-                >
-                  {n.title || 'Untitled'}
-                </div>
-              ))}
+          {/* Hierarchical Folder Tree for Notes */}
+          {activeTab === 'notes' && (
+            <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
+              <FolderTree folders={noteFolders} notes={notes} boards={boards} type="notes" />
             </div>
           )}
 
           <div 
             className={`${styles.navItem} ${activeTab === 'boards' ? styles.active : ''}`}
             onClick={() => handleTabChange('boards')}
+            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
-            <Kanban size={20} />
-            <span>Workflow Tracker</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Kanban size={20} />
+              <span>Workflow Tracker</span>
+            </div>
+            {activeTab === 'boards' && (
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button 
+                  onClick={handleAddFolder}
+                  style={{ padding: '4px', borderRadius: '4px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
+                  title="New Folder"
+                >
+                  <FolderPlus size={16} />
+                </button>
+                <button 
+                  onClick={() => setIsBoardModalOpen(true)}
+                  style={{ padding: '4px', borderRadius: '4px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
+                  title="New Board"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+            )}
           </div>
           
-          {/* Sub-list of Boards */}
-          {activeTab === 'boards' && boards && boards.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginLeft: '32px', marginTop: '4px', marginBottom: '8px' }}>
-              {boards.map(b => (
-                <div 
-                  key={b._id}
-                  onClick={() => setActiveBoardId(b._id)}
-                  style={{
-                    fontSize: '13px',
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    color: b._id === activeBoardId ? 'var(--text-color)' : 'var(--text-secondary)',
-                    fontWeight: b._id === activeBoardId ? 600 : 400,
-                    background: b._id === activeBoardId ? 'var(--hover-bg)' : 'transparent',
-                    transition: 'background 0.1s'
-                  }}
-                  onMouseOver={(e) => { if (b._id !== activeBoardId) e.currentTarget.style.background = 'var(--hover-bg)' }}
-                  onMouseOut={(e) => { if (b._id !== activeBoardId) e.currentTarget.style.background = 'transparent' }}
-                >
-                  {b.name}
-                </div>
-              ))}
+          {/* Hierarchical Folder Tree for Boards */}
+          {activeTab === 'boards' && (
+            <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
+              <FolderTree folders={boardFolders} notes={notes} boards={boards} type="boards" />
             </div>
           )}
         </nav>
