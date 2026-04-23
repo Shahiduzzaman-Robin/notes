@@ -19,12 +19,15 @@ const useStore = create((set, get) => ({
   boardFolders: [],
   activeBoardId: null,
   activeNoteId: null,
+  activeFolderId: null,
   isLoadingBoards: true,
   isLoadingFolders: true,
   globalSearchQuery: '',
   
   setGlobalSearchQuery: (query) => set({ globalSearchQuery: query }),
-  setActiveNoteId: (id) => set({ activeNoteId: id }),
+  setActiveNoteId: (id) => set({ activeNoteId: id, activeFolderId: null }),
+  setActiveBoardId: (id) => set({ activeBoardId: id, activeFolderId: null }),
+  setActiveFolderId: (id) => set({ activeFolderId: id, activeNoteId: null, activeBoardId: null }),
   
   // Folder Actions
   fetchFolders: async () => {

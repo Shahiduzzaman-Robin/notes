@@ -125,7 +125,17 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
           >
             {expandedFolders[folder._id] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             <Folder size={14} className="text-primary" />
-            <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <span 
+              onClick={(e) => { e.stopPropagation(); setActiveFolderId(folder._id); }}
+              style={{ 
+                flex: 1, 
+                whiteSpace: 'nowrap', 
+                overflow: 'hidden', 
+                textOverflow: 'ellipsis',
+                fontWeight: activeFolderId === folder._id ? 600 : 400,
+                color: activeFolderId === folder._id ? 'var(--text-color)' : 'inherit'
+              }}
+            >
               {folder.name}
             </span>
             
@@ -162,64 +172,6 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
               type={type}
             />
           )}
-        </div>
-      ))}
-
-      {/* Boards List */}
-      {currentBoards.map(board => (
-        <div 
-          key={board._id}
-          onClick={() => setActiveBoardId(board._id)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            fontSize: '13px',
-            padding: '4px 8px 4px 22px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            color: board._id === activeBoardId ? 'var(--text-color)' : 'var(--text-secondary)',
-            fontWeight: board._id === activeBoardId ? 600 : 400,
-            background: board._id === activeBoardId ? 'var(--hover-bg)' : 'transparent',
-            transition: 'background 0.1s',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            gap: '8px'
-          }}
-          onMouseOver={(e) => { if (board._id !== activeBoardId) e.currentTarget.style.background = 'var(--hover-bg)' }}
-          onMouseOut={(e) => { if (board._id !== activeBoardId) e.currentTarget.style.background = 'transparent' }}
-        >
-          <Kanban size={14} style={{ opacity: 0.7 }} />
-          <span>{board.name}</span>
-        </div>
-      ))}
-
-      {/* Notes List */}
-      {currentNotes.map(note => (
-        <div 
-          key={note._id}
-          onClick={() => setActiveNoteId(note._id)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            fontSize: '13px',
-            padding: '4px 8px 4px 22px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            color: note._id === activeNoteId ? 'var(--text-color)' : 'var(--text-secondary)',
-            fontWeight: note._id === activeNoteId ? 600 : 400,
-            background: note._id === activeNoteId ? 'var(--hover-bg)' : 'transparent',
-            transition: 'background 0.1s',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            gap: '8px'
-          }}
-          onMouseOver={(e) => { if (note._id !== activeNoteId) e.currentTarget.style.background = 'var(--hover-bg)' }}
-          onMouseOut={(e) => { if (note._id !== activeNoteId) e.currentTarget.style.background = 'transparent' }}
-        >
-          <FileText size={14} style={{ opacity: 0.7 }} />
-          <span>{note.title || 'Untitled'}</span>
         </div>
       ))}
 

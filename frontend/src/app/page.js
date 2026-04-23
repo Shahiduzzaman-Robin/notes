@@ -22,6 +22,7 @@ import useStore from '../store/useStore';
 import Notes from '../components/Notes';
 import KanbanBoard from '../components/KanbanBoard';
 import FolderTree from '../components/FolderTree';
+import FolderView from '../components/FolderView';
 import Modal from '../components/Modal';
 
 export default function Home() {
@@ -31,7 +32,8 @@ export default function Home() {
     globalSearchQuery, setGlobalSearchQuery, 
     boards, activeBoardId, setActiveBoardId, 
     notes, fetchNotes, activeNoteId, setActiveNoteId, addNote,
-    noteFolders, boardFolders, fetchFolders, addFolder
+    noteFolders, boardFolders, fetchFolders, addFolder,
+    activeFolderId
   } = useStore();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('notes');
@@ -236,11 +238,9 @@ export default function Home() {
           </div>
 
           {/* Hierarchical Folder Tree for Notes */}
-          {activeTab === 'notes' && (
-            <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
-              <FolderTree folders={noteFolders} notes={notes} boards={boards} type="notes" />
-            </div>
-          )}
+          <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
+            <FolderTree folders={noteFolders} notes={notes} boards={boards} type="notes" />
+          </div>
 
           <div className={styles.sidebarDivider} />
           
@@ -275,11 +275,9 @@ export default function Home() {
           </div>
 
           {/* Hierarchical Folder Tree for Boards */}
-          {activeTab === 'boards' && (
-            <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
-              <FolderTree folders={boardFolders} notes={notes} boards={boards} type="boards" />
-            </div>
-          )}
+          <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
+            <FolderTree folders={boardFolders} notes={notes} boards={boards} type="boards" />
+          </div>
         </nav>
 
         <div className={styles.userProfile}>
@@ -321,8 +319,10 @@ export default function Home() {
           </div>
         </header>
 
-        <main className={styles.contentArea} style={{ padding: activeTab === 'notes' ? '0' : undefined }}>
-          {activeTab === 'notes' ? (
+        <main className={styles.contentArea} style={{ padding: (activeTab === 'notes' && activeNoteId) ? '0' : undefined }}>
+          {activeFolderId ? (
+            <FolderView folderId={activeFolderId} type={activeTab} />
+          ) : activeTab === 'notes' ? (
             <Notes />
           ) : (
             <KanbanBoard />
