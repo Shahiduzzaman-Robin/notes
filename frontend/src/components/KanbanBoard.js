@@ -1,0 +1,916 @@
+"use client";
+import { useEffect, useState } from 'react';
+import useStore from '../store/useStore';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { Plus, MoreVertical, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2, Check, X, Settings, Kanban } from 'lucide-react';
+import { format } from 'date-fns';
+
+
+// Simple debounce function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+export default function KanbanBoard() {
+  const { boards, tasks, activeBoardId, fetchBoards, createBoard, updateBoard, deleteBoard, setActiveBoardId, addTask, updateTask, deleteTask, reorderTasks, globalSearchQuery, isLoadingBoards } = useStore();
+  const [newTaskText, setNewTaskText] = useState({});
+  const [editingBoardId, setEditingBoardId] = useState(null);
+  const [editingBoardName, setEditingBoardName] = useState('');
+  const [showBoardMenu, setShowBoardMenu] = useState(null);
+  const [isAddingBoard, setIsAddingBoard] = useState(false);
+  const [newBoardName, setNewBoardName] = useState('');
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [localTask, setLocalTask] = useState(null);
+  const [isDescFocused, setIsDescFocused] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [boardToDelete, setBoardToDelete] = useState(null);
+
+
+
+  useEffect(() => {
+    fetchBoards();
+  }, [fetchBoards]);
+
+  useEffect(() => {
+    if (selectedTask) {
+      setLocalTask(selectedTask);
+    } else {
+      setLocalTask(null);
+    }
+  }, [selectedTask]);
+
+  const handleUpdateTaskDetail = async (id, updates) => {
+    const updatedTask = await updateTask(id, updates);
+    if (selectedTask && selectedTask._id === id && updatedTask) {
+      setSelectedTask(updatedTask);
+    }
+  };
+
+  const handleMoveTask = async (task, direction) => {
+    const currentIndex = columns.findIndex(col => col.id === task.columnId);
+    let newIndex = direction === 'right' ? currentIndex + 1 : currentIndex - 1;
+
+    if (newIndex >= 0 && newIndex < columns.length) {
+      const nextColumnId = columns[newIndex].id;
+      await updateTask(task._id, { columnId: nextColumnId });
+    }
+  };
+
+  const handleAddSubtask = async () => {
+    if (!selectedTask) return;
+    const newChecklist = [...(selectedTask.checklist || []), { text: 'New subtask', completed: false }];
+    handleUpdateTaskDetail(selectedTask._id, { checklist: newChecklist });
+  };
+
+  const toggleSubtask = async (index) => {
+    if (!selectedTask) return;
+    const newChecklist = [...selectedTask.checklist];
+    newChecklist[index].completed = !newChecklist[index].completed;
+    handleUpdateTaskDetail(selectedTask._id, { checklist: newChecklist });
+  };
+
+  const removeSubtask = async (index) => {
+    if (!selectedTask) return;
+    const newChecklist = selectedTask.checklist.filter((_, i) => i !== index);
+    handleUpdateTaskDetail(selectedTask._id, { checklist: newChecklist });
+  };
+
+  const updateSubtaskText = async (index, text) => {
+    if (!localTask) return;
+    const newChecklist = [...localTask.checklist];
+    newChecklist[index].text = text;
+    setLocalTask({ ...localTask, checklist: newChecklist });
+    debouncedUpdate(localTask._id, { checklist: newChecklist });
+  };
+
+  if (isLoadingBoards) {
+    return <div style={{ height: 'calc(100vh - 120px)' }} />;
+  }
+
+  if (boards.length === 0) {
+    return (
+      <div style={{
+        height: 'calc(100vh - 120px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0 40px'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '80px',
+          maxWidth: '1000px',
+          width: '100%',
+          animation: 'fadeInUp 0.8s ease-out'
+        }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              left: '-20px',
+              right: '20px',
+              bottom: '20px',
+              background: 'linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%)',
+              borderRadius: '24px',
+              opacity: 0.1,
+              filter: 'blur(40px)',
+              zIndex: -1
+            }} />
+            <img
+              src="/kanban_empty.png"
+              alt="Kanban Illustration"
+              style={{
+                width: '100%',
+                height: 'auto',
+                borderRadius: '24px',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.1)',
+                display: 'block'
+              }}
+            />
+          </div>
+
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{
+                width: 'fit-content',
+                padding: '6px 12px',
+                background: 'rgba(35, 131, 226, 0.1)',
+                color: 'var(--primary)',
+                borderRadius: '100px',
+                fontSize: '12px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
+              }}>
+                Get Started
+              </div>
+              <h1 style={{
+                fontSize: '48px',
+                fontWeight: 800,
+                color: 'var(--text-color)',
+                lineHeight: 1.1,
+                margin: 0
+              }}>
+                Organize your work <br />
+                <span style={{ color: 'var(--primary)' }}>visually.</span>
+              </h1>
+              <p style={{
+                fontSize: '18px',
+                color: 'var(--text-secondary)',
+                lineHeight: 1.6,
+                maxWidth: '400px',
+                margin: 0
+              }}>
+                Create a board to start organizing your projects into beautiful visual columns and interactive cards.
+              </p>
+            </div>
+
+            <button
+              onClick={() => createBoard('Main Workspace')}
+              style={{
+                width: 'fit-content',
+                padding: '14px 32px',
+                background: 'var(--primary)',
+                color: 'white',
+                borderRadius: '12px',
+                fontWeight: 600,
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                boxShadow: '0 10px 20px rgba(35, 131, 226, 0.3)',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 15px 30px rgba(35, 131, 226, 0.4)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 10px 20px rgba(35, 131, 226, 0.3)';
+              }}
+            >
+              <Plus size={20} /> Create your first board
+            </button>
+          </div>
+        </div>
+        <style jsx>{`
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  const activeBoard = boards.find(b => b._id === activeBoardId) || boards[0];
+  const columns = activeBoard.columns.sort((a, b) => a.order - b.order);
+
+  const highlightText = (text, query) => {
+    if (!query || !text) return text;
+    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    return parts.map((part, i) =>
+      part.toLowerCase() === query.toLowerCase()
+        ? <mark key={i} style={{
+          backgroundColor: 'rgba(135, 253, 0, 0.6)',
+          color: 'inherit',
+          padding: '0',
+          borderRadius: '1px'
+        }}>{part}</mark>
+        : part
+    );
+  };
+
+  const renderContentWithLinksAndHighlights = (content) => {
+    if (!content) return null;
+    const parts = content.split(/(https?:\/\/[^\s]+)/g);
+    return parts.map((part, i) => {
+      if (part.match(/https?:\/\/[^\s]+/)) {
+        return <a key={i} href={part} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ color: 'var(--primary)', textDecoration: 'underline' }}>
+          {highlightText(part, globalSearchQuery)}
+        </a>;
+      }
+      return highlightText(part, globalSearchQuery);
+    });
+  };
+
+  const getTasksByColumn = (colId) => tasks.filter(t => t.columnId === colId).sort((a, b) => a.order - b.order);
+
+  const getFilteredTasksByColumn = (colId) => {
+    const colTasks = getTasksByColumn(colId);
+    if (!globalSearchQuery) return colTasks;
+    const query = globalSearchQuery.toLowerCase();
+    return colTasks.filter(t =>
+      t.title.toLowerCase().includes(query) ||
+      (t.description && t.description.toLowerCase().includes(query)) ||
+      (t.tags && t.tags.some(tag => tag.toLowerCase().includes(query)))
+    );
+  };
+
+  const handleDragEnd = (result) => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+
+    const sourceTasks = getTasksByColumn(source.droppableId);
+    const destTasks = source.droppableId === destination.droppableId ? sourceTasks : getTasksByColumn(destination.droppableId);
+
+    const taskDragged = tasks.find(t => t._id === draggableId);
+
+    let newTasks = [...tasks];
+
+    if (source.droppableId === destination.droppableId) {
+      sourceTasks.splice(source.index, 1);
+      sourceTasks.splice(destination.index, 0, taskDragged);
+
+      sourceTasks.forEach((t, idx) => {
+        const tIndex = newTasks.findIndex(nt => nt._id === t._id);
+        if (tIndex > -1) newTasks[tIndex] = { ...newTasks[tIndex], order: idx };
+      });
+    } else {
+      sourceTasks.splice(source.index, 1);
+      taskDragged.columnId = destination.droppableId;
+      destTasks.splice(destination.index, 0, taskDragged);
+
+      sourceTasks.forEach((t, idx) => {
+        const tIndex = newTasks.findIndex(nt => nt._id === t._id);
+        if (tIndex > -1) newTasks[tIndex] = { ...newTasks[tIndex], order: idx };
+      });
+
+      destTasks.forEach((t, idx) => {
+        const tIndex = newTasks.findIndex(nt => nt._id === t._id);
+        if (tIndex > -1) newTasks[tIndex] = { ...newTasks[tIndex], order: idx, columnId: destination.droppableId };
+      });
+    }
+
+    reorderTasks(newTasks);
+  };
+
+  const moveTaskColumn = async (task, newColumnIndex) => {
+    const newColumn = columns[newColumnIndex];
+    if (newColumn) {
+      await updateTask(task._id, { columnId: newColumn.id });
+    }
+  };
+
+  const handleAddTask = async (colId) => {
+    const title = newTaskText[colId];
+    if (!title || title.trim() === '') return;
+
+    await addTask({
+      title,
+      board: activeBoardId,
+      columnId: colId,
+      order: getTasksByColumn(colId).length
+    });
+
+    setNewTaskText({ ...newTaskText, [colId]: '' });
+  };
+
+  const handleCreateBoard = async () => {
+    if (newBoardName.trim() === '') return;
+    await createBoard(newBoardName);
+    setNewBoardName('');
+    setIsAddingBoard(false);
+  };
+
+  const startEditingBoard = (board) => {
+    setEditingBoardId(board._id);
+    setEditingBoardName(board.name);
+    setShowBoardMenu(null);
+  };
+
+  const handleUpdateBoard = async () => {
+    if (editingBoardName.trim() === '') return;
+    await updateBoard(editingBoardId, editingBoardName);
+    setEditingBoardId(null);
+  };
+
+  const handleDeleteBoard = (id, name) => {
+    setBoardToDelete({ id, name });
+    setShowBoardMenu(null);
+  };
+
+  return (
+    <div className="animate-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', position: 'relative', zIndex: 50 }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {activeBoard && (
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {editingBoardId === activeBoard._id ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', borderRadius: '4px', background: 'var(--hover-bg)' }}>
+                  <input
+                    autoFocus
+                    value={editingBoardName}
+                    onChange={(e) => setEditingBoardName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleUpdateBoard()}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-color)', fontWeight: 700, fontSize: '24px', outline: 'none', width: '200px' }}
+                  />
+                  <button onClick={handleUpdateBoard} style={{ color: '#10b981' }}><Check size={20} /></button>
+                  <button onClick={() => setEditingBoardId(null)} style={{ color: '#ef4444' }}><X size={20} /></button>
+                </div>
+              ) : (
+                <>
+                  <h1 style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: 'var(--text-color)' }}>
+                    {activeBoard.name}
+                  </h1>
+                  <button
+                    onClick={() => setShowBoardMenu(showBoardMenu === activeBoard._id ? null : activeBoard._id)}
+                    style={{
+                      padding: '4px',
+                      borderRadius: '4px',
+                      color: 'var(--text-secondary)',
+                      background: showBoardMenu === activeBoard._id ? 'var(--hover-bg)' : 'transparent',
+                      transition: 'all 0.1s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.background = 'var(--hover-bg)'}
+                    onMouseOut={(e) => { if (showBoardMenu !== activeBoard._id) e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                </>
+              )}
+
+              {showBoardMenu === activeBoard._id && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: '0',
+                  marginTop: '8px',
+                  zIndex: 1000,
+                  borderRadius: '6px',
+                  padding: '6px',
+                  minWidth: '160px',
+                  background: 'var(--bg-color)',
+                  border: '1px solid var(--border-color)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px'
+                }}>
+                  <button
+                    onClick={() => startEditingBoard(activeBoard)}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '4px', fontSize: '14px', textAlign: 'left' }}
+                    onMouseOver={(e) => e.currentTarget.style.background = 'var(--hover-bg)'}
+                    onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+                  >
+                    <Edit2 size={14} style={{ opacity: 0.6 }} /> Rename
+                  </button>
+                  <div style={{ height: '1px', background: 'var(--border-color)', margin: '4px 0' }} />
+                  <button
+                    onClick={() => handleDeleteBoard(activeBoard._id, activeBoard.name)}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '4px', fontSize: '14px', color: '#eb5757', textAlign: 'left' }}
+                    onMouseOver={(e) => e.currentTarget.style.background = 'rgba(235, 87, 87, 0.08)'}
+                    onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+                  >
+                    <Trash2 size={14} /> Delete Board
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {isAddingBoard ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-color)', marginLeft: '16px' }}>
+              <input
+                autoFocus
+                placeholder="Board name..."
+                value={newBoardName}
+                onChange={(e) => setNewBoardName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateBoard()}
+                style={{ background: 'none', border: 'none', color: 'var(--text-color)', fontSize: '14px', outline: 'none', width: '120px' }}
+              />
+              <button onClick={handleCreateBoard} style={{ color: 'var(--primary)' }}><Check size={14} /></button>
+              <button onClick={() => setIsAddingBoard(false)} style={{ color: 'var(--text-secondary)' }}><X size={14} /></button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setIsAddingBoard(true)}
+              style={{
+                padding: '6px 10px',
+                color: 'var(--text-secondary)',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                marginLeft: '16px'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-color)'}
+              onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+            >
+              <Plus size={16} /> New Board
+            </button>
+          )}
+        </div>
+
+        {/* Progress Indicator */}
+        {(() => {
+          const totalTasks = columns.reduce((acc, col) => acc + getFilteredTasksByColumn(col.id).length, 0);
+          const doneColumn = columns.find(c => c.title && (c.title.toLowerCase() === 'done' || c.title.toLowerCase() === 'completed')) || columns[columns.length - 1];
+          const inProgressColumn = columns.find(c => c.title && (c.title.toLowerCase() === 'in progress' || c.title.toLowerCase() === 'doing' || c.title.toLowerCase() === 'progress'));
+          const doneTasksCount = doneColumn ? getFilteredTasksByColumn(doneColumn.id).length : 0;
+          const inProgressTasksCount = inProgressColumn ? getFilteredTasksByColumn(inProgressColumn.id).length : 0;
+          const percentDone = totalTasks === 0 ? 0 : Math.round((doneTasksCount / totalTasks) * 100);
+
+          if (totalTasks === 0) return null;
+
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--text-secondary)', opacity: 0.3 }} />
+                  {totalTasks - doneTasksCount - inProgressTasksCount} To Do
+                </span>
+                {inProgressColumn && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#eab308' }} />
+                    {inProgressTasksCount} In Progress
+                  </span>
+                )}
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
+                  {doneTasksCount} Done
+                </span>
+              </div>
+
+              <div style={{ width: '1px', height: '16px', background: 'var(--border-color)' }} />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '60px', height: '6px', borderRadius: '3px', background: 'var(--border-color)', overflow: 'hidden' }}>
+                  <div style={{ width: `${percentDone}%`, height: '100%', background: '#10b981', transition: 'width 0.5s ease' }} />
+                </div>
+                <span style={{ fontWeight: 600, color: percentDone === 100 ? '#10b981' : 'var(--text-color)', minWidth: '32px' }}>
+                  {percentDone}%
+                </span>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <style>{`
+          .kanban-board-container {
+            display: flex;
+            gap: 32px;
+            flex: 1;
+            overflow-x: auto;
+          }
+          .kanban-column {
+            min-width: 280px;
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+          }
+          @media (max-width: 768px) {
+            .kanban-board-container {
+              flex-direction: column;
+              overflow-x: hidden;
+              overflow-y: visible;
+              gap: 24px;
+            }
+            .kanban-column {
+              min-width: 100%;
+              width: 100%;
+            }
+          }
+        `}</style>
+        <div className="kanban-board-container">
+          {columns.map((col, cIndex) => (
+            <div key={col.id} className="kanban-column" style={{
+              background: cIndex === 0 ? 'var(--col-todo-bg)' : cIndex === 1 ? 'var(--col-inprogress-bg)' : 'var(--col-done-bg)',
+              borderRadius: '8px',
+              padding: '12px',
+              border: '1px solid var(--border-color)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontWeight: 600, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-color)', margin: 0 }}>
+                  <span style={{ padding: '2px 6px', borderRadius: '3px', background: cIndex === 0 ? '#ffebf0' : cIndex === 1 ? '#fff9db' : '#e3fcf7', color: cIndex === 0 ? '#ff4d4d' : cIndex === 1 ? '#fab005' : '#0ca678', fontSize: '11px', fontWeight: 700 }}>
+                    {col.title.toUpperCase()}
+                  </span>
+                  <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>
+                    {getFilteredTasksByColumn(col.id).length}
+                  </span>
+                </h3>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                </div>
+              </div>
+
+              <Droppable droppableId={col.id}>
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      minHeight: '200px',
+                      padding: '4px 0',
+                      transition: 'background 0.2s ease',
+                      background: snapshot.isDraggingOver ? 'var(--hover-bg)' : 'transparent',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    {getFilteredTasksByColumn(col.id).map((task, index) => (
+                      <Draggable key={task._id} draggableId={task._id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            onClick={() => setSelectedTask(task)}
+                            style={{
+                              position: 'relative',
+                              padding: '12px',
+                              borderRadius: '4px',
+                              background: 'var(--bg-color)',
+                              border: '1px solid var(--border-color)',
+                              boxShadow: snapshot.isDragging ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+                              ...provided.draggableProps.style,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '8px',
+                              cursor: 'pointer',
+                              transition: 'transform 0.1s, box-shadow 0.1s',
+                            }}
+                            onMouseOver={(e) => {
+                              if (!snapshot.isDragging) e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                            }}
+                            onMouseOut={(e) => {
+                              if (!snapshot.isDragging) e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                            }}
+                          >
+                            <div className="card-actions" style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '2px', background: 'var(--bg-color)', borderRadius: '4px', padding: '2px' }}>
+                              {cIndex > 0 && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleMoveTask(task, 'left'); }}
+                                  style={{ padding: '2px', borderRadius: '4px', color: 'var(--text-secondary)', background: 'none', border: 'none' }}
+                                  title="Move Left"
+                                >
+                                  <ChevronLeft size={14} />
+                                </button>
+                              )}
+                              {cIndex < columns.length - 1 && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleMoveTask(task, 'right'); }}
+                                  style={{ padding: '2px', borderRadius: '4px', color: 'var(--text-secondary)', background: 'none', border: 'none' }}
+                                  title="Move Right"
+                                >
+                                  <ChevronRight size={14} />
+                                </button>
+                              )}
+                            </div>
+
+                            {(task.priority && task.priority !== 'none') && (
+                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', paddingRight: '40px' }}>
+                                <span style={{
+                                  fontSize: '10px',
+                                  padding: '1px 5px',
+                                  borderRadius: '3px',
+                                  fontWeight: 700,
+                                  background: task.priority === 'high' ? '#ffebf0' : task.priority === 'medium' ? '#fff9db' : '#eefcf1',
+                                  color: task.priority === 'high' ? '#ff4d4d' : task.priority === 'medium' ? '#fab005' : '#0ca678'
+                                }}>
+                                  {task.priority.toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+
+                            <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--text-color)', lineHeight: 1.4, paddingRight: '40px' }}>
+                              {highlightText(task.title, globalSearchQuery)}
+                            </h4>
+
+                            {(task.description || task.dueDate || (task.checklist && task.checklist.length > 0)) && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+                                {task.dueDate && (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>
+                                    <Calendar size={12} />
+                                    <span>{format(new Date(task.dueDate), 'MMM d')}</span>
+                                  </div>
+                                )}
+
+                                {task.checklist && task.checklist.length > 0 && (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>
+                                    <Check size={12} />
+                                    <span>{task.checklist.filter(c => c.completed).length}/{task.checklist.length}</span>
+                                  </div>
+                                )}
+
+                                {task.description && (
+                                  <div style={{ color: 'var(--text-secondary)' }}>
+                                    <MoreHorizontal size={12} />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {task.tags && task.tags.length > 0 && (
+                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+                                {task.tags.map((tag, i) => (
+                                  <span key={i} style={{ fontSize: '10px', color: 'var(--text-secondary)', background: 'var(--hover-bg)', padding: '1px 4px', borderRadius: '3px' }}>
+                                    #{highlightText(tag, globalSearchQuery)}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+
+                    <input
+                      type="text"
+                      placeholder="+ New"
+                      value={newTaskText[col.id] || ''}
+                      onChange={(e) => setNewTaskText({ ...newTaskText, [col.id]: e.target.value })}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddTask(col.id)}
+                      style={{ width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', color: 'var(--text-color)', fontSize: '14px', borderRadius: '4px', marginTop: '4px', outline: 'none', transition: 'background 0.1s' }}
+                      onFocus={(e) => e.target.style.background = 'var(--hover-bg)'}
+                      onBlur={(e) => e.target.style.background = 'transparent'}
+                    />
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          ))}
+
+
+        </div>
+      </DragDropContext>
+      {localTask && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.4)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(4px)'
+        }} onClick={() => setSelectedTask(null)}>
+          <div style={{
+            width: '600px',
+            maxHeight: '90vh',
+            background: 'var(--bg-color)',
+            borderRadius: '12px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Kanban size={20} color="var(--primary)" />
+                <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Task Details</h2>
+              </div>
+              <button onClick={() => setSelectedTask(null)} style={{ color: 'var(--text-secondary)' }}><X size={20} /></button>
+            </div>
+
+            <div style={{ padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Title</label>
+                <input
+                  value={localTask.title || ''}
+                  onChange={(e) => {
+                    setLocalTask({ ...localTask, title: e.target.value });
+                  }}
+                  onBlur={() => {
+                    handleUpdateTaskDetail(localTask._id, localTask);
+                  }}
+                  style={{ width: '100%', padding: '10px', fontSize: '16px', fontWeight: 500, borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--hover-bg)', color: 'var(--text-color)', outline: 'none' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Priority</label>
+                <select
+                  value={localTask.priority || 'none'}
+                  onChange={(e) => {
+                    const newPriority = e.target.value;
+                    setLocalTask({ ...localTask, priority: newPriority });
+                    handleUpdateTaskDetail(localTask._id, { priority: newPriority });
+                  }}
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--hover-bg)', color: 'var(--text-color)', outline: 'none' }}
+                >
+                  <option value="none">None</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Description</label>
+                {isDescFocused ? (
+                  <textarea
+                    autoFocus
+                    rows={4}
+                    value={localTask.description || ''}
+                    onChange={(e) => {
+                      setLocalTask({ ...localTask, description: e.target.value });
+                    }}
+                    onBlur={() => {
+                      setIsDescFocused(false);
+                      handleUpdateTaskDetail(localTask._id, localTask);
+                    }}
+                    placeholder="Add a more detailed description..."
+                    style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--hover-bg)', color: 'var(--text-color)', outline: 'none', resize: 'none', fontSize: '14px' }}
+                  />
+                ) : (
+                  <div
+                    onClick={() => setIsDescFocused(true)}
+                    style={{ width: '100%', padding: '12px', minHeight: '80px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--hover-bg)', color: 'var(--text-color)', fontSize: '14px', whiteSpace: 'pre-wrap', cursor: 'text' }}
+                  >
+                    {localTask.description ? renderContentWithLinksAndHighlights(localTask.description) : (
+                      <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>Add a more detailed description...</span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block' }}>Subtasks</label>
+                  <button onClick={handleAddSubtask} style={{ color: 'var(--primary)', fontSize: '12px', fontWeight: 600 }}>+ Add</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {localTask.checklist && localTask.checklist.map((item, index) => (
+                    <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px', borderRadius: '6px', background: 'var(--hover-bg)' }}>
+                      <input
+                        type="checkbox"
+                        checked={item.completed}
+                        onChange={() => toggleSubtask(index)}
+                        style={{ width: '16px', height: '16px' }}
+                      />
+                      <input
+                        value={item.text}
+                        onChange={(e) => updateSubtaskText(index, e.target.value)}
+                        style={{ flex: 1, background: 'none', border: 'none', color: item.completed ? 'var(--text-secondary)' : 'var(--text-color)', textDecoration: item.completed ? 'line-through' : 'none', outline: 'none' }}
+                      />
+                      <button onClick={() => removeSubtask(index)} style={{ color: '#ef4444', padding: '4px' }}><Trash2 size={14} /></button>
+                    </div>
+                  ))}
+                  {(!localTask.checklist || localTask.checklist.length === 0) && (
+                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', fontStyle: 'italic', margin: 0 }}>No subtasks yet.</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Tags (comma separated)</label>
+                <input
+                  value={localTask.tagsString !== undefined ? localTask.tagsString : (localTask.tags ? localTask.tags.join(', ') : '')}
+                  onChange={(e) => {
+                    setLocalTask({ ...localTask, tagsString: e.target.value });
+                  }}
+                  onBlur={(e) => {
+                    const newTags = e.target.value.split(',').map(s => s.trim()).filter(s => s !== '');
+                    const updatedTask = { ...localTask, tags: newTags };
+                    delete updatedTask.tagsString; // clear local string so it formats from array
+                    setLocalTask(updatedTask);
+                    handleUpdateTaskDetail(localTask._id, updatedTask);
+                  }}
+                  placeholder="e.g. urgent, backend, design"
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--hover-bg)', color: 'var(--text-color)', outline: 'none' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ padding: '20px 24px', background: 'var(--hover-bg)', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 500 }}
+              >
+                <Trash2 size={16} /> Delete Task
+              </button>
+              <button
+                onClick={() => setSelectedTask(null)}
+                style={{ padding: '8px 20px', background: 'var(--primary)', color: 'white', borderRadius: '6px', fontWeight: 600 }}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)' }} onClick={() => setShowDeleteModal(false)}>
+          <div style={{ background: 'var(--bg-color)', padding: '24px', borderRadius: '12px', width: '360px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid var(--border-color)' }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-color)', marginBottom: '8px' }}>Delete this task?</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.5' }}>This will permanently remove the task and all its subtasks. This action cannot be undone.</p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 500, color: 'var(--text-color)', background: 'var(--hover-bg)', border: '1px solid var(--border-color)' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { deleteTask(localTask._id); setSelectedTask(null); setShowDeleteModal(false); }}
+                style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: '#ef4444', color: 'white', border: 'none' }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Board Confirmation Modal */}
+      {boardToDelete && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)' }} onClick={() => setBoardToDelete(null)}>
+          <div style={{ background: 'var(--bg-color)', padding: '24px', borderRadius: '12px', width: '360px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid var(--border-color)' }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-color)', marginBottom: '8px' }}>Delete board?</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.5' }}>Are you sure you want to delete "{boardToDelete.name}"? All tasks will be permanently lost. This action cannot be undone.</p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setBoardToDelete(null)}
+                style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 500, color: 'var(--text-color)', background: 'var(--hover-bg)', border: '1px solid var(--border-color)' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => { await deleteBoard(boardToDelete.id); setBoardToDelete(null); }}
+                style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: '#ef4444', color: 'white', border: 'none' }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        div:hover > button {
+          opacity: 1 !important;
+        }
+      `}</style>
+    </div>
+  );
+}

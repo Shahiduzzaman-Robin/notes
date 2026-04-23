@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-color: #ffffff;
+  --text-color: #37352f;
+  --text-secondary: rgba(55, 53, 47, 0.65);
+  --sidebar-bg: #f7f6f3;
+  --card-bg: #ffffff;
+  --border-color: rgba(55, 53, 47, 0.09);
+  --primary: #2383e2; /* Notion blue */
+  --primary-hover: #1e70c1;
+  --hover-bg: rgba(55, 53, 47, 0.04);
+  --danger: #eb5757;
+  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  --col-todo-bg: rgba(255, 77, 77, 0.03);
+  --col-inprogress-bg: rgba(250, 176, 5, 0.03);
+  --col-done-bg: rgba(12, 166, 120, 0.03);
+}
+
+.dark-theme {
+  --bg-color: #191919;
+  --text-color: rgba(255, 255, 255, 0.9);
+  --text-secondary: rgba(255, 255, 255, 0.5);
+  --sidebar-bg: #202020;
+  --card-bg: #202020;
+  --border-color: rgba(255, 255, 255, 0.06);
+  --hover-bg: rgba(255, 255, 255, 0.05);
+
+  --col-todo-bg: rgba(255, 255, 255, 0.02);
+  --col-inprogress-bg: rgba(255, 255, 255, 0.02);
+  --col-done-bg: rgba(255, 255, 255, 0.02);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.2s ease;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+* {
+  box-sizing: inherit;
+}
+
+/* Minimal Utilities */
+.glass, .glass-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px; /* Notion uses smaller border-radius */
+  transition: all 0.2s ease;
+}
+
+.glass-card:hover {
+  background: var(--hover-bg);
+}
+
+.btn-gradient {
+  background: var(--primary);
+  color: white;
+  border-radius: 4px;
+  font-weight: 500;
+  padding: 6px 12px;
+  transition: background 0.2s;
+}
+
+.btn-gradient:hover {
+  background: var(--primary-hover);
+}
+
+/* Animations (Minimal) */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+input, textarea, button, select {
+  font-family: inherit;
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+h1, h2, h3, h4 {
+  margin-top: 0;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* Layout Utilities */
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Hide scrollbar but allow scrolling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(55, 53, 47, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
