@@ -13,7 +13,10 @@ import Highlight from '@tiptap/extension-highlight';
 import { TextAlign } from '@tiptap/extension-text-align';
 import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { Extension } from '@tiptap/core';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { 
   Bold, Italic, Underline as UnderlineIcon, Strikethrough, Code,
   Heading1, Heading2, Heading3,
@@ -26,7 +29,58 @@ import {
 } from 'lucide-react';
 import Modal from './Modal';
 
-export default function TiptapEditor({ noteId, initialContent, onChange, onSave }) {
+const SearchHighlight = Extension.create({
+  name: 'searchHighlight',
+  addOptions() {
+    return {
+      searchQuery: '',
+    }
+  },
+  addProseMirrorPlugins() {
+    const { searchQuery } = this.options;
+    return [
+      new Plugin({
+        key: new PluginKey('searchHighlight'),
+        state: {
+          init() { return DecorationSet.empty },
+          apply(tr, set) {
+            set = set.map(tr.mapping, tr.doc);
+            return set;
+          },
+        },
+        props: {
+          decorations(state) {
+            const { searchQuery } = this.editor.extensionManager.extensions.find(e => e.name === 'searchHighlight').options;
+            if (!searchQuery || searchQuery.length < 2) return DecorationSet.empty;
+
+            const decorations = [];
+            const { doc } = state;
+            const regex = new RegExp(searchQuery, 'gi');
+
+            doc.descendants((node, pos) => {
+              if (node.isText) {
+                const { text } = node;
+                let match;
+                while ((match = regex.exec(text)) !== null) {
+                  const start = pos + match.index;
+                  const end = start + match[0].length;
+                  decorations.push(
+                    Decoration.inline(start, end, {
+                      class: 'search-result-highlight',
+                    })
+                  );
+                }
+              }
+            });
+            return DecorationSet.create(doc, decorations);
+          },
+        },
+      }),
+    ]
+  },
+});
+
+export default function TiptapEditor({ noteId, initialContent, onChange, onSave, searchQuery = '' }) {
   const [isFocused, setIsFocused] = useState(false);
   
   // Slash menu state
@@ -126,6 +180,7 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
         HTMLAttributes: { class: 'youtube-embed' },
       }),
       Placeholder.configure({ placeholder: 'Type / for commands, or just start writing...' }),
+      SearchHighlight.configure({ searchQuery }),
     ],
     content: initialContent || '',
     immediatelyRender: false,
@@ -194,6 +249,21 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
 
     return () => clearTimeout(timeout);
   }, [editor?.state.doc.content, isFocused, onSave]);
+
+  useEffect(() => {
+    if (editor && searchQuery !== undefined) {
+      editor.setOptions({
+        extensions: editor.extensionManager.extensions.map(ext => {
+          if (ext.name === 'searchHighlight') {
+            return ext.configure({ searchQuery });
+          }
+          return ext;
+        })
+      });
+      // Force a re-render of the decorations by updating the state
+      editor.view.dispatch(editor.state.tr);
+    }
+  }, [editor, searchQuery]);
 
   // Track slash input for the menu
   const handleSlashTracking = useCallback((editor) => {

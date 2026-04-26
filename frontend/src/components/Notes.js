@@ -235,6 +235,7 @@ export default function Notes() {
                     initialContent={currentNote.content || ''}
                     onChange={handleContentChange}
                     onSave={handleSave}
+                    searchQuery={globalSearchQuery}
                   />
                 </div>
               </div>
