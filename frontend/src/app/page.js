@@ -33,10 +33,9 @@ export default function Home() {
     boards, activeBoardId, setActiveBoardId, 
     notes, fetchNotes, activeNoteId, setActiveNoteId, addNote,
     noteFolders, boardFolders, fetchFolders, addFolder, fetchBoards,
-    activeFolderId
+    activeFolderId, setActiveFolderId, activeTab, setActiveTab
   } = useStore();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('notes');
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -56,11 +55,11 @@ export default function Home() {
   useEffect(() => {
     const savedTab = localStorage.getItem('activeTab');
     if (savedTab) setActiveTab(savedTab);
-  }, []);
+  }, [setActiveTab]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    localStorage.setItem('activeTab', tab);
+    setActiveFolderId(null, tab);
   };
 
   const handleAddNote = async (e) => {

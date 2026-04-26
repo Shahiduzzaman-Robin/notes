@@ -127,7 +127,7 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
             {expandedFolders[folder._id] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             <Folder size={14} className="text-primary" />
             <span 
-              onClick={(e) => { e.stopPropagation(); setActiveFolderId(folder._id); }}
+              onClick={(e) => { e.stopPropagation(); setActiveFolderId(folder._id, type); }}
               style={{ 
                 flex: 1, 
                 whiteSpace: 'nowrap', 

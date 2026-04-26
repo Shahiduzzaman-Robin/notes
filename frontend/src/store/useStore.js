@@ -23,14 +23,19 @@ const useStore = create((set, get) => ({
   isLoadingBoards: true,
   isLoadingFolders: true,
   globalSearchQuery: '',
+  activeTab: 'notes',
   
   setGlobalSearchQuery: (query) => set({ globalSearchQuery: query }),
-  setActiveNoteId: (id) => set({ activeNoteId: id, activeFolderId: null, activeBoardId: null }),
+  setActiveTab: (tab) => {
+    set({ activeTab: tab });
+    localStorage.setItem('activeTab', tab);
+  },
+  setActiveNoteId: (id) => set({ activeNoteId: id, activeFolderId: null, activeBoardId: null, activeTab: 'notes' }),
   setActiveBoardId: (id) => {
-    set({ activeBoardId: id, activeFolderId: null, activeNoteId: null });
+    set({ activeBoardId: id, activeFolderId: null, activeNoteId: null, activeTab: 'boards' });
     get().fetchTasks(id);
   },
-  setActiveFolderId: (id) => set({ activeFolderId: id, activeNoteId: null, activeBoardId: null }),
+  setActiveFolderId: (id, type) => set({ activeFolderId: id, activeNoteId: null, activeBoardId: null, activeTab: type || get().activeTab }),
   
   // Folder Actions
   fetchFolders: async () => {
