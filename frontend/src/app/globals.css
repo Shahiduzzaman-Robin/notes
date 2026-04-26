@@ -18,7 +18,7 @@
   --col-todo-bg: rgba(255, 77, 77, 0.03);
   --col-inprogress-bg: rgba(250, 176, 5, 0.03);
   --col-done-bg: rgba(12, 166, 120, 0.03);
-  --toolbar-bg: rgba(255, 255, 255, 0.8);
+  --toolbar-bg: #ffffff;
 }
 
 .dark-theme {
@@ -33,7 +33,7 @@
   --col-todo-bg: rgba(255, 255, 255, 0.02);
   --col-inprogress-bg: rgba(255, 255, 255, 0.02);
   --col-done-bg: rgba(255, 255, 255, 0.02);
-  --toolbar-bg: rgba(25, 25, 25, 0.8);
+  --toolbar-bg: #252525;
 }
 
 body {
@@ -147,6 +147,7 @@ h1, h2, h3, h4 {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background: var(--toolbar-bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   flex-wrap: wrap;
