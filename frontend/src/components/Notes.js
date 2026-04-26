@@ -210,165 +210,84 @@ export default function Notes() {
   return (
     <div className="notes-layout" style={{ height: '100%' }}>
       <style>{`
-        .notes-layout {
-          display: flex;
-          gap: 0px;
-        }
-        .notes-editor-container {
-          flex: 1;
-          display: flex;
-          flex-direction: row;
-          background: var(--bg-color);
-          width: 100%;
-          overflow: hidden;
-        }
-        #editor-scroll-container::-webkit-scrollbar,
-        .notes-metadata-panel::-webkit-scrollbar {
-          display: none;
-        }
-        #editor-scroll-container,
-        .notes-metadata-panel {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .notes-editor-inner {
-          max-width: 900px;
-          width: 100%;
-          padding: 60px 80px;
-          display: flex;
-          flex-direction: column;
-          margin: 0 auto;
-        }
-        .notes-metadata-panel {
-          width: 280px;
-          border-left: 1px solid var(--border-color);
-          padding: 32px 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 32px;
-          background: var(--sidebar-bg);
-          overflow-y: auto;
-          flex-shrink: 0;
-        }
-        .meta-group {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-        .meta-group h4 {
-          font-size: 11px;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--text-secondary);
-          margin: 0;
-          font-weight: 600;
-        }
-        .meta-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
-          font-size: 13px;
-          color: var(--text-color);
-        }
-        .meta-icon {
-          color: var(--text-secondary);
-          flex-shrink: 0;
-        }
-        @media (max-width: 1024px) {
-          .notes-metadata-panel {
-            display: none;
-          }
-        }
-        @media (max-width: 768px) {
-          .notes-editor-inner {
-            padding: 20px 16px !important;
-          }
-        }
-        .loading-dots:after {
-          content: ' .';
-          animation: dots 1s steps(5, end) infinite;
-        }
-        @keyframes dots {
-          0%, 20% { content: ' .'; }
-          40% { content: ' . .'; }
-          60% { content: ' . . .'; }
-          80%, 100% { content: ' . . . .'; }
-        }
+        .notes-layout { display: flex; height: 100%; overflow: hidden; }
+        .notes-editor-container { flex: 1; display: flex; background: var(--bg-color); overflow: hidden; }
+        #editor-scroll-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .notes-editor-inner { max-width: 900px; width: 100%; padding: 60px 80px; margin: 0 auto; }
+        .notes-metadata-panel { width: 300px; border-left: 1px solid var(--border-color); background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; }
+        
+        .meta-group { display: flex; flex-direction: column; gap: 16px; }
+        .meta-item { display: flex; align-items: center; gap: 12px; }
+        .meta-icon { color: var(--text-secondary); opacity: 0.7; }
+        .meta-content { display: flex; flex-direction: column; }
+        .meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 2px; }
+        .meta-value { font-size: 13px; color: var(--text-color); font-weight: 500; }
+        .meta-select { background: transparent; border: none; color: var(--text-color); font-size: 13px; font-weight: 500; outline: none; padding: 0; cursor: pointer; }
+        .tag-pill { display: inline-flex; align-items: center; gap: 4px; background: var(--hover-bg); padding: 2px 10px; border-radius: 14px; font-size: 12px; border: 1px solid var(--border-color); }
+        .tag-input { background: transparent; border: 1px solid var(--primary); color: var(--text-color); font-size: 12px; padding: 2px 10px; border-radius: 14px; outline: none; width: 100px; }
+        .add-tag-btn { color: var(--text-secondary); font-size: 12px; padding: 2px 10px; border-radius: 14px; background: transparent; border: 1px dashed var(--border-color); cursor: pointer; }
+        
+        .action-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 13px; font-weight: 500; cursor: pointer; margin-bottom: 8px; transition: all 0.2s; }
+        .action-btn:hover { background: var(--border-color); transform: translateY(-1px); }
+        .action-btn.delete { color: var(--danger); border-color: rgba(239, 68, 68, 0.2); }
+        .action-btn.delete:hover { background: rgba(239, 68, 68, 0.1); }
+
+        .ai-card { background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+        .ai-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .ai-action-icon { background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .ai-action-icon:hover { color: var(--primary); background: var(--primary-light); }
+        
+        .ai-chat-container { display: flex; flex-direction: column; height: 350px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .chat-bubble { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4; }
+        .chat-bubble.user { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 2px; }
+        .chat-bubble.model { align-self: flex-start; background: var(--hover-bg); border: 1px solid var(--border-color); border-bottom-left-radius: 2px; }
+        
+        .chat-input-wrapper { display: flex; padding: 8px; background: var(--hover-bg); border-top: 1px solid var(--border-color); gap: 8px; }
+        .chat-input { flex: 1; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 12px; font-size: 13px; outline: none; color: var(--text-color); }
+        .chat-send-btn { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin { animation: spin 1s linear infinite; }
+        
+        .loading-dots:after { content: ' .'; animation: dots 1s steps(5, end) infinite; }
+        @keyframes dots { 0%, 20% { content: ' .'; } 40% { content: ' . .'; } 60% { content: ' . . .'; } 80%, 100% { content: ' . . . .'; } }
       `}</style>
-      
-      {/* Editor Area (The "Page") */}
+
       <div className="notes-editor-container">
         {currentNote._id ? (
           <>
-            <div id="editor-scroll-container" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <div id="editor-scroll-container">
               <div className="notes-editor-inner">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)', overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '4px', flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <FileText size={14} />
-                      <span>Notes</span>
-                    </div>
-                    {currentNote.folder && (() => {
-                      const path = [];
-                      let currentId = currentNote.folder;
-                      while (currentId) {
-                        const folder = noteFolders.find(f => f._id === currentId);
-                        if (folder) {
-                          path.unshift(folder);
-                          currentId = folder.parentFolder;
-                        } else break;
-                      }
-                      return (
-                        <>
-                          {path.map(f => (
-                            <div key={f._id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <ChevronRight size={12} style={{ opacity: 0.5 }} />
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <Folder size={14} style={{ color: 'var(--primary)', opacity: 0.8 }} />
-                                <span>{f.name}</span>
-                              </div>
-                            </div>
-                          ))}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <ChevronRight size={12} style={{ opacity: 0.5 }} />
-                            <span style={{ color: 'var(--text-color)', fontWeight: 500 }}>{currentNote.title || 'Untitled'}</span>
-                          </div>
-                        </>
-                      );
-                    })()}
-                    {!currentNote.folder && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <ChevronRight size={12} style={{ opacity: 0.5 }} />
-                        <span style={{ color: 'var(--text-color)', fontWeight: 500 }}>{currentNote.title || 'Untitled'}</span>
-                      </div>
-                    )}
+                {/* Breadcrumbs & Meta info */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', opacity: 0.6, fontSize: '13px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <FileText size={14} />
+                    <span>Notes</span>
+                    <ChevronRight size={12} />
+                    <span style={{ color: 'var(--text-color)', fontWeight: 500 }}>{currentNote.title || 'Untitled'}</span>
                   </div>
-                  <div style={{ display: 'flex', gap: '16px', fontSize: '13px', opacity: 0.6 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={14} /> Last edited {updatedAt}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={14} /> {updatedAt}</span>
+                    <button onClick={() => updateNote(currentNote._id, { isPinned: !currentNote.isPinned })} style={{ color: currentNote.isPinned ? 'var(--primary)' : 'inherit', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <Pin size={16} fill={currentNote.isPinned ? 'currentColor' : 'none'} />
+                    </button>
                   </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '16px', opacity: 0.6 }}>
-                  <button onClick={() => setCurrentNote({...currentNote, isPinned: !currentNote.isPinned})} style={{ color: currentNote.isPinned ? 'var(--primary)' : 'inherit', background: 'none', border: 'none', cursor: 'pointer' }}><Pin size={18} /></button>
-                  <button onClick={() => setShowDeleteModal(true)} style={{ color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={18} /></button>
                 </div>
 
                 <input 
                   type="text" 
                   value={currentNote.title}
-                  onChange={e => {
-                    const newNote = {...currentNote, title: e.target.value};
-                    setCurrentNote(newNote);
-                  }}
+                  onChange={e => setCurrentNote(prev => ({ ...prev, title: e.target.value }))}
                   onBlur={() => handleSave()}
                   placeholder="Untitled"
-                  style={{ fontSize: '42px', fontWeight: 700, background: 'transparent', border: 'none', color: 'var(--text-color)', width: '100%', marginBottom: '20px', outline: 'none' }}
+                  style={{ fontSize: '42px', fontWeight: 700, background: 'transparent', border: 'none', color: 'var(--text-color)', width: '100%', marginBottom: '24px', outline: 'none' }}
                 />
-                
-                <div style={{ flex: 1, minHeight: '500px', position: 'relative' }}>
+
+                <div style={{ flex: 1, minHeight: '600px' }}>
                   {currentNote.content === undefined && (
-                    <div style={{ position: 'absolute', top: '100px', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
-                      <div className="loading-dots">Loading content</div>
+                    <div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-secondary)' }} className="loading-dots">
+                      Loading content
                     </div>
                   )}
                   <TiptapEditor 
@@ -382,287 +301,159 @@ export default function Notes() {
               </div>
             </div>
 
-            {/* Right Side Metadata Panel */}
+            {/* Right Sidebar */}
             <div className="notes-metadata-panel">
-              <div className="meta-group">
-                <h4>Properties</h4>
-                <div className="meta-item">
-                  <AlignLeft size={16} className="meta-icon" />
-                  <span style={{ flex: 1 }}>Word Count</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>{wordCount}</span>
-                </div>
-                <div className="meta-item">
-                  <AlignLeft size={16} className="meta-icon" />
-                  <span style={{ flex: 1 }}>Characters</span>
-                  <span>{currentNote.content ? currentNote.content.length : 0}</span>
-                </div>
-              </div>
-
-              <div className="meta-group">
-                <h4>Actions</h4>
+              <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)' }}>
                 <button 
-                  onClick={handleDownloadPDF}
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    borderRadius: '8px', 
-                    background: 'var(--hover-bg)', 
-                    border: '1px solid var(--border-color)', 
-                    color: 'var(--text-color)', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '10px', 
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-                  onMouseOut={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                  onClick={() => setActiveRightTab('meta')}
+                  style={{ flex: 1, padding: '14px', fontSize: '12px', fontWeight: 600, color: activeRightTab === 'meta' ? 'var(--primary)' : 'var(--text-secondary)', borderBottom: activeRightTab === 'meta' ? '2px solid var(--primary)' : 'none', background: 'transparent', cursor: 'pointer' }}
                 >
-                  <FileText size={16} />
-                  Export as PDF
+                  Properties
+                </button>
+                <button 
+                  onClick={() => setActiveRightTab('ai')}
+                  style={{ flex: 1, padding: '14px', fontSize: '12px', fontWeight: 600, color: activeRightTab === 'ai' ? 'var(--primary)' : 'var(--text-secondary)', borderBottom: activeRightTab === 'ai' ? '2px solid var(--primary)' : 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                >
+                  <Sparkles size={14} /> AI Assistant
                 </button>
               </div>
 
-              <div className="meta-group">
-                <h4>History</h4>
-          <>
-            {/* Sidebar Toggle/Tabs */}
-            <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-color)' }}>
-              <button 
-                onClick={() => setActiveRightTab('meta')}
-                style={{ flex: 1, padding: '12px', fontSize: '12px', fontWeight: 600, color: activeRightTab === 'meta' ? 'var(--primary)' : 'var(--text-secondary)', borderBottom: activeRightTab === 'meta' ? '2px solid var(--primary)' : 'none', background: 'transparent' }}
-              >
-                Properties
-              </button>
-              <button 
-                onClick={() => setActiveRightTab('ai')}
-                style={{ flex: 1, padding: '12px', fontSize: '12px', fontWeight: 600, color: activeRightTab === 'ai' ? 'var(--primary)' : 'var(--text-secondary)', borderBottom: activeRightTab === 'ai' ? '2px solid var(--primary)' : 'none', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-              >
-                <Sparkles size={14} /> AI Assistant
-              </button>
-            </div>
-
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-              {activeRightTab === 'meta' ? (
-                <div className="meta-section">
-                  <div className="meta-group">
-                    <div className="meta-item">
-                      <Clock size={16} className="meta-icon" />
-                      <div className="meta-content">
-                        <span className="meta-label">Last Edited</span>
-                        <span className="meta-value">{currentNote.updatedAt ? format(new Date(currentNote.updatedAt), 'MMM d, yyyy • h:mm a') : 'Just now'}</span>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+                {activeRightTab === 'meta' ? (
+                  <div className="meta-section">
+                    <div className="meta-group">
+                      <div className="meta-item">
+                        <Clock size={16} className="meta-icon" />
+                        <div className="meta-content">
+                          <span className="meta-label">Last Edited</span>
+                          <span className="meta-value">{updatedAt}</span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="meta-item">
-                      <Folder size={16} className="meta-icon" />
-                      <div className="meta-content">
-                        <span className="meta-label">Location</span>
-                        <select 
-                          value={currentNote.folder || 'root'} 
-                          onChange={(e) => updateNote(currentNote._id, { folder: e.target.value === 'root' ? null : e.target.value })}
-                          className="meta-select"
-                        >
-                          <option value="root">No Folder</option>
-                          {noteFolders.map(f => (
-                            <option key={f._id} value={f._id}>{f.name}</option>
+                      <div className="meta-item">
+                        <Folder size={16} className="meta-icon" />
+                        <div className="meta-content">
+                          <span className="meta-label">Location</span>
+                          <select 
+                            value={currentNote.folder || 'root'} 
+                            onChange={(e) => handleFolderChange(e.target.value)}
+                            className="meta-select"
+                          >
+                            <option value="root">No Folder</option>
+                            {noteFolders.map(f => (
+                              <option key={f._id} value={f._id}>{f.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="meta-item" style={{ alignItems: 'flex-start' }}>
+                        <Tag size={16} className="meta-icon" style={{ marginTop: '2px' }} />
+                        <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                          {(currentNote.tags || []).map(t => (
+                            <span key={t} className="tag-pill">
+                              {t}
+                              <X size={12} style={{ cursor: 'pointer', opacity: 0.5 }} onClick={() => handleRemoveTag(t)} />
+                            </span>
                           ))}
-                        </select>
+                          {isAddingTag ? (
+                            <input autoFocus value={newTag} onChange={e => setNewTag(e.target.value)} onKeyDown={handleAddTag} onBlur={() => setIsAddingTag(false)} placeholder="Tag..." className="tag-input" />
+                          ) : (
+                            <button onClick={() => setIsAddingTag(true)} className="add-tag-btn">+ Tag</button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="meta-item" style={{ alignItems: 'flex-start' }}>
-                      <Tag size={16} className="meta-icon" style={{ marginTop: '2px' }} />
-                      <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {(currentNote.tags || []).map(t => (
-                          <span key={t} className="tag-pill">
-                            {t}
-                            <X size={12} style={{ cursor: 'pointer', opacity: 0.5 }} onClick={() => handleRemoveTag(t)} />
-                          </span>
-                        ))}
-                        {isAddingTag ? (
-                          <input 
-                            autoFocus
-                            value={newTag}
-                            onChange={e => setNewTag(e.target.value)}
-                            onKeyDown={handleAddTag}
-                            onBlur={() => { setIsAddingTag(false); setNewTag(''); }}
-                            placeholder="Add tag..."
-                            className="tag-input"
-                          />
-                        ) : (
-                          <button onClick={() => setIsAddingTag(true)} className="add-tag-btn">+ Tag</button>
+
+                    <div className="meta-group" style={{ marginTop: '40px' }}>
+                      <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '8px' }}>Statistics</h4>
+                      <div style={{ fontSize: '13px', opacity: 0.8 }}>
+                        {wordCount} words • {charCount} characters
+                      </div>
+                    </div>
+
+                    <div className="meta-group" style={{ marginTop: '40px' }}>
+                      <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '12px' }}>Actions</h4>
+                      <button onClick={handleDownloadPDF} className="action-btn">
+                        <Download size={16} /> Export as PDF
+                      </button>
+                      <button onClick={() => setShowDeleteModal(true)} className="action-btn delete">
+                        <Trash2 size={16} /> Delete Note
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="ai-section">
+                    <div className="ai-card">
+                      <div className="ai-card-header">
+                        <span style={{ fontWeight: 600, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <AlignLeft size={16} color="var(--primary)" /> Smart Summary
+                        </span>
+                        <button onClick={handleAISummarize} disabled={aiLoading} className="ai-action-icon">
+                          <RefreshCcw size={14} className={aiLoading ? 'spin' : ''} />
+                        </button>
+                      </div>
+                      {aiSummary ? (
+                        <div style={{ fontSize: '13px', lineHeight: '1.6' }}>{aiSummary.split('\n').map((l, i) => <p key={i} style={{ margin: '4px 0' }}>{l}</p>)}</div>
+                      ) : (
+                        <p style={{ fontSize: '12px', opacity: 0.5 }}>Click summarize to begin.</p>
+                      )}
+                    </div>
+
+                    <div className="ai-card">
+                      <div className="ai-card-header">
+                        <span style={{ fontWeight: 600, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Tag size={16} color="var(--primary)" /> Smart Tags
+                        </span>
+                        <button onClick={handleAISuggestTags} disabled={aiLoading} className="ai-action-icon">
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                      <p style={{ fontSize: '12px', opacity: 0.5 }}>Let AI suggest relevant tags.</p>
+                    </div>
+
+                    <div className="ai-chat-container">
+                      <div className="chat-messages">
+                        {chatHistory.length === 0 && (
+                          <div style={{ textAlign: 'center', padding: '20px', opacity: 0.3 }}>
+                            <Bot size={32} style={{ marginBottom: '8px' }} />
+                            <p style={{ fontSize: '11px' }}>Chat with this note</p>
+                          </div>
                         )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="meta-group" style={{ marginTop: '30px' }}>
-                    <h3 style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '12px' }}>Actions</h3>
-                    <button onClick={handleDownloadPDF} className="action-btn">
-                      <Download size={16} /> Export as PDF
-                    </button>
-                    <button onClick={() => setShowDeleteModal(true)} className="action-btn delete">
-                      <Trash2 size={16} /> Delete Note
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="ai-section">
-                  {/* AI Summary Section */}
-                  <div className="ai-card">
-                    <div className="ai-card-header">
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '13px' }}>
-                        <AlignLeft size={16} color="var(--primary)" /> Smart Summary
-                      </span>
-                      <button 
-                        onClick={handleAISummarize} 
-                        disabled={aiLoading}
-                        className="ai-action-icon"
-                      >
-                        <RefreshCcw size={14} className={aiLoading ? 'spin' : ''} />
-                      </button>
-                    </div>
-                    {aiSummary ? (
-                      <div className="ai-summary-content">
-                        {aiSummary.split('\n').map((line, i) => (
-                          <p key={i} style={{ margin: '4px 0', fontSize: '13px', lineHeight: '1.5' }}>{line}</p>
+                        {chatHistory.map((m, i) => (
+                          <div key={i} className={`chat-bubble ${m.role}`}>{m.parts[0].text}</div>
                         ))}
+                        {aiLoading && <div className="chat-bubble model loading-dots">Thinking</div>}
                       </div>
-                    ) : (
-                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>No summary generated yet.</p>
-                    )}
-                  </div>
-
-                  {/* AI Tags Section */}
-                  <div className="ai-card">
-                    <div className="ai-card-header">
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '13px' }}>
-                        <Tag size={16} color="var(--primary)" /> Suggest Tags
-                      </span>
-                      <button onClick={handleAISuggestTags} disabled={aiLoading} className="ai-action-icon">
-                        <Plus size={16} />
-                      </button>
+                      <form onSubmit={handleAIChat} className="chat-input-wrapper">
+                        <input type="text" value={chatMessage} onChange={e => setChatMessage(e.target.value)} placeholder="Ask anything..." className="chat-input" />
+                        <button type="submit" disabled={!chatMessage.trim() || aiLoading} className="chat-send-btn"><Send size={14} /></button>
+                      </form>
                     </div>
-                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>Let AI analyze your note and suggest relevant tags.</p>
                   </div>
-
-                  {/* AI Chat Section */}
-                  <div className="ai-chat-container">
-                    <div className="chat-messages">
-                      {chatHistory.length === 0 && (
-                        <div style={{ textAlign: 'center', padding: '20px', opacity: 0.5 }}>
-                          <Bot size={32} style={{ marginBottom: '10px' }} />
-                          <p style={{ fontSize: '12px' }}>Ask me anything about this note!</p>
-                        </div>
-                      )}
-                      {chatHistory.map((msg, i) => (
-                        <div key={i} className={`chat-bubble ${msg.role}`}>
-                          {msg.parts[0].text}
-                        </div>
-                      ))}
-                      {aiLoading && (
-                        <div className="chat-bubble model loading">
-                          <span className="dot"></span><span className="dot"></span><span className="dot"></span>
-                        </div>
-                      )}
-                    </div>
-                    <form onSubmit={handleAIChat} className="chat-input-wrapper">
-                      <input 
-                        type="text" 
-                        value={chatMessage}
-                        onChange={e => setChatMessage(e.target.value)}
-                        placeholder="Ask AI..."
-                        className="chat-input"
-                      />
-                      <button type="submit" disabled={!chatMessage.trim() || aiLoading} className="chat-send-btn">
-                        <Send size={14} />
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </>
         ) : (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: 'var(--text-secondary)' }}>
-            <div style={{ maxWidth: '400px', textAlign: 'center' }}>
-              <FileText size={64} style={{ marginBottom: '24px', opacity: 0.1 }} />
-              <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-color)', marginBottom: '8px' }}>Select a page</h2>
-              <p style={{ fontSize: '14px' }}>Choose a note from the sidebar or create a new one to start writing.</p>
-            </div>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: 'var(--text-secondary)', padding: '40px', textAlign: 'center' }}>
+            <FileText size={64} style={{ marginBottom: '24px', opacity: 0.1 }} />
+            <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-color)', marginBottom: '8px' }}>Select a page</h2>
+            <p style={{ fontSize: '14px' }}>Choose a note from the sidebar or create a new one.</p>
           </div>
         )}
       </div>
 
-      <style jsx>{`
-        .meta-group { display: flex; flex-direction: column; gap: 16px; }
-        .meta-item { display: flex; align-items: center; gap: 12px; }
-        .meta-icon { color: var(--text-secondary); opacity: 0.7; }
-        .meta-content { display: flex; flex-direction: column; }
-        .meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 2px; }
-        .meta-value { font-size: 13px; color: var(--text-color); font-weight: 500; }
-        .meta-select { background: transparent; border: none; color: var(--text-color); font-size: 13px; font-weight: 500; outline: none; padding: 0; cursor: pointer; }
-        .tag-pill { display: inline-flex; alignItems: center; gap: 4px; background: var(--hover-bg); padding: 2px 10px; borderRadius: 14px; fontSize: 12px; border: 1px solid var(--border-color); }
-        .tag-input { background: transparent; border: 1px solid var(--primary); color: var(--text-color); fontSize: 12px; padding: 2px 10px; borderRadius: 14px; outline: none; width: 100px; }
-        .add-tag-btn { color: var(--text-secondary); fontSize: 12px; padding: 2px 10px; borderRadius: 14px; background: transparent; border: 1px dashed var(--border-color); cursor: pointer; }
-        
-        .action-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 13px; font-weight: 500; cursor: pointer; margin-bottom: 8px; transition: all 0.2s; }
-        .action-btn:hover { background: var(--border-color); transform: translateY(-1px); }
-        .action-btn.delete { color: var(--danger); border-color: rgba(239, 68, 68, 0.2); }
-        .action-btn.delete:hover { background: rgba(239, 68, 68, 0.1); }
-
-        .ai-card { background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-        .ai-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .ai-action-icon { background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .ai-action-icon:hover { color: var(--primary); background: var(--primary-light); }
-        .ai-summary-content { color: var(--text-color); }
-
-        .ai-chat-container { display: flex; flex-direction: column; height: 300px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-top: 10px; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-        .chat-bubble { max-width: 85%; padding: 8px 12px; borderRadius: 12px; font-size: 13px; line-height: 1.4; }
-        .chat-bubble.user { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 2px; }
-        .chat-bubble.model { align-self: flex-start; background: var(--hover-bg); border: 1px solid var(--border-color); border-bottom-left-radius: 2px; }
-        
-        .chat-input-wrapper { display: flex; padding: 8px; background: var(--hover-bg); border-top: 1px solid var(--border-color); gap: 8px; }
-        .chat-input { flex: 1; background: var(--bg-color); border: 1px solid var(--border-color); borderRadius: 8px; padding: 6px 12px; font-size: 13px; outline: none; color: var(--text-color); }
-        .chat-send-btn { background: var(--primary); color: #fff; border: none; borderRadius: 8px; padding: 6px 10px; cursor: pointer; display: flex; alignItems: center; justifyContent: center; }
-        .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .spin { animation: spin 1s linear infinite; }
-
-        .loading .dot { display: inline-block; width: 4px; height: 4px; background: var(--text-secondary); border-radius: 50%; margin: 0 2px; animation: bounce 1.4s infinite ease-in-out; }
-        .loading .dot:nth-child(2) { animation-delay: 0.2s; }
-        .loading .dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
-      `}</style>
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        title="Delete this note?"
+        title="Delete Note"
         footer={
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button 
-              onClick={() => setShowDeleteModal(false)} 
-              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: 'var(--text-secondary)', background: 'transparent' }}
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={async () => {
-                await deleteNote(currentNote._id);
-                setActiveNoteId(null);
-                setShowDeleteModal(false);
-              }}
-              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 500, color: '#fff', background: '#ef4444', border: 'none', cursor: 'pointer' }}
-            >
-              Delete Note
-            </button>
+            <button onClick={() => setShowDeleteModal(false)} style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', background: 'transparent' }}>Cancel</button>
+            <button onClick={async () => { await deleteNote(currentNote._id); setActiveNoteId(null); setShowDeleteModal(false); }} style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', background: '#ef4444', color: '#fff', border: 'none', cursor: 'pointer' }}>Delete</button>
           </div>
         }
       >
-        <p>This will permanently remove the note and its content. This action cannot be undone.</p>
+        <p>Are you sure? This action cannot be undone.</p>
       </Modal>
     </div>
   );
