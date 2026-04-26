@@ -28,20 +28,23 @@ export default function Notes() {
           Last edited: ${currentNote.updatedAt ? new Date(currentNote.updatedAt).toLocaleString() : 'Just now'}
         </div>
         <div class="tiptap-content">
-          ${currentNote.content}
+          ${currentNote.content.replace(/<table/g, '<div class="table-wrapper"><table').replace(/<\/table>/g, '</table></div>')}
         </div>
       </div>
       <style>
+        .table-wrapper { 
+          page-break-inside: avoid !important; 
+          break-inside: avoid !important;
+          margin: 20px 0;
+          display: block;
+        }
         .tiptap-content table { 
           border-collapse: collapse; 
           width: 100%; 
-          margin: 10px 0; 
           page-break-inside: avoid !important; 
-          break-inside: avoid !important;
         }
         .tiptap-content tr { 
           page-break-inside: avoid !important; 
-          break-inside: avoid !important;
         }
         .tiptap-content table td, .tiptap-content table th { border: 1px solid #ddd; padding: 8px; }
         .tiptap-content h1 { font-size: 24px; margin-top: 20px; }
