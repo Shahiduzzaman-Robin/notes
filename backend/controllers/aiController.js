@@ -25,9 +25,10 @@ exports.summarizeNote = async (req, res) => {
       Use clear and professional language.
     `;
 
+    // New SDK simplifies things: you can often just pass the prompt string directly in contents
     const result = await ai.models.generateContent({
       model: MODEL_NAME,
-      contents: [{ role: 'user', parts: [{ text: prompt }] }]
+      contents: prompt
     });
     
     res.json({ summary: result.text });
@@ -46,10 +47,10 @@ exports.chatWithNote = async (req, res) => {
       return res.status(500).json({ message: "GEMINI_API_KEY is not configured on Render dashboard." });
     }
 
-    // Format history for the new SDK
+    // Modern SDK history format
     const formattedHistory = (history || []).map(h => ({
       role: h.role === 'model' ? 'model' : 'user',
-      parts: h.parts || [{ text: h.content }]
+      parts: [{ text: h.parts?.[0]?.text || h.content || "" }]
     }));
 
     const chat = ai.chats.create({
@@ -95,7 +96,7 @@ exports.suggestTags = async (req, res) => {
 
     const result = await ai.models.generateContent({
       model: MODEL_NAME,
-      contents: [{ role: 'user', parts: [{ text: prompt }] }]
+      contents: prompt
     });
     
     const text = result.text;
