@@ -1,12 +1,20 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const getAIModel = () => {
+  if (!process.env.GEMINI_API_KEY) return null;
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+};
 
 exports.summarizeNote = async (req, res) => {
   try {
     const { content, title } = req.body;
+    const model = getAIModel();
     
+    if (!model) {
+      return res.status(500).json({ message: "GEMINI_API_KEY is missing on the server." });
+    }
+
     const prompt = `
       You are an expert assistant. Please summarize the following note.
       Title: ${title}
@@ -23,16 +31,16 @@ exports.summarizeNote = async (req, res) => {
     res.json({ summary: text });
   } catch (error) {
     console.error("AI Summarize Error:", error);
-    const msg = !process.env.GEMINI_API_KEY ? "GEMINI_API_KEY is missing on the server." : "Failed to summarize note";
-    res.status(500).json({ message: msg });
+    res.status(500).json({ message: error.message || "Failed to summarize note" });
   }
 };
 
 exports.chatWithNote = async (req, res) => {
   try {
     const { content, title, message, history } = req.body;
+    const model = getAIModel();
     
-    if (!process.env.GEMINI_API_KEY) {
+    if (!model) {
       return res.status(500).json({ message: "GEMINI_API_KEY is not configured on Render dashboard." });
     }
 
@@ -67,8 +75,9 @@ exports.chatWithNote = async (req, res) => {
 exports.suggestTags = async (req, res) => {
   try {
     const { content, title } = req.body;
+    const model = getAIModel();
     
-    if (!process.env.GEMINI_API_KEY) {
+    if (!model) {
       return res.status(500).json({ message: "GEMINI_API_KEY missing." });
     }
 
