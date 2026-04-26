@@ -165,10 +165,6 @@ const useStore = create((set, get) => ({
         headers: { Authorization: `Bearer ${user.token}` }
       });
       set({ boards: res.data, isLoadingBoards: false });
-      if (res.data.length > 0 && !get().activeBoardId) {
-        set({ activeBoardId: res.data[0]._id });
-        get().fetchTasks(res.data[0]._id);
-      }
     } catch (error) {
       console.error(error);
       set({ isLoadingBoards: false });

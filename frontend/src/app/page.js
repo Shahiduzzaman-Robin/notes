@@ -320,7 +320,7 @@ export default function Home() {
         </header>
 
         <main className={styles.contentArea} style={{ padding: (activeTab === 'notes' && activeNoteId) ? '0' : undefined }}>
-          {activeFolderId ? (
+          {(activeFolderId || (activeTab === 'notes' && !activeNoteId) || (activeTab === 'boards' && !activeBoardId)) ? (
             <FolderView folderId={activeFolderId} type={activeTab} />
           ) : activeTab === 'notes' ? (
             <Notes />

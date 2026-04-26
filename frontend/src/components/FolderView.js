@@ -1,15 +1,20 @@
 "use client";
-import { FileText, Kanban, Plus, ChevronRight } from 'lucide-react';
+import { FileText, Kanban, Plus, ChevronRight, Folder } from 'lucide-react';
 import useStore from '../store/useStore';
 
 export default function FolderView({ folderId, type }) {
-  const { notes, boards, noteFolders, boardFolders, setActiveNoteId, setActiveBoardId, addNote, createBoard } = useStore();
+  const { notes, boards, noteFolders, boardFolders, setActiveNoteId, setActiveBoardId, setActiveFolderId, addNote, createBoard } = useStore();
   
-  const currentFolder = [...noteFolders, ...boardFolders].find(f => f._id === folderId);
-  const currentNotes = notes.filter(n => n.folder === folderId);
-  const currentBoards = boards.filter(b => b.folder === folderId);
+  const allFolders = type === 'notes' ? noteFolders : boardFolders;
+  const currentFolder = folderId 
+    ? allFolders.find(f => f._id === folderId) 
+    : { name: type === 'notes' ? 'Personal Notes' : 'Management', _id: null };
 
-  if (!currentFolder) return null;
+  const subFolders = allFolders.filter(f => f.parentFolder === (folderId || null));
+  const currentNotes = notes.filter(n => n.folder === (folderId || null));
+  const currentBoards = boards.filter(b => b.folder === (folderId || null));
+
+  if (!currentFolder && folderId) return null;
 
   const stripHtml = (html) => {
     if (!html) return '';
@@ -20,13 +25,42 @@ export default function FolderView({ folderId, type }) {
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px', opacity: 0.5, fontSize: '14px' }}>
         <span>{type === 'notes' ? 'Personal Notes' : 'Management'}</span>
-        <ChevronRight size={14} />
-        <span>{currentFolder.name}</span>
+        {folderId && (
+          <>
+            <ChevronRight size={14} />
+            <span>{currentFolder.name}</span>
+          </>
+        )}
       </div>
 
       <h1 style={{ fontSize: '32px', fontWeight: 700, marginBottom: '40px', color: 'var(--text-color)' }}>{currentFolder.name}</h1>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+        {/* Folders first */}
+        {subFolders.map(folder => (
+          <div 
+            key={folder._id} 
+            onClick={() => setActiveFolderId(folder._id, type)}
+            style={{ 
+              padding: '16px', 
+              borderRadius: '12px', 
+              border: '1px solid var(--border-color)', 
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              background: 'var(--bg-color)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px'
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.transform = 'none'; }}
+          >
+            <Folder size={24} style={{ color: 'var(--primary)', opacity: 0.8 }} />
+            <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0 }}>{folder.name}</h3>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Folder</span>
+          </div>
+        ))}
+
         {type === 'notes' ? (
           <>
             {currentNotes.map(note => (
@@ -63,7 +97,8 @@ export default function FolderView({ folderId, type }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                color: 'var(--text-secondary)'
+                color: 'var(--text-secondary)',
+                minHeight: '120px'
               }}
               onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
               onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
@@ -105,7 +140,8 @@ export default function FolderView({ folderId, type }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                color: 'var(--text-secondary)'
+                color: 'var(--text-secondary)',
+                minHeight: '120px'
               }}
               onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
               onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
