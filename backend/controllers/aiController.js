@@ -1,17 +1,18 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
 
-const getAIModel = () => {
+const getAIClient = () => {
   if (!process.env.GEMINI_API_KEY) return null;
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  return genAI.getGenerativeModel({ model: "gemini-pro" });
+  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 };
+
+const MODEL_NAME = "gemini-2.0-flash";
 
 exports.summarizeNote = async (req, res) => {
   try {
     const { content, title } = req.body;
-    const model = getAIModel();
+    const ai = getAIClient();
     
-    if (!model) {
+    if (!ai) {
       return res.status(500).json({ message: "GEMINI_API_KEY is missing on the server." });
     }
 
@@ -24,11 +25,12 @@ exports.summarizeNote = async (req, res) => {
       Use clear and professional language.
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const result = await ai.models.generateContent({
+      model: MODEL_NAME,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }]
+    });
     
-    res.json({ summary: text });
+    res.json({ summary: result.text });
   } catch (error) {
     console.error("AI Summarize Error:", error);
     res.status(500).json({ message: error.message || "Failed to summarize note" });
@@ -38,17 +40,21 @@ exports.summarizeNote = async (req, res) => {
 exports.chatWithNote = async (req, res) => {
   try {
     const { content, title, message, history } = req.body;
-    const model = getAIModel();
+    const ai = getAIClient();
     
-    if (!model) {
+    if (!ai) {
       return res.status(500).json({ message: "GEMINI_API_KEY is not configured on Render dashboard." });
     }
 
-    const chat = model.startChat({
-      history: history || [],
-      generationConfig: {
-        maxOutputTokens: 1000,
-      },
+    // Format history for the new SDK
+    const formattedHistory = (history || []).map(h => ({
+      role: h.role === 'model' ? 'model' : 'user',
+      parts: h.parts || [{ text: h.content }]
+    }));
+
+    const chat = ai.chats.create({
+      model: MODEL_NAME,
+      history: formattedHistory
     });
 
     const prompt = `
@@ -62,10 +68,8 @@ exports.chatWithNote = async (req, res) => {
     `;
 
     const result = await chat.sendMessage(prompt);
-    const response = await result.response;
-    const text = response.text();
     
-    res.json({ reply: text });
+    res.json({ reply: result.text });
   } catch (error) {
     console.error("AI Chat Error:", error);
     res.status(500).json({ message: error.message || "Failed to chat with note" });
@@ -75,9 +79,9 @@ exports.chatWithNote = async (req, res) => {
 exports.suggestTags = async (req, res) => {
   try {
     const { content, title } = req.body;
-    const model = getAIModel();
+    const ai = getAIClient();
     
-    if (!model) {
+    if (!ai) {
       return res.status(500).json({ message: "GEMINI_API_KEY missing." });
     }
 
@@ -89,10 +93,12 @@ exports.suggestTags = async (req, res) => {
       Return only the tags separated by commas. No other text.
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const result = await ai.models.generateContent({
+      model: MODEL_NAME,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }]
+    });
     
+    const text = result.text;
     const tags = text.split(',').map(tag => tag.trim());
     res.json({ tags });
   } catch (error) {
