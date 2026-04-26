@@ -22,45 +22,43 @@ export default function Notes() {
     // Create a temporary element to hold the styled content for PDF
     const element = document.createElement('div');
     element.innerHTML = `
-      <div style="padding: 40px; font-family: 'Inter', sans-serif; color: #000; background: #fff;">
-        <h1 style="font-size: 32px; margin-bottom: 10px; color: #1a1a1a;">${currentNote.title || 'Untitled'}</h1>
-        <div style="font-size: 12px; color: #666; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-          Last edited: ${currentNote.updatedAt ? new Date(currentNote.updatedAt).toLocaleString() : 'Just now'}
-        </div>
-        <div class="tiptap-content">
-          ${currentNote.content.replace(/<table/g, '<div class="table-wrapper"><table').replace(/<\/table>/g, '</table></div>')}
+      <div style="font-family: 'Inter', sans-serif; color: #000; background: #fff; width: 100%;">
+        <div style="padding: 40px;">
+          <h1 style="font-size: 32px; margin-bottom: 10px; color: #1a1a1a;">${currentNote.title || 'Untitled'}</h1>
+          <div style="font-size: 12px; color: #666; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+            Last edited: ${currentNote.updatedAt ? new Date(currentNote.updatedAt).toLocaleString() : 'Just now'}
+          </div>
+          <div class="tiptap-content">
+            ${currentNote.content}
+          </div>
         </div>
       </div>
       <style>
-        .table-wrapper { 
-          page-break-inside: avoid !important; 
-          break-inside: avoid !important;
-          margin: 20px 0;
-          display: block;
-        }
         .tiptap-content table { 
           border-collapse: collapse; 
           width: 100%; 
-          page-break-inside: avoid !important; 
+          margin: 20px 0; 
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
         }
-        .tiptap-content tr { 
-          page-break-inside: avoid !important; 
+        .tiptap-content tr, .tiptap-content td, .tiptap-content th { 
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
         }
         .tiptap-content table td, .tiptap-content table th { border: 1px solid #ddd; padding: 8px; }
         .tiptap-content h1 { font-size: 24px; margin-top: 20px; }
         .tiptap-content h2 { font-size: 20px; margin-top: 15px; }
         .tiptap-content p { line-height: 1.6; margin-bottom: 10px; }
-        .tiptap-content .search-result-highlight { background: yellow; }
       </style>
     `;
 
     const opt = {
-      margin: [10, 10],
+      margin: 10,
       filename: `${currentNote.title || 'Note'}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      pagebreak: { mode: ['css', 'legacy'] }
     };
 
     html2pdf().from(element).set(opt).save();
