@@ -11,6 +11,8 @@ import Youtube from '@tiptap/extension-youtube';
 import Placeholder from '@tiptap/extension-placeholder';
 import Highlight from '@tiptap/extension-highlight';
 import TextAlign from '@tiptap/extension-text-align';
+import Color from '@tiptap/extension-color';
+import TextStyle from '@tiptap/extension-text-style';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { 
   Bold, Italic, Underline as UnderlineIcon, Strikethrough, Code,
@@ -19,7 +21,8 @@ import {
   Plus, Trash, Columns, Rows, Grid3X3,
   Minus, SquareCode, Type, Subscript as SubIcon, Superscript as SupIcon,
   CirclePlay, Highlighter,
-  AlignLeft, AlignCenter, AlignRight, AlignJustify
+  AlignLeft, AlignCenter, AlignRight, AlignJustify,
+  Palette
 } from 'lucide-react';
 import Modal from './Modal';
 
@@ -86,6 +89,8 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
+      TextStyle,
+      Color,
       Youtube.configure({
         inline: false,
         HTMLAttributes: { class: 'youtube-embed' },
@@ -311,6 +316,18 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
           <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('center').run()} isActive={editor.isActive({ textAlign: 'center' })} title="Align Center"><AlignCenter size={15} /></ToolbarButton>
           <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('right').run()} isActive={editor.isActive({ textAlign: 'right' })} title="Align Right"><AlignRight size={15} /></ToolbarButton>
           <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('justify').run()} isActive={editor.isActive({ textAlign: 'justify' })} title="Align Justify"><AlignJustify size={15} /></ToolbarButton>
+        </div>
+        <div className="toolbar-divider" />
+        <div className="toolbar-group">
+          <div className="toolbar-btn" title="Text Color" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <Palette size={15} />
+            <input 
+              type="color" 
+              onInput={e => editor.chain().focus().setColor(e.target.value).run()}
+              value={editor.getAttributes('textStyle').color || '#000000'}
+              style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+            />
+          </div>
         </div>
         <div className="toolbar-divider" />
         <div className="toolbar-group">
