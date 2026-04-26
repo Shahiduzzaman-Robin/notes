@@ -49,8 +49,9 @@ export default function Home() {
     } else if (user) {
       fetchNotes();
       fetchFolders();
+      fetchBoards();
     }
-  }, [user, loading, router, fetchNotes, fetchFolders]);
+  }, [user, loading, router, fetchNotes, fetchFolders, fetchBoards]);
 
   useEffect(() => {
     const savedTab = localStorage.getItem('activeTab');

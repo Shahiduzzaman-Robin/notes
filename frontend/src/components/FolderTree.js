@@ -176,6 +176,62 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
         </div>
       ))}
 
+      {currentNotes.map(note => (
+        <div 
+          key={note._id}
+          className="tree-item note-item"
+          onClick={() => setActiveNoteId(note._id)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '4px 8px 4px 18px', // Slightly offset to align with folder content
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '13px',
+            color: activeNoteId === note._id ? 'var(--text-color)' : 'var(--text-secondary)',
+            gap: '8px',
+            background: activeNoteId === note._id ? 'var(--hover-bg)' : 'transparent',
+            fontWeight: activeNoteId === note._id ? 600 : 400,
+            transition: 'background 0.1s'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'var(--hover-bg)'}
+          onMouseOut={(e) => e.currentTarget.style.background = activeNoteId === note._id ? 'var(--hover-bg)' : 'transparent'}
+        >
+          <FileText size={14} style={{ opacity: 0.7, minWidth: '14px' }} />
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {note.title || 'Untitled'}
+          </span>
+        </div>
+      ))}
+
+      {currentBoards.map(board => (
+        <div 
+          key={board._id}
+          className="tree-item board-item"
+          onClick={() => setActiveBoardId(board._id)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '4px 8px 4px 18px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '13px',
+            color: activeBoardId === board._id ? 'var(--text-color)' : 'var(--text-secondary)',
+            gap: '8px',
+            background: activeBoardId === board._id ? 'var(--hover-bg)' : 'transparent',
+            fontWeight: activeBoardId === board._id ? 600 : 400,
+            transition: 'background 0.1s'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'var(--hover-bg)'}
+          onMouseOut={(e) => e.currentTarget.style.background = activeBoardId === board._id ? 'var(--hover-bg)' : 'transparent'}
+        >
+          <Kanban size={14} style={{ opacity: 0.7, minWidth: '14px' }} />
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {board.name}
+          </span>
+        </div>
+      ))}
+
       <Modal 
         isOpen={modal.isOpen} 
         onClose={() => setModal({ ...modal, isOpen: false })}
