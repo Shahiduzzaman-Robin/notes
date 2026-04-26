@@ -239,7 +239,6 @@ export default function FolderView({ folderId, type }) {
           />
         </div>
       </Modal>
-      </div>
     </div>
   );
 }
