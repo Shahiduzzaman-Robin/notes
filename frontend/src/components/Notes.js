@@ -32,7 +32,7 @@ export default function Notes() {
         </div>
       </div>
       <style>
-        .tiptap-content table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+        .tiptap-content table { border-collapse: collapse; width: 100%; margin: 10px 0; page-break-inside: avoid; }
         .tiptap-content table td, .tiptap-content table th { border: 1px solid #ddd; padding: 8px; }
         .tiptap-content h1 { font-size: 24px; margin-top: 20px; }
         .tiptap-content h2 { font-size: 20px; margin-top: 15px; }
@@ -46,7 +46,8 @@ export default function Notes() {
       filename: `${currentNote.title || 'Note'}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     html2pdf().from(element).set(opt).save();
