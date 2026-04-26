@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef, useCallback } from 'react';
 import useStore from '../store/useStore';
-import { Plus, Edit2, Trash2, Pin, Search, FileText, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Clock, AlignLeft, Type, Tag, X, Folder, Sparkles, Send, Bot, RefreshCcw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Pin, Search, FileText, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Clock, AlignLeft, Type, Tag, X, Folder, Sparkles, Send, Bot, RefreshCcw, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import dynamic from 'next/dynamic';
 import Modal from './Modal';
