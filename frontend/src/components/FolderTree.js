@@ -111,6 +111,12 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
         await addFolder({ name: modal.value, parentFolder: modal.folder._id, type });
         if (!expandedFolders[modal.folder._id]) toggleFolder(modal.folder._id);
       }
+    } else if (modal.type === 'createBoard') {
+      if (modal.value.trim()) {
+        const newBoard = await createBoard(modal.value, modal.folder._id);
+        if (newBoard) {
+          setActiveBoardId(newBoard._id);
+        }
         if (!expandedFolders[modal.folder._id]) toggleFolder(modal.folder._id);
       }
     } else if (modal.type === 'createNote') {
