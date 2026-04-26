@@ -10,6 +10,7 @@ const boardRoutes = require('./routes/boardRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const folderRoutes = require('./routes/folderRoutes');
 const syncRoutes = require('./routes/syncRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use('/api/boards', boardRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/folders', folderRoutes);
 app.use('/api/sync', syncRoutes);
+app.use('/api/ai', aiRoutes);
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/productivity-app';

@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useState, useRef, useCallback } from 'react';
 import useStore from '../store/useStore';
-import { Plus, Edit2, Trash2, Pin, Search, FileText, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Clock, AlignLeft, Type, Tag, X, Folder } from 'lucide-react';
+import { Plus, Edit2, Trash2, Pin, Search, FileText, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Clock, AlignLeft, Type, Tag, X, Folder, Sparkles, Send, Bot, RefreshCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import dynamic from 'next/dynamic';
 import Modal from './Modal';
+import axios from 'axios';
 
 const TiptapEditor = dynamic(() => import('./TiptapEditor'), { ssr: false });
 
@@ -15,6 +16,77 @@ export default function Notes() {
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [newTag, setNewTag] = useState('');
   const contentRef = useRef('');
+
+  const [activeRightTab, setActiveRightTab] = useState('meta');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSummary, setAiSummary] = useState('');
+  const [chatMessage, setChatMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState([]);
+
+  const handleAISummarize = async () => {
+    if (!currentNote.content) return;
+    setAiLoading(true);
+    try {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/summarize`, {
+        content: currentNote.content,
+        title: currentNote.title
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setAiSummary(res.data.summary);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAIChat = async (e) => {
+    e?.preventDefault();
+    if (!chatMessage.trim() || aiLoading) return;
+    
+    const userMsg = { role: 'user', parts: [{ text: chatMessage }] };
+    setChatHistory(prev => [...prev, userMsg]);
+    const msgToSend = chatMessage;
+    setChatMessage('');
+    setAiLoading(true);
+
+    try {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/chat`, {
+        content: currentNote.content,
+        title: currentNote.title,
+        message: msgToSend,
+        history: chatHistory
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: res.data.reply }] }]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAISuggestTags = async () => {
+    setAiLoading(true);
+    try {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/suggest-tags`, {
+        content: currentNote.content,
+        title: currentNote.title
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      const uniqueTags = [...new Set([...(currentNote.tags || []), ...res.data.tags])];
+      updateNote(currentNote._id, { ...currentNote, tags: uniqueTags });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleDownloadPDF = async () => {
     const html2pdf = (await import('html2pdf.js')).default;
@@ -364,57 +436,160 @@ export default function Notes() {
                   <Clock size={16} className="meta-icon" style={{ marginTop: '2px' }} />
                   <span style={{ flex: 1 }}>Updated</span>
                   <span style={{ color: 'var(--text-secondary)', textAlign: 'right', whiteSpace: 'nowrap' }}>{updatedAt}</span>
-                </div>
-              </div>
+            {/* Sidebar Toggle/Tabs */}
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-color)' }}>
+              <button 
+                onClick={() => setActiveRightTab('meta')}
+                style={{ flex: 1, padding: '12px', fontSize: '12px', fontWeight: 600, color: activeRightTab === 'meta' ? 'var(--primary)' : 'var(--text-secondary)', borderBottom: activeRightTab === 'meta' ? '2px solid var(--primary)' : 'none', background: 'transparent' }}
+              >
+                Properties
+              </button>
+              <button 
+                onClick={() => setActiveRightTab('ai')}
+                style={{ flex: 1, padding: '12px', fontSize: '12px', fontWeight: 600, color: activeRightTab === 'ai' ? 'var(--primary)' : 'var(--text-secondary)', borderBottom: activeRightTab === 'ai' ? '2px solid var(--primary)' : 'none', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              >
+                <Sparkles size={14} /> AI Assistant
+              </button>
+            </div>
 
-              <div className="meta-group">
-                <h4>Organization</h4>
-                <div className="meta-item">
-                  <Folder size={16} className="meta-icon" />
-                  <span style={{ flex: 1 }}>Folder</span>
-                  <select 
-                    value={currentNote.folder || 'root'} 
-                    onChange={(e) => handleFolderChange(e.target.value)}
-                    style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '13px', outline: 'none', textAlign: 'right', cursor: 'pointer', maxWidth: '140px' }}
-                  >
-                    <option value="root">No Folder</option>
-                    {noteFolders.map(f => (
-                      <option key={f._id} value={f._id}>{f.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="meta-item" style={{ alignItems: 'flex-start' }}>
-                  <Tag size={16} className="meta-icon" style={{ marginTop: '2px' }} />
-                  <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {(currentNote.tags || []).map(t => (
-                      <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--hover-bg)', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', color: 'var(--text-color)' }}>
-                        {t}
-                        <X size={12} style={{ cursor: 'pointer', opacity: 0.5 }} onClick={() => handleRemoveTag(t)} />
-                      </span>
-                    ))}
-                    {isAddingTag ? (
-                      <input 
-                        autoFocus
-                        value={newTag}
-                        onChange={e => setNewTag(e.target.value)}
-                        onKeyDown={handleAddTag}
-                        onBlur={() => { setIsAddingTag(false); setNewTag(''); }}
-                        placeholder="Type tag & Enter"
-                        style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-color)', fontSize: '12px', padding: '2px 8px', borderRadius: '12px', outline: 'none', width: '100px' }}
-                      />
-                    ) : (
-                      <button 
-                        onClick={() => setIsAddingTag(true)}
-                        style={{ color: 'var(--text-secondary)', fontSize: '12px', padding: '2px 8px', borderRadius: '12px', background: 'transparent', border: '1px dashed var(--border-color)', cursor: 'pointer' }}
-                        onMouseOver={e => e.currentTarget.style.color = 'var(--text-color)'}
-                        onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}
-                      >
-                        + Add tag
-                      </button>
-                    )}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+              {activeRightTab === 'meta' ? (
+                <div className="meta-section">
+                  <div className="meta-group">
+                    <div className="meta-item">
+                      <Clock size={16} className="meta-icon" />
+                      <div className="meta-content">
+                        <span className="meta-label">Last Edited</span>
+                        <span className="meta-value">{currentNote.updatedAt ? format(new Date(currentNote.updatedAt), 'MMM d, yyyy • h:mm a') : 'Just now'}</span>
+                      </div>
+                    </div>
+                    <div className="meta-item">
+                      <Folder size={16} className="meta-icon" />
+                      <div className="meta-content">
+                        <span className="meta-label">Location</span>
+                        <select 
+                          value={currentNote.folder || 'root'} 
+                          onChange={(e) => updateNote(currentNote._id, { folder: e.target.value === 'root' ? null : e.target.value })}
+                          className="meta-select"
+                        >
+                          <option value="root">No Folder</option>
+                          {noteFolders.map(f => (
+                            <option key={f._id} value={f._id}>{f.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="meta-item" style={{ alignItems: 'flex-start' }}>
+                      <Tag size={16} className="meta-icon" style={{ marginTop: '2px' }} />
+                      <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {(currentNote.tags || []).map(t => (
+                          <span key={t} className="tag-pill">
+                            {t}
+                            <X size={12} style={{ cursor: 'pointer', opacity: 0.5 }} onClick={() => handleRemoveTag(t)} />
+                          </span>
+                        ))}
+                        {isAddingTag ? (
+                          <input 
+                            autoFocus
+                            value={newTag}
+                            onChange={e => setNewTag(e.target.value)}
+                            onKeyDown={handleAddTag}
+                            onBlur={() => { setIsAddingTag(false); setNewTag(''); }}
+                            placeholder="Add tag..."
+                            className="tag-input"
+                          />
+                        ) : (
+                          <button onClick={() => setIsAddingTag(true)} className="add-tag-btn">+ Tag</button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="meta-group" style={{ marginTop: '30px' }}>
+                    <h3 style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '12px' }}>Actions</h3>
+                    <button onClick={handleDownloadPDF} className="action-btn">
+                      <Download size={16} /> Export as PDF
+                    </button>
+                    <button onClick={() => setShowDeleteModal(true)} className="action-btn delete">
+                      <Trash2 size={16} /> Delete Note
+                    </button>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="ai-section">
+                  {/* AI Summary Section */}
+                  <div className="ai-card">
+                    <div className="ai-card-header">
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '13px' }}>
+                        <AlignLeft size={16} color="var(--primary)" /> Smart Summary
+                      </span>
+                      <button 
+                        onClick={handleAISummarize} 
+                        disabled={aiLoading}
+                        className="ai-action-icon"
+                      >
+                        <RefreshCcw size={14} className={aiLoading ? 'spin' : ''} />
+                      </button>
+                    </div>
+                    {aiSummary ? (
+                      <div className="ai-summary-content">
+                        {aiSummary.split('\n').map((line, i) => (
+                          <p key={i} style={{ margin: '4px 0', fontSize: '13px', lineHeight: '1.5' }}>{line}</p>
+                        ))}
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>No summary generated yet.</p>
+                    )}
+                  </div>
+
+                  {/* AI Tags Section */}
+                  <div className="ai-card">
+                    <div className="ai-card-header">
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '13px' }}>
+                        <Tag size={16} color="var(--primary)" /> Suggest Tags
+                      </span>
+                      <button onClick={handleAISuggestTags} disabled={aiLoading} className="ai-action-icon">
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>Let AI analyze your note and suggest relevant tags.</p>
+                  </div>
+
+                  {/* AI Chat Section */}
+                  <div className="ai-chat-container">
+                    <div className="chat-messages">
+                      {chatHistory.length === 0 && (
+                        <div style={{ textAlign: 'center', padding: '20px', opacity: 0.5 }}>
+                          <Bot size={32} style={{ marginBottom: '10px' }} />
+                          <p style={{ fontSize: '12px' }}>Ask me anything about this note!</p>
+                        </div>
+                      )}
+                      {chatHistory.map((msg, i) => (
+                        <div key={i} className={`chat-bubble ${msg.role}`}>
+                          {msg.parts[0].text}
+                        </div>
+                      ))}
+                      {aiLoading && (
+                        <div className="chat-bubble model loading">
+                          <span className="dot"></span><span className="dot"></span><span className="dot"></span>
+                        </div>
+                      )}
+                    </div>
+                    <form onSubmit={handleAIChat} className="chat-input-wrapper">
+                      <input 
+                        type="text" 
+                        value={chatMessage}
+                        onChange={e => setChatMessage(e.target.value)}
+                        placeholder="Ask AI..."
+                        className="chat-input"
+                      />
+                      <button type="submit" disabled={!chatMessage.trim() || aiLoading} className="chat-send-btn">
+                        <Send size={14} />
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         ) : (
@@ -427,6 +602,49 @@ export default function Notes() {
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        .meta-group { display: flex; flex-direction: column; gap: 16px; }
+        .meta-item { display: flex; align-items: center; gap: 12px; }
+        .meta-icon { color: var(--text-secondary); opacity: 0.7; }
+        .meta-content { display: flex; flex-direction: column; }
+        .meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 2px; }
+        .meta-value { font-size: 13px; color: var(--text-color); font-weight: 500; }
+        .meta-select { background: transparent; border: none; color: var(--text-color); font-size: 13px; font-weight: 500; outline: none; padding: 0; cursor: pointer; }
+        .tag-pill { display: inline-flex; alignItems: center; gap: 4px; background: var(--hover-bg); padding: 2px 10px; borderRadius: 14px; fontSize: 12px; border: 1px solid var(--border-color); }
+        .tag-input { background: transparent; border: 1px solid var(--primary); color: var(--text-color); fontSize: 12px; padding: 2px 10px; borderRadius: 14px; outline: none; width: 100px; }
+        .add-tag-btn { color: var(--text-secondary); fontSize: 12px; padding: 2px 10px; borderRadius: 14px; background: transparent; border: 1px dashed var(--border-color); cursor: pointer; }
+        
+        .action-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 13px; font-weight: 500; cursor: pointer; margin-bottom: 8px; transition: all 0.2s; }
+        .action-btn:hover { background: var(--border-color); transform: translateY(-1px); }
+        .action-btn.delete { color: var(--danger); border-color: rgba(239, 68, 68, 0.2); }
+        .action-btn.delete:hover { background: rgba(239, 68, 68, 0.1); }
+
+        .ai-card { background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+        .ai-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .ai-action-icon { background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .ai-action-icon:hover { color: var(--primary); background: var(--primary-light); }
+        .ai-summary-content { color: var(--text-color); }
+
+        .ai-chat-container { display: flex; flex-direction: column; height: 300px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-top: 10px; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .chat-bubble { max-width: 85%; padding: 8px 12px; borderRadius: 12px; font-size: 13px; line-height: 1.4; }
+        .chat-bubble.user { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 2px; }
+        .chat-bubble.model { align-self: flex-start; background: var(--hover-bg); border: 1px solid var(--border-color); border-bottom-left-radius: 2px; }
+        
+        .chat-input-wrapper { display: flex; padding: 8px; background: var(--hover-bg); border-top: 1px solid var(--border-color); gap: 8px; }
+        .chat-input { flex: 1; background: var(--bg-color); border: 1px solid var(--border-color); borderRadius: 8px; padding: 6px 12px; font-size: 13px; outline: none; color: var(--text-color); }
+        .chat-send-btn { background: var(--primary); color: #fff; border: none; borderRadius: 8px; padding: 6px 10px; cursor: pointer; display: flex; alignItems: center; justifyContent: center; }
+        .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin { animation: spin 1s linear infinite; }
+
+        .loading .dot { display: inline-block; width: 4px; height: 4px; background: var(--text-secondary); border-radius: 50%; margin: 0 2px; animation: bounce 1.4s infinite ease-in-out; }
+        .loading .dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading .dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+      `}</style>
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
