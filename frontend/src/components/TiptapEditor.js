@@ -1,5 +1,5 @@
 "use client";
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Table, TableRow, TableCell, TableHeader } from '@tiptap/extension-table';
 import TaskList from '@tiptap/extension-task-list';
@@ -10,7 +10,6 @@ import Superscript from '@tiptap/extension-superscript';
 import Youtube from '@tiptap/extension-youtube';
 import Placeholder from '@tiptap/extension-placeholder';
 import Highlight from '@tiptap/extension-highlight';
-import BubbleMenuExtension from '@tiptap/extension-bubble-menu';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { 
   Bold, Italic, Underline as UnderlineIcon, Strikethrough, Code,
@@ -22,9 +21,6 @@ import {
 } from 'lucide-react';
 import Modal from './Modal';
 
-// Slash menu items
-// SLASH_ITEMS moved inside component to access state
-
 export default function TiptapEditor({ noteId, initialContent, onChange, onSave }) {
   const [isFocused, setIsFocused] = useState(false);
   
@@ -34,6 +30,11 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
   const [slashMenuPos, setSlashMenuPos] = useState({ top: 0, left: 0 });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [slashStartPos, setSlashStartPos] = useState(null);
+
+  // Table menu state
+  const [tableMenuOpen, setTableMenuOpen] = useState(false);
+  const [tableMenuPos, setTableMenuPos] = useState({ top: 0, left: 0 });
+
   const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
   const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
   const menuRef = useRef(null);
@@ -80,7 +81,6 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
       Subscript,
       Superscript,
       Highlight,
-      BubbleMenuExtension,
       Youtube.configure({
         inline: false,
         HTMLAttributes: { class: 'youtube-embed' },
@@ -94,30 +94,46 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
       handleSlashTracking(editor);
     },
     onSelectionUpdate: ({ editor }) => {
-      // Typewriter scrolling: if cursor is low on screen, scroll it up
+      // 1. Table menu tracking
+      const isTable = editor.isActive('table');
+      if (isTable) {
+        const { state } = editor;
+        const { selection } = state;
+        const { $from } = selection;
+        
+        // Find the current table element in DOM
+        const editorDOM = editor.view.dom;
+        const selectionNode = window.getSelection()?.focusNode;
+        const tableDOM = selectionNode?.nodeType === 1 ? selectionNode.closest('table') : selectionNode?.parentElement?.closest('table');
+        
+        if (tableDOM) {
+          const rect = tableDOM.getBoundingClientRect();
+          const wrapperRect = editorDOM.closest('.tiptap-wrapper').getBoundingClientRect();
+          setTableMenuPos({
+            top: rect.top - wrapperRect.top - 48, // Show above table
+            left: rect.left - wrapperRect.left
+          });
+          setTableMenuOpen(true);
+        }
+      } else {
+        setTableMenuOpen(false);
+      }
+
+      // 2. Typewriter scrolling: if cursor is low on screen, scroll it up
       const { selection } = editor.state;
       const { $from } = selection;
       try {
         const coords = editor.view.coordsAtPos($from.pos);
         const viewportHeight = window.innerHeight;
-        
-        // If cursor is in the bottom 40% of the screen
         if (coords.bottom > viewportHeight * 0.6) {
           const scrollContainer = document.querySelector('[class*="contentArea"]');
           if (scrollContainer) {
-            scrollContainer.scrollBy({
-              top: 100,
-              behavior: 'smooth'
-            });
+            scrollContainer.scrollBy({ top: 100, behavior: 'smooth' });
           }
         }
-      } catch (e) {
-        // Ignore coords errors
-      }
+      } catch (e) {}
     },
-    onFocus: () => {
-      setIsFocused(true);
-    },
+    onFocus: () => setIsFocused(true),
     onBlur: () => {
       setIsFocused(false);
       setTimeout(() => setSlashMenuOpen(false), 150);
@@ -210,6 +226,7 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
     if (editor) {
       editor.commands.setContent(initialContent || '');
       setSlashMenuOpen(false);
+      setTableMenuOpen(false);
     }
   }, [noteId]);
 
@@ -251,119 +268,33 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
           <ToolbarButton onClick={() => editor.chain().focus().toggleSuperscript().run()} isActive={editor.isActive('superscript')} title="Superscript">
             <SupIcon size={15} />
           </ToolbarButton>
-          <ToolbarButton 
-            onClick={() => editor.chain().focus().toggleHighlight().run()} 
-            isActive={editor.isActive('highlight')} 
-            title="Highlight"
-          >
-            <Highlighter size={15} />
-          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleHighlight().run()} isActive={editor.isActive('highlight')} title="Highlight"><Highlighter size={15} /></ToolbarButton>
         </div>
-
         <div className="toolbar-divider" />
-
         <div className="toolbar-group">
-          <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} isActive={editor.isActive('heading', { level: 1 })} title="Heading 1">
-            <Heading1 size={15} />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} isActive={editor.isActive('heading', { level: 2 })} title="Heading 2">
-            <Heading2 size={15} />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} isActive={editor.isActive('heading', { level: 3 })} title="Heading 3">
-            <Heading3 size={15} />
-          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} isActive={editor.isActive('heading', { level: 1 })} title="Heading 1"><Heading1 size={15} /></ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} isActive={editor.isActive('heading', { level: 2 })} title="Heading 2"><Heading2 size={15} /></ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} isActive={editor.isActive('heading', { level: 3 })} title="Heading 3"><Heading3 size={15} /></ToolbarButton>
         </div>
-
         <div className="toolbar-divider" />
-
         <div className="toolbar-group">
-          <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive('bulletList')} title="Bullet List">
-            <List size={15} />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} isActive={editor.isActive('orderedList')} title="Numbered List">
-            <ListOrdered size={15} />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} isActive={editor.isActive('blockquote')} title="Quote">
-            <Quote size={15} />
-          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive('bulletList')} title="Bullet List"><List size={15} /></ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} isActive={editor.isActive('orderedList')} title="Numbered List"><ListOrdered size={15} /></ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} isActive={editor.isActive('blockquote')} title="Quote"><Quote size={15} /></ToolbarButton>
         </div>
-
         <div className="toolbar-divider" />
-
         <div className="toolbar-group">
-          <ToolbarButton onClick={() => editor.chain().focus().toggleCodeBlock().run()} isActive={editor.isActive('codeBlock')} title="Code Block">
-            <SquareCode size={15} />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal Rule">
-            <Minus size={15} />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} isActive={editor.isActive('table')} title="Insert Table">
-            <Grid3X3 size={15} />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => setIsYoutubeModalOpen(true)} title="YouTube Embed">
-            <CirclePlay size={15} />
-          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleCodeBlock().run()} isActive={editor.isActive('codeBlock')} title="Code Block"><SquareCode size={15} /></ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal Rule"><Minus size={15} /></ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} isActive={editor.isActive('table')} title="Insert Table"><Grid3X3 size={15} /></ToolbarButton>
+          <ToolbarButton onClick={() => setIsYoutubeModalOpen(true)} title="YouTube Embed"><CirclePlay size={15} /></ToolbarButton>
         </div>
       </div>)}
 
-      <Modal
-        isOpen={isYoutubeModalOpen}
-        onClose={() => {
-          setIsYoutubeModalOpen(false);
-          setYoutubeUrlInput('');
-        }}
-        title="Embed YouTube Video"
-        footer={
-          <button
-            onClick={() => {
-              if (youtubeUrlInput) {
-                editor.commands.setYoutubeVideo({ src: youtubeUrlInput });
-                setIsYoutubeModalOpen(false);
-                setYoutubeUrlInput('');
-              }
-            }}
-            style={{ 
-              padding: '8px 20px', 
-              borderRadius: '6px', 
-              background: 'var(--primary)', 
-              color: 'white', 
-              border: 'none', 
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            Embed Video
-          </button>
-        }
-      >
+      <Modal isOpen={isYoutubeModalOpen} onClose={() => { setIsYoutubeModalOpen(false); setYoutubeUrlInput(''); }} title="Embed YouTube Video" footer={<button onClick={() => { if (youtubeUrlInput) { editor.commands.setYoutubeVideo({ src: youtubeUrlInput }); setIsYoutubeModalOpen(false); setYoutubeUrlInput(''); } }} style={{ padding: '8px 20px', borderRadius: '6px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Embed Video</button>}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-            Paste a link from YouTube to embed it in your note.
-          </p>
-          <input 
-            autoFocus
-            type="text"
-            placeholder="https://www.youtube.com/watch?v=..."
-            value={youtubeUrlInput}
-            onChange={(e) => setYoutubeUrlInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && youtubeUrlInput) {
-                editor.commands.setYoutubeVideo({ src: youtubeUrlInput });
-                setIsYoutubeModalOpen(false);
-                setYoutubeUrlInput('');
-              }
-            }}
-            style={{ 
-              width: '100%', 
-              padding: '12px', 
-              borderRadius: '8px', 
-              background: 'var(--hover-bg)', 
-              border: '1px solid var(--border-color)', 
-              color: 'var(--text-color)',
-              fontSize: '14px',
-              outline: 'none'
-            }}
-          />
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>Paste a link from YouTube to embed it in your note.</p>
+          <input autoFocus type="text" placeholder="https://www.youtube.com/watch?v=..." value={youtubeUrlInput} onChange={(e) => setYoutubeUrlInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && youtubeUrlInput) { editor.commands.setYoutubeVideo({ src: youtubeUrlInput }); setIsYoutubeModalOpen(false); setYoutubeUrlInput(''); } }} style={{ width: '100%', padding: '12px', borderRadius: '8px', background: 'var(--hover-bg)', border: '1px solid var(--border-color)', color: 'var(--text-color)', fontSize: '14px', outline: 'none' }} />
         </div>
       </Modal>
 
@@ -374,17 +305,9 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
           {filteredItems.map((item, index) => {
             const Icon = item.icon;
             return (
-              <div
-                key={item.title}
-                className={`slash-item ${index === selectedIndex ? 'selected' : ''}`}
-                onMouseDown={(e) => { e.preventDefault(); executeSlashCommand(item); }}
-                onMouseEnter={() => setSelectedIndex(index)}
-              >
+              <div key={item.title} className={`slash-item ${index === selectedIndex ? 'selected' : ''}`} onMouseDown={(e) => { e.preventDefault(); executeSlashCommand(item); }} onMouseEnter={() => setSelectedIndex(index)}>
                 <div className="slash-item-icon"><Icon size={18} /></div>
-                <div className="slash-item-text">
-                  <span className="slash-item-title">{item.title}</span>
-                  <span className="slash-item-desc">{item.description}</span>
-                </div>
+                <div className="slash-item-text"><span className="slash-item-title">{item.title}</span><span className="slash-item-desc">{item.description}</span></div>
               </div>
             );
           })}
@@ -392,24 +315,18 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
       )}
 
       {/* Table controls */}
-      {editor && (
-        <BubbleMenu 
-          editor={editor} 
-          tippyOptions={{ duration: 100, offset: [0, 10], zIndex: 9999 }} 
-          shouldShow={({ editor }) => editor.isActive('table')}
-        >
-          <div className="table-bubble-menu">
-            <button onClick={() => editor.chain().focus().addColumnBefore().run()} title="Add column before"><Columns size={14} /><Plus size={10}/></button>
-            <button onClick={() => editor.chain().focus().addColumnAfter().run()} title="Add column after"><Columns size={14} /><Plus size={10}/></button>
-            <button onClick={() => editor.chain().focus().deleteColumn().run()} title="Delete column" className="danger"><Columns size={14} /><Trash size={10}/></button>
-            <div className="divider" />
-            <button onClick={() => editor.chain().focus().addRowBefore().run()} title="Add row before"><Rows size={14} /><Plus size={10}/></button>
-            <button onClick={() => editor.chain().focus().addRowAfter().run()} title="Add row after"><Rows size={14} /><Plus size={10}/></button>
-            <button onClick={() => editor.chain().focus().deleteRow().run()} title="Delete row" className="danger"><Rows size={14} /><Trash size={10}/></button>
-            <div className="divider" />
-            <button onClick={() => editor.chain().focus().deleteTable().run()} title="Delete table" className="danger"><Trash size={14} /> Table</button>
-          </div>
-        </BubbleMenu>
+      {tableMenuOpen && (
+        <div className="table-bubble-menu" style={{ position: 'absolute', top: tableMenuPos.top, left: tableMenuPos.left, zIndex: 100 }}>
+          <button onClick={() => editor.chain().focus().addColumnBefore().run()} title="Add column before"><Columns size={14} /><Plus size={10}/></button>
+          <button onClick={() => editor.chain().focus().addColumnAfter().run()} title="Add column after"><Columns size={14} /><Plus size={10}/></button>
+          <button onClick={() => editor.chain().focus().deleteColumn().run()} title="Delete column" className="danger"><Columns size={14} /><Trash size={10}/></button>
+          <div className="divider" />
+          <button onClick={() => editor.chain().focus().addRowBefore().run()} title="Add row before"><Rows size={14} /><Plus size={10}/></button>
+          <button onClick={() => editor.chain().focus().addRowAfter().run()} title="Add row after"><Rows size={14} /><Plus size={10}/></button>
+          <button onClick={() => editor.chain().focus().deleteRow().run()} title="Delete row" className="danger"><Rows size={14} /><Trash size={10}/></button>
+          <div className="divider" />
+          <button onClick={() => editor.chain().focus().deleteTable().run()} title="Delete table" className="danger"><Trash size={14} /> Table</button>
+        </div>
       )}
 
       <EditorContent editor={editor} />
