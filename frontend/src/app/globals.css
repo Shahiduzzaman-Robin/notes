@@ -144,8 +144,12 @@ h1, h2, h3, h4 {
   margin-bottom: 16px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: var(--sidebar-bg);
+  background: var(--bg-color); /* Changed to bg-color for better visibility when sticky */
   flex-wrap: wrap;
+  position: sticky;
+  top: -40px; /* Offset parent padding */
+  z-index: 50;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .toolbar-group {
