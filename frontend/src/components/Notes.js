@@ -427,15 +427,7 @@ export default function Notes() {
 
               <div className="meta-group">
                 <h4>History</h4>
-                <div className="meta-item">
-                  <Calendar size={16} className="meta-icon" style={{ marginTop: '2px' }} />
-                  <span style={{ flex: 1 }}>Created</span>
-                  <span style={{ color: 'var(--text-secondary)', textAlign: 'right', whiteSpace: 'nowrap' }}>{createdAt}</span>
-                </div>
-                <div className="meta-item">
-                  <Clock size={16} className="meta-icon" style={{ marginTop: '2px' }} />
-                  <span style={{ flex: 1 }}>Updated</span>
-                  <span style={{ color: 'var(--text-secondary)', textAlign: 'right', whiteSpace: 'nowrap' }}>{updatedAt}</span>
+          <>
             {/* Sidebar Toggle/Tabs */}
             <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-color)' }}>
               <button 
