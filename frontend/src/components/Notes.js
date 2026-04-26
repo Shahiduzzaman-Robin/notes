@@ -32,7 +32,17 @@ export default function Notes() {
         </div>
       </div>
       <style>
-        .tiptap-content table { border-collapse: collapse; width: 100%; margin: 10px 0; page-break-inside: avoid; }
+        .tiptap-content table { 
+          border-collapse: collapse; 
+          width: 100%; 
+          margin: 10px 0; 
+          page-break-inside: avoid !important; 
+          break-inside: avoid !important;
+        }
+        .tiptap-content tr { 
+          page-break-inside: avoid !important; 
+          break-inside: avoid !important;
+        }
         .tiptap-content table td, .tiptap-content table th { border: 1px solid #ddd; padding: 8px; }
         .tiptap-content h1 { font-size: 24px; margin-top: 20px; }
         .tiptap-content h2 { font-size: 20px; margin-top: 15px; }
