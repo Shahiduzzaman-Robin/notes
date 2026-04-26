@@ -24,6 +24,7 @@ import KanbanBoard from '../components/KanbanBoard';
 import FolderTree from '../components/FolderTree';
 import FolderView from '../components/FolderView';
 import Modal from '../components/Modal';
+import CommandPalette from '../components/CommandPalette';
 
 export default function Home() {
   const { user, loading, logout } = useAuth();
