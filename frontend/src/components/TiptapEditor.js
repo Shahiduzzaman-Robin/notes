@@ -268,6 +268,16 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
     }
   }, [editor, searchQuery]);
 
+  // Update content when noteId changes
+  useEffect(() => {
+    if (editor && noteId) {
+      const currentHTML = editor.getHTML();
+      if (currentHTML !== initialContent) {
+        editor.commands.setContent(initialContent || '');
+      }
+    }
+  }, [noteId, editor]);
+
   // Track slash input for the menu
   const handleSlashTracking = useCallback((editor) => {
     const { state } = editor;
