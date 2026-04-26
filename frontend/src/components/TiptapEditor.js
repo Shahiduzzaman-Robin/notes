@@ -238,7 +238,7 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
         setSlashMenuOpen(false);
         setColorMenuOpen(false);
       }, 150);
-      onSave();
+      onSave?.();
     }
   });
 
@@ -247,7 +247,7 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
     if (!editor || !isFocused) return;
 
     const timeout = setTimeout(() => {
-      onSave();
+      onSave?.();
     }, 3000); // Auto-save after 3 seconds of inactivity
 
     return () => clearTimeout(timeout);
