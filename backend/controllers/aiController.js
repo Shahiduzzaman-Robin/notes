@@ -7,6 +7,20 @@ const getAIClient = () => {
 
 const MODEL_NAME = "gemini-2.0-flash";
 
+// Global config for most flexible and creative responses
+const AI_CONFIG = {
+  safetySettings: [
+    { category: "HATE_SPEECH", threshold: "BLOCK_NONE" },
+    { category: "HARASSMENT", threshold: "BLOCK_NONE" },
+    { category: "SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+    { category: "DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+  ],
+  generationConfig: {
+    temperature: 0.7,
+    maxOutputTokens: 2000,
+  }
+};
+
 exports.summarizeNote = async (req, res) => {
   try {
     const { content, title } = req.body;
@@ -25,10 +39,10 @@ exports.summarizeNote = async (req, res) => {
       Use clear and professional language.
     `;
 
-    // New SDK simplifies things: you can often just pass the prompt string directly in contents
     const result = await ai.models.generateContent({
       model: MODEL_NAME,
-      contents: prompt
+      contents: prompt,
+      config: AI_CONFIG
     });
     
     res.json({ summary: result.text });
@@ -47,7 +61,6 @@ exports.chatWithNote = async (req, res) => {
       return res.status(500).json({ message: "GEMINI_API_KEY is not configured on Render dashboard." });
     }
 
-    // Modern SDK history format
     const formattedHistory = (history || []).map(h => ({
       role: h.role === 'model' ? 'model' : 'user',
       parts: [{ text: h.parts?.[0]?.text || h.content || "" }]
@@ -55,7 +68,8 @@ exports.chatWithNote = async (req, res) => {
 
     const chat = ai.chats.create({
       model: MODEL_NAME,
-      history: formattedHistory
+      history: formattedHistory,
+      config: AI_CONFIG
     });
 
     const prompt = `
@@ -96,7 +110,8 @@ exports.suggestTags = async (req, res) => {
 
     const result = await ai.models.generateContent({
       model: MODEL_NAME,
-      contents: prompt
+      contents: prompt,
+      config: AI_CONFIG
     });
     
     const text = result.text;
