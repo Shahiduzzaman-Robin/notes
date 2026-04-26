@@ -37,7 +37,7 @@ const SearchHighlight = Extension.create({
     }
   },
   addProseMirrorPlugins() {
-    const { searchQuery } = this.options;
+    const extension = this;
     return [
       new Plugin({
         key: new PluginKey('searchHighlight'),
@@ -50,12 +50,15 @@ const SearchHighlight = Extension.create({
         },
         props: {
           decorations(state) {
-            const { searchQuery } = this.editor.extensionManager.extensions.find(e => e.name === 'searchHighlight').options;
+            const { searchQuery } = extension.options;
             if (!searchQuery || searchQuery.length < 2) return DecorationSet.empty;
 
             const decorations = [];
             const { doc } = state;
-            const regex = new RegExp(searchQuery, 'gi');
+            
+            // Escape special regex characters
+            const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(escapedQuery, 'gi');
 
             doc.descendants((node, pos) => {
               if (node.isText) {
