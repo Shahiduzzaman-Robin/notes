@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import useStore from '../store/useStore';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { Plus, MoreVertical, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2, Check, X, Settings, Kanban } from 'lucide-react';
+import { Plus, MoreVertical, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2, Check, X, Settings, Kanban, Folder } from 'lucide-react';
 import { format } from 'date-fns';
 
 
@@ -372,7 +372,7 @@ export default function KanbanBoard() {
                 <div key={f._id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <ChevronRight size={12} style={{ opacity: 0.5 }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Settings size={14} style={{ color: 'var(--primary)', opacity: 0.8 }} />
+                    <Folder size={14} style={{ color: 'var(--primary)', opacity: 0.8 }} />
                     <span>{f.name}</span>
                   </div>
                 </div>
