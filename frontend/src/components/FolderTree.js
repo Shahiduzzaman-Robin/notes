@@ -52,6 +52,39 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
     }
   }, [globalSearchQuery, folders, notes, boards]);
 
+  // Auto-expand to active note/board
+  useEffect(() => {
+    if (activeNoteId || activeBoardId) {
+      const newExpanded = { ...expandedFolders };
+      let found = false;
+
+      const expandPath = (itemId, itemType) => {
+        let currentFolderId = null;
+        if (itemType === 'note') {
+          const note = notes.find(n => n._id === itemId);
+          currentFolderId = note?.folder;
+        } else {
+          const board = boards.find(b => b._id === itemId);
+          currentFolderId = board?.folder;
+        }
+
+        while (currentFolderId) {
+          newExpanded[currentFolderId] = true;
+          const folder = folders.find(f => f._id === currentFolderId);
+          currentFolderId = folder?.parentFolder;
+        }
+        found = true;
+      };
+
+      if (activeNoteId) expandPath(activeNoteId, 'note');
+      if (activeBoardId) expandPath(activeBoardId, 'board');
+
+      if (found) {
+        setExpandedFolders(prev => ({ ...prev, ...newExpanded }));
+      }
+    }
+  }, [activeNoteId, activeBoardId, notes, boards, folders]);
+
   const handleAddSubNote = async (folderId) => {
     const newNote = await addNote({ title: '', content: '', folder: folderId });
     if (newNote) {
