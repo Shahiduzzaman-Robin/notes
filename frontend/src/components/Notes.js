@@ -28,9 +28,18 @@ export default function Notes() {
   const handleSave = useCallback(async () => {
     const content = contentRef.current;
     if (!currentNote._id) return;
+    
+    // Safety check: Don't save if content is empty but we know it should have content
+    // This prevents accidental wipes during loading glitches
+    const existingNote = notes.find(n => n._id === currentNote._id);
+    if (existingNote && existingNote.content && !content) {
+      console.warn('Blocked accidental note wipe detected');
+      return;
+    }
+
     const noteToSave = { ...currentNote, content };
     await updateNote(currentNote._id, noteToSave);
-  }, [currentNote, updateNote]);
+  }, [currentNote, updateNote, notes]);
 
   const handleFolderChange = async (folderId) => {
     const fid = folderId === 'root' ? null : folderId;
