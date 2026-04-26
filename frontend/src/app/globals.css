@@ -373,19 +373,36 @@ h1, h2, h3, h4 {
   width: 100%;
   margin: 16px 0;
   border-radius: 6px;
-  overflow: hidden;
   table-layout: fixed;
+  overflow: hidden;
 }
 
 .tiptap-wrapper .tiptap table td,
 .tiptap-wrapper .tiptap table th {
   border: 1px solid var(--border-color);
   padding: 8px 12px;
-  min-width: 80px;
+  min-width: 100px;
   vertical-align: top;
   position: relative;
   font-size: 14px;
   line-height: 1.5;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .tiptap-wrapper .tiptap table {
+    table-layout: auto !important;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    border: none;
+  }
+  
+  .tiptap-wrapper .tiptap table td,
+  .tiptap-wrapper .tiptap table th {
+    min-width: 140px; /* Prevent text squashing */
+  }
 }
 
 .tiptap-wrapper .tiptap table th {
