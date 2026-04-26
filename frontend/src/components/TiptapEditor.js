@@ -221,14 +221,21 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
     }
   }, [selectedIndex, slashMenuOpen]);
 
-  // When note ID changes, reload content
+  // When note ID or initial content changes, sync the editor
   useEffect(() => {
-    if (editor) {
-      editor.commands.setContent(initialContent || '');
+    if (editor && initialContent !== undefined) {
+      const currentHTML = editor.getHTML();
+      // Only update if the ID changed OR if the content is truly different
+      // This prevents cursor jumping and accidental wipes
+      if (currentHTML !== initialContent) {
+        // Use emitUpdate: false to prevent the editor from calling onChange 
+        // with the temporary state during initialization
+        editor.commands.setContent(initialContent || '', false);
+      }
       setSlashMenuOpen(false);
       setTableMenuOpen(false);
     }
-  }, [noteId]);
+  }, [noteId, initialContent, editor]);
 
   if (!editor) return null;
 
