@@ -32,9 +32,13 @@ export default function Notes() {
     if (!currentNote._id) return;
     
     const timer = setTimeout(() => {
+      // Safety Guard: Don't allow saving empty content if the note is known to have content in the store
+      const noteInStore = notes.find(n => n._id === currentNote._id);
+      const isAccidentalWipe = noteInStore?.content && !currentNote.content;
+      
       const hasChanges = 
         currentNote.title !== lastSavedNote.title || 
-        currentNote.content !== lastSavedNote.content ||
+        (currentNote.content !== lastSavedNote.content && !isAccidentalWipe) ||
         JSON.stringify(currentNote.tags) !== JSON.stringify(lastSavedNote.tags) ||
         currentNote.folder !== lastSavedNote.folder;
 
