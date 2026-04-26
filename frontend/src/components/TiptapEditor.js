@@ -10,6 +10,7 @@ import Superscript from '@tiptap/extension-superscript';
 import Youtube from '@tiptap/extension-youtube';
 import Placeholder from '@tiptap/extension-placeholder';
 import Highlight from '@tiptap/extension-highlight';
+import TextAlign from '@tiptap/extension-text-align';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { 
   Bold, Italic, Underline as UnderlineIcon, Strikethrough, Code,
@@ -17,7 +18,8 @@ import {
   List, ListOrdered, Quote, CheckSquare,
   Plus, Trash, Columns, Rows, Grid3X3,
   Minus, SquareCode, Type, Subscript as SubIcon, Superscript as SupIcon,
-  CirclePlay, Highlighter
+  CirclePlay, Highlighter,
+  AlignLeft, AlignCenter, AlignRight, AlignJustify
 } from 'lucide-react';
 import Modal from './Modal';
 
@@ -81,6 +83,9 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
       Subscript,
       Superscript,
       Highlight,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
       Youtube.configure({
         inline: false,
         HTMLAttributes: { class: 'youtube-embed' },
@@ -299,6 +304,13 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
           <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive('bulletList')} title="Bullet List"><List size={15} /></ToolbarButton>
           <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} isActive={editor.isActive('orderedList')} title="Numbered List"><ListOrdered size={15} /></ToolbarButton>
           <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} isActive={editor.isActive('blockquote')} title="Quote"><Quote size={15} /></ToolbarButton>
+        </div>
+        <div className="toolbar-divider" />
+        <div className="toolbar-group">
+          <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('left').run()} isActive={editor.isActive({ textAlign: 'left' })} title="Align Left"><AlignLeft size={15} /></ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('center').run()} isActive={editor.isActive({ textAlign: 'center' })} title="Align Center"><AlignCenter size={15} /></ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('right').run()} isActive={editor.isActive({ textAlign: 'right' })} title="Align Right"><AlignRight size={15} /></ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('justify').run()} isActive={editor.isActive({ textAlign: 'justify' })} title="Align Justify"><AlignJustify size={15} /></ToolbarButton>
         </div>
         <div className="toolbar-divider" />
         <div className="toolbar-group">
