@@ -33,7 +33,8 @@ export default function Home() {
     boards, activeBoardId, setActiveBoardId, 
     notes, fetchNotes, activeNoteId, setActiveNoteId, addNote,
     noteFolders, boardFolders, fetchFolders, addFolder, fetchBoards,
-    activeFolderId, setActiveFolderId, activeTab, setActiveTab
+    activeFolderId, setActiveFolderId, activeTab, setActiveTab,
+    bootstrap, isLoading
   } = useStore();
   const router = useRouter();
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
@@ -54,11 +55,9 @@ export default function Home() {
     if (!loading && !user) {
       router.push('/login');
     } else if (user) {
-      fetchNotes();
-      fetchFolders();
-      fetchBoards();
+      bootstrap();
     }
-  }, [user, loading, router, fetchNotes, fetchFolders, fetchBoards]);
+  }, [user, loading, router, bootstrap]);
 
   useEffect(() => {
     const savedTab = localStorage.getItem('activeTab');

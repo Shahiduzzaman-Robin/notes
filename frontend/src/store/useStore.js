@@ -24,8 +24,32 @@ const useStore = create((set, get) => ({
   isLoadingFolders: true,
   globalSearchQuery: '',
   activeTab: 'notes',
+  isLoading: false,
   
-  setGlobalSearchQuery: (query) => set({ globalSearchQuery: query }),
+  bootstrap: async () => {
+    try {
+      set({ isLoading: true });
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) return;
+
+      const res = await axios.get(`${API_URL}/sync/bootstrap`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+
+      set({ 
+        notes: res.data.notes,
+        noteFolders: res.data.noteFolders,
+        boardFolders: res.data.boardFolders,
+        boards: res.data.boards,
+        isLoading: false,
+        isLoadingFolders: false,
+        isLoadingBoards: false
+      });
+    } catch (error) {
+      console.error('Bootstrap failed:', error);
+      set({ isLoading: false });
+    }
+  },
   setActiveTab: (tab) => {
     set({ activeTab: tab });
     localStorage.setItem('activeTab', tab);
