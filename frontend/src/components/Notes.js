@@ -153,8 +153,10 @@ export default function Notes() {
               }}
             />
             <TiptapEditor
-              content={currentNote.content || ''}
+              noteId={currentNote._id}
+              initialContent={currentNote.content || ''}
               onChange={(content) => setCurrentNote(prev => ({ ...prev, content }))}
+              onSave={() => updateNote(currentNote._id, { content: currentNote.content })}
             />
           </div>
         </div>
