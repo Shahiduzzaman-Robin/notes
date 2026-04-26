@@ -220,14 +220,14 @@ export default function Home() {
             {activeTab === 'notes' && (
               <div style={{ display: 'flex', gap: '4px' }}>
                 <button 
-                  onClick={(e) => { e.stopPropagation(); handleAddFolder(); }}
+                  onClick={(e) => handleAddFolder(e)}
                   style={{ padding: '4px', borderRadius: '4px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
                   title="New Folder"
                 >
                   <FolderPlus size={14} />
                 </button>
                 <button 
-                  onClick={(e) => { e.stopPropagation(); handleAddNote(); }}
+                  onClick={(e) => handleAddNote(e)}
                   style={{ padding: '4px', borderRadius: '4px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
                   title="New Note"
                 >
@@ -257,7 +257,7 @@ export default function Home() {
             {activeTab === 'boards' && (
               <div style={{ display: 'flex', gap: '4px' }}>
                 <button 
-                  onClick={(e) => { e.stopPropagation(); handleAddFolder(); }}
+                  onClick={(e) => handleAddFolder(e)}
                   style={{ padding: '4px', borderRadius: '4px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}
                   title="New Folder"
                 >
