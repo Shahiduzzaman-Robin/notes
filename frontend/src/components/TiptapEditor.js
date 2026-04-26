@@ -252,7 +252,7 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
   return (
     <div className="tiptap-wrapper" style={{ position: 'relative' }}>
       {/* Formatting Toolbar */}
-      {isFocused && (<div className="tiptap-toolbar">
+      {editor && (<div className="tiptap-toolbar">
         <div className="toolbar-group">
           <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive('bold')} title="Bold (⌘B)">
             <Bold size={15} />
