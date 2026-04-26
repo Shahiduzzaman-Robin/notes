@@ -11,6 +11,11 @@ export default function FolderView({ folderId, type }) {
 
   if (!currentFolder) return null;
 
+  const stripHtml = (html) => {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+  };
+
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px', opacity: 0.5, fontSize: '14px' }}>
@@ -42,7 +47,7 @@ export default function FolderView({ folderId, type }) {
                 <FileText size={24} style={{ marginBottom: '12px', color: 'var(--primary)' }} />
                 <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0 }}>{note.title || 'Untitled'}</h3>
                 <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                  {note.content?.substring(0, 60) || 'No content'}
+                  {stripHtml(note.content).substring(0, 100) || 'No content'}
                 </p>
               </div>
             ))}
