@@ -23,7 +23,8 @@ exports.summarizeNote = async (req, res) => {
     res.json({ summary: text });
   } catch (error) {
     console.error("AI Summarize Error:", error);
-    res.status(500).json({ message: "Failed to summarize note" });
+    const msg = !process.env.GEMINI_API_KEY ? "GEMINI_API_KEY is missing on the server." : "Failed to summarize note";
+    res.status(500).json({ message: msg });
   }
 };
 
@@ -31,6 +32,10 @@ exports.chatWithNote = async (req, res) => {
   try {
     const { content, title, message, history } = req.body;
     
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ message: "GEMINI_API_KEY is not configured on Render dashboard." });
+    }
+
     const chat = model.startChat({
       history: history || [],
       generationConfig: {
@@ -55,7 +60,7 @@ exports.chatWithNote = async (req, res) => {
     res.json({ reply: text });
   } catch (error) {
     console.error("AI Chat Error:", error);
-    res.status(500).json({ message: "Failed to chat with note" });
+    res.status(500).json({ message: error.message || "Failed to chat with note" });
   }
 };
 
@@ -63,6 +68,10 @@ exports.suggestTags = async (req, res) => {
   try {
     const { content, title } = req.body;
     
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ message: "GEMINI_API_KEY missing." });
+    }
+
     const prompt = `
       Analyze this note and suggest 5 relevant one-word tags.
       Title: ${title}
@@ -79,6 +88,6 @@ exports.suggestTags = async (req, res) => {
     res.json({ tags });
   } catch (error) {
     console.error("AI Tag Suggestion Error:", error);
-    res.status(500).json({ message: "Failed to suggest tags" });
+    res.status(500).json({ message: error.message || "Failed to suggest tags" });
   }
 };

@@ -64,6 +64,8 @@ export default function Notes() {
       setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: res.data.reply }] }]);
     } catch (err) {
       console.error(err);
+      const errMsg = err.response?.data?.message || "Connection failed. Please check your API Key on Render.";
+      setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: `❌ Error: ${errMsg}` }] }]);
     } finally {
       setAiLoading(false);
     }
