@@ -22,7 +22,7 @@ import {
   Minus, SquareCode, Type, Subscript as SubIcon, Superscript as SupIcon,
   CirclePlay, Highlighter,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
-  Palette, MergeCells, Split
+  Palette, TableCellsMerge, TableCellsSplit
 } from 'lucide-react';
 import Modal from './Modal';
 
@@ -413,8 +413,8 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
           <button onClick={() => editor.chain().focus().addRowAfter().run()} title="Add row after"><Rows size={14} /><Plus size={10}/></button>
           <button onClick={() => editor.chain().focus().deleteRow().run()} title="Delete row" className="danger"><Rows size={14} /><Trash size={10}/></button>
           <div className="divider" />
-          <button onClick={() => editor.chain().focus().mergeCells().run()} title="Merge cells"><MergeCells size={14} /></button>
-          <button onClick={() => editor.chain().focus().splitCell().run()} title="Split cell"><Split size={14} /></button>
+          <button onClick={() => editor.chain().focus().mergeCells().run()} title="Merge cells"><TableCellsMerge size={14} /></button>
+          <button onClick={() => editor.chain().focus().splitCell().run()} title="Split cell"><TableCellsSplit size={14} /></button>
           <div className="divider" />
           <button onClick={() => editor.chain().focus().deleteTable().run()} title="Delete table" className="danger"><Trash size={14} /> Table</button>
         </div>
