@@ -1,9 +1,14 @@
 "use client";
 import { FileText, Kanban, Plus, ChevronRight, Folder } from 'lucide-react';
+import { useState } from 'react';
 import useStore from '../store/useStore';
+import Modal from './Modal';
 
 export default function FolderView({ folderId, type }) {
   const { notes, boards, noteFolders, boardFolders, setActiveNoteId, setActiveBoardId, setActiveFolderId, addNote, createBoard } = useStore();
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
+  const [newName, setNewName] = useState('');
   
   const allFolders = type === 'notes' ? noteFolders : boardFolders;
   const currentFolder = folderId 
@@ -86,7 +91,7 @@ export default function FolderView({ folderId, type }) {
               </div>
             ))}
             <div 
-              onClick={() => addNote({ title: '', content: '', folder: folderId })}
+              onClick={() => { setNewName(''); setIsNoteModalOpen(true); }}
               style={{ 
                 padding: '16px', 
                 borderRadius: '12px', 
@@ -129,7 +134,7 @@ export default function FolderView({ folderId, type }) {
               </div>
             ))}
             <div 
-              onClick={() => createBoard('New Board', folderId)}
+              onClick={() => { setNewName(''); setIsBoardModalOpen(true); }}
               style={{ 
                 padding: '16px', 
                 borderRadius: '12px', 
@@ -151,6 +156,89 @@ export default function FolderView({ folderId, type }) {
             </div>
           </>
         )}
+      </div>
+
+      <Modal 
+        isOpen={isNoteModalOpen} 
+        onClose={() => setIsNoteModalOpen(false)}
+        title="Create New Note"
+        footer={
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button onClick={() => setIsNoteModalOpen(false)} style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: 'var(--text-secondary)', background: 'transparent' }}>Cancel</button>
+            <button 
+              onClick={async () => {
+                if (newName.trim()) {
+                  const newNote = await addNote({ title: newName, content: '', folder: folderId });
+                  if (newNote) setActiveNoteId(newNote._id);
+                  setIsNoteModalOpen(false);
+                }
+              }} 
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: '#fff', background: 'var(--primary)', border: 'none', fontWeight: 500, cursor: 'pointer' }}
+            >
+              Create Note
+            </button>
+          </div>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Note Title</label>
+          <input 
+            autoFocus type="text" value={newName} onChange={(e) => setNewName(e.target.value)} 
+            onKeyDown={(e) => { 
+              if (e.key === 'Enter' && newName.trim()) {
+                (async () => {
+                  const newNote = await addNote({ title: newName, content: '', folder: folderId });
+                  if (newNote) setActiveNoteId(newNote._id);
+                  setIsNoteModalOpen(false);
+                })();
+              }
+            }}
+            placeholder="Enter title..." 
+            style={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--hover-bg)', border: '1px solid var(--border-color)', color: 'var(--text-color)', outline: 'none', fontSize: '14px' }} 
+          />
+        </div>
+      </Modal>
+
+      <Modal 
+        isOpen={isBoardModalOpen} 
+        onClose={() => setIsBoardModalOpen(false)}
+        title="Create New Board"
+        footer={
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button onClick={() => setIsBoardModalOpen(false)} style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: 'var(--text-secondary)', background: 'transparent' }}>Cancel</button>
+            <button 
+              onClick={async () => {
+                if (newName.trim()) {
+                  const newBoard = await createBoard(newName, folderId);
+                  if (newBoard) setActiveBoardId(newBoard._id);
+                  setIsBoardModalOpen(false);
+                }
+              }} 
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: '#fff', background: 'var(--primary)', border: 'none', fontWeight: 500, cursor: 'pointer' }}
+            >
+              Create Board
+            </button>
+          </div>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Board Name</label>
+          <input 
+            autoFocus type="text" value={newName} onChange={(e) => setNewName(e.target.value)} 
+            onKeyDown={(e) => { 
+              if (e.key === 'Enter' && newName.trim()) {
+                (async () => {
+                  const newBoard = await createBoard(newName, folderId);
+                  if (newBoard) setActiveBoardId(newBoard._id);
+                  setIsBoardModalOpen(false);
+                })();
+              }
+            }}
+            placeholder="Enter name..." 
+            style={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--hover-bg)', border: '1px solid var(--border-color)', color: 'var(--text-color)', outline: 'none', fontSize: '14px' }} 
+          />
+        </div>
+      </Modal>
       </div>
     </div>
   );
