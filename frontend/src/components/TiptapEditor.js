@@ -353,20 +353,22 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
         </div>
         <div className="toolbar-divider" />
         <div className="toolbar-group">
-          <div className="toolbar-btn" title="Text Color" style={{ position: 'relative' }}>
-            <Palette 
-              size={15} 
-              onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const wrapperRect = e.currentTarget.closest('.tiptap-wrapper').getBoundingClientRect();
-                setColorMenuPos({
-                  top: rect.bottom - wrapperRect.top + 8,
-                  left: Math.min(rect.left - wrapperRect.left, window.innerWidth - 300)
-                });
-                setColorMenuOpen(!colorMenuOpen);
-              }}
-            />
-          </div>
+          <button
+            onMouseDown={(e) => {
+              e.preventDefault();
+              const rect = e.currentTarget.getBoundingClientRect();
+              const wrapperRect = e.currentTarget.closest('.tiptap-wrapper').getBoundingClientRect();
+              setColorMenuPos({
+                top: rect.bottom - wrapperRect.top + 8,
+                left: Math.max(0, Math.min(rect.left - wrapperRect.left, window.innerWidth - 300))
+              });
+              setColorMenuOpen(!colorMenuOpen);
+            }}
+            title="Text Color"
+            className={`toolbar-btn ${colorMenuOpen ? 'active' : ''}`}
+          >
+            <Palette size={15} />
+          </button>
         </div>
         <div className="toolbar-divider" />
         <div className="toolbar-group">
