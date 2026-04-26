@@ -40,6 +40,10 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
   const [tableMenuPos, setTableMenuPos] = useState({ top: 0, left: 0 });
 
+  // Color menu state
+  const [colorMenuOpen, setColorMenuOpen] = useState(false);
+  const [colorMenuPos, setColorMenuPos] = useState({ top: 0, left: 0 });
+
   const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
   const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
   const menuRef = useRef(null);
@@ -71,6 +75,32 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
       command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() },
     { title: 'YouTube', description: 'Embed a video', icon: CirclePlay,
       command: () => setIsYoutubeModalOpen(true) },
+  ];
+
+  const TEXT_COLORS = [
+    { name: 'Default', color: 'inherit' },
+    { name: 'Gray', color: '#787774' },
+    { name: 'Brown', color: '#976d57' },
+    { name: 'Orange', color: '#d9730d' },
+    { name: 'Yellow', color: '#cb912f' },
+    { name: 'Green', color: '#448361' },
+    { name: 'Blue', color: '#337ea9' },
+    { name: 'Purple', color: '#9065b0' },
+    { name: 'Pink', color: '#c14c8a' },
+    { name: 'Red', color: '#d44c47' },
+  ];
+
+  const HIGHLIGHT_COLORS = [
+    { name: 'Default', color: 'transparent' },
+    { name: 'Gray', color: '#f1f1ef' },
+    { name: 'Brown', color: '#f4eeee' },
+    { name: 'Orange', color: '#fbeced' },
+    { name: 'Yellow', color: '#fbf3db' },
+    { name: 'Green', color: '#edf3ec' },
+    { name: 'Blue', color: '#ebf5f7' },
+    { name: 'Purple', color: '#f5f0f7' },
+    { name: 'Pink', color: '#f9f0f5' },
+    { name: 'Red', color: '#fdebec' },
   ];
 
   const editor = useEditor({
@@ -146,7 +176,10 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
     onFocus: () => setIsFocused(true),
     onBlur: () => {
       setIsFocused(false);
-      setTimeout(() => setSlashMenuOpen(false), 150);
+      setTimeout(() => {
+        setSlashMenuOpen(false);
+        setColorMenuOpen(false);
+      }, 150);
       onSave();
     }
   });
@@ -255,6 +288,7 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
       }
       setSlashMenuOpen(false);
       setTableMenuOpen(false);
+      setColorMenuOpen(false);
     }
   }, [noteId, initialContent, editor]);
 
@@ -319,13 +353,18 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
         </div>
         <div className="toolbar-divider" />
         <div className="toolbar-group">
-          <div className="toolbar-btn" title="Text Color" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Palette size={15} />
-            <input 
-              type="color" 
-              onInput={e => editor.chain().focus().setColor(e.target.value).run()}
-              value={editor.getAttributes('textStyle').color || '#000000'}
-              style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+          <div className="toolbar-btn" title="Text Color" style={{ position: 'relative' }}>
+            <Palette 
+              size={15} 
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const wrapperRect = e.currentTarget.closest('.tiptap-wrapper').getBoundingClientRect();
+                setColorMenuPos({
+                  top: rect.bottom - wrapperRect.top + 8,
+                  left: Math.min(rect.left - wrapperRect.left, window.innerWidth - 300)
+                });
+                setColorMenuOpen(!colorMenuOpen);
+              }}
             />
           </div>
         </div>
@@ -373,6 +412,45 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
           <button onClick={() => editor.chain().focus().deleteRow().run()} title="Delete row" className="danger"><Rows size={14} /><Trash size={10}/></button>
           <div className="divider" />
           <button onClick={() => editor.chain().focus().deleteTable().run()} title="Delete table" className="danger"><Trash size={14} /> Table</button>
+        </div>
+      )}
+
+      {/* Color Menu */}
+      {colorMenuOpen && (
+        <div className="slash-menu" style={{ top: colorMenuPos.top, left: colorMenuPos.left, width: '220px', padding: '8px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', padding: '4px 8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Color</div>
+          {TEXT_COLORS.map(c => (
+            <div 
+              key={c.name} 
+              className="slash-item" 
+              onMouseDown={(e) => {
+                e.preventDefault();
+                if (c.color === 'inherit') editor.chain().focus().unsetColor().run();
+                else editor.chain().focus().setColor(c.color).run();
+                setColorMenuOpen(false);
+              }}
+            >
+              <div style={{ width: '20px', height: '20px', borderRadius: '4px', border: '1px solid var(--border-color)', background: c.color === 'inherit' ? 'var(--text-color)' : c.color, marginRight: '8px' }} />
+              <span style={{ fontSize: '13px' }}>{c.name}</span>
+            </div>
+          ))}
+          <div style={{ height: '1px', background: 'var(--border-color)', margin: '8px 4px' }} />
+          <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', padding: '4px 8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Background</div>
+          {HIGHLIGHT_COLORS.map(c => (
+            <div 
+              key={c.name} 
+              className="slash-item" 
+              onMouseDown={(e) => {
+                e.preventDefault();
+                if (c.color === 'transparent') editor.chain().focus().unsetHighlight().run();
+                else editor.chain().focus().setHighlight({ color: c.color }).run();
+                setColorMenuOpen(false);
+              }}
+            >
+              <div style={{ width: '20px', height: '20px', borderRadius: '4px', border: '1px solid var(--border-color)', background: c.color, marginRight: '8px' }} />
+              <span style={{ fontSize: '13px' }}>{c.name} Background</span>
+            </div>
+          ))}
         </div>
       )}
 
