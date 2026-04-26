@@ -33,9 +33,10 @@ exports.summarizeNote = async (req, res) => {
       Content: ${content || "No content provided."}
     `;
 
+    // Explicitly structured content for generateContent
     const result = await ai.models.generateContent({
       model: MODEL_NAME,
-      contents: [prompt],
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: AI_CONFIG
     });
     
@@ -55,10 +56,13 @@ exports.chatWithNote = async (req, res) => {
       return res.status(500).json({ message: "GEMINI_API_KEY is not configured on Render dashboard." });
     }
 
-    const formattedHistory = (history || []).map(h => ({
-      role: h.role === 'model' ? 'model' : 'user',
-      parts: [{ text: h.parts?.[0]?.text || h.content || "" }]
-    }));
+    // Ultra-strict history formatting
+    const formattedHistory = (history || [])
+      .filter(h => (h.parts?.[0]?.text || h.content)) // Remove empty messages
+      .map(h => ({
+        role: h.role === 'model' ? 'model' : 'user',
+        parts: [{ text: String(h.parts?.[0]?.text || h.content || "") }]
+      }));
 
     const chat = ai.chats.create({
       model: MODEL_NAME,
@@ -67,16 +71,19 @@ exports.chatWithNote = async (req, res) => {
     });
 
     const prompt = `
-      Context (Current Note):
-      Title: ${title}
-      Content: ${content}
+      Context (Note):
+      Title: ${title || "Untitled"}
+      Content: ${content || "Empty Note"}
       
       User Question: ${message}
       
-      Please answer the question based strictly on the note content provided above. If the information is not in the note, say you don't know.
+      Answer strictly based on the note.
     `;
 
-    const result = await chat.sendMessage(prompt);
+    // Explicitly structured sendMessage call
+    const result = await chat.sendMessage({
+      parts: [{ text: prompt }]
+    });
     
     res.json({ reply: result.text });
   } catch (error) {
@@ -95,7 +102,7 @@ exports.suggestTags = async (req, res) => {
 
     const result = await ai.models.generateContent({
       model: MODEL_NAME,
-      contents: [prompt],
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: AI_CONFIG
     });
     
