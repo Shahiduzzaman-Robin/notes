@@ -23,25 +23,19 @@ const AI_CONFIG = {
 
 exports.summarizeNote = async (req, res) => {
   try {
-    const { content, title } = req.body;
-    const ai = getAIClient();
-    
-    if (!ai) {
-      return res.status(500).json({ message: "GEMINI_API_KEY is missing on the server." });
+    if (!content?.trim() && !title?.trim()) {
+      return res.status(400).json({ message: "Note is empty. Please add some content to summarize." });
     }
 
     const prompt = `
-      You are an expert assistant. Please summarize the following note.
-      Title: ${title}
-      Content: ${content}
-      
-      Provide a concise summary in exactly 3 bullet points. 
-      Use clear and professional language.
+      Summarize this note in 3 bullet points.
+      Title: ${title || "Untitled"}
+      Content: ${content || "No content provided."}
     `;
 
     const result = await ai.models.generateContent({
       model: MODEL_NAME,
-      contents: prompt,
+      contents: [prompt],
       config: AI_CONFIG
     });
     
@@ -93,24 +87,15 @@ exports.chatWithNote = async (req, res) => {
 
 exports.suggestTags = async (req, res) => {
   try {
-    const { content, title } = req.body;
-    const ai = getAIClient();
-    
-    if (!ai) {
-      return res.status(500).json({ message: "GEMINI_API_KEY missing." });
+    if (!content?.trim() && !title?.trim()) {
+      return res.status(400).json({ message: "Add content to get tag suggestions." });
     }
 
-    const prompt = `
-      Analyze this note and suggest 5 relevant one-word tags.
-      Title: ${title}
-      Content: ${content}
-      
-      Return only the tags separated by commas. No other text.
-    `;
+    const prompt = `Suggest 5 one-word tags for this note: "${title} ${content}". Return ONLY commas-separated tags.`;
 
     const result = await ai.models.generateContent({
       model: MODEL_NAME,
-      contents: prompt,
+      contents: [prompt],
       config: AI_CONFIG
     });
     
