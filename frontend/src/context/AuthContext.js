@@ -48,6 +48,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      const hostname = typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || `http://${hostname}:5005/api`;
+      await axios.put(`${apiUrl}/auth/change-password`, 
+        { currentPassword, newPassword },
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || 'Password change failed' };
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
@@ -55,7 +69,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, changePassword }}>
       {children}
     </AuthContext.Provider>
   );

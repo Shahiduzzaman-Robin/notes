@@ -41,6 +41,11 @@ export default function Home() {
   const [newFolderName, setNewFolderName] = useState('');
   const [newBoardName, setNewBoardName] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const { changePassword } = useAuth();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -93,6 +98,30 @@ export default function Home() {
       }
       setNewBoardName('');
       setIsBoardModalOpen(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    setPasswordError('');
+    setPasswordSuccess('');
+    
+    if (passwordData.new !== passwordData.confirm) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+    
+    if (passwordData.new.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+      return;
+    }
+
+    const res = await changePassword(passwordData.current, passwordData.new);
+    if (res.success) {
+      setPasswordSuccess('Password updated successfully!');
+      setPasswordData({ current: '', new: '', confirm: '' });
+      setTimeout(() => setIsSettingsModalOpen(false), 2000);
+    } else {
+      setPasswordError(res.message);
     }
   };
 
@@ -185,6 +214,68 @@ export default function Home() {
               fontSize: '14px'
             }}
           />
+        </div>
+      </Modal>
+
+      <Modal 
+        isOpen={isSettingsModalOpen} 
+        onClose={() => { setIsSettingsModalOpen(false); setPasswordError(''); setPasswordSuccess(''); }}
+        title="User Settings"
+        footer={
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button 
+              onClick={() => setIsSettingsModalOpen(false)}
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: 'var(--text-secondary)', background: 'transparent' }}
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handlePasswordChange}
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: '#fff', background: 'var(--primary)', border: 'none', fontWeight: 500, cursor: 'pointer' }}
+            >
+              Update Password
+            </button>
+          </div>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <p style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Change Password</p>
+            <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>Update your account security.</p>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Current Password</label>
+            <input 
+              type="password"
+              value={passwordData.current}
+              onChange={(e) => setPasswordData({...passwordData, current: e.target.value})}
+              style={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--hover-bg)', border: '1px solid var(--border-color)', color: 'var(--text-color)', outline: 'none', fontSize: '14px' }}
+            />
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>New Password</label>
+            <input 
+              type="password"
+              value={passwordData.new}
+              onChange={(e) => setPasswordData({...passwordData, new: e.target.value})}
+              style={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--hover-bg)', border: '1px solid var(--border-color)', color: 'var(--text-color)', outline: 'none', fontSize: '14px' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Confirm New Password</label>
+            <input 
+              type="password"
+              value={passwordData.confirm}
+              onChange={(e) => setPasswordData({...passwordData, confirm: e.target.value})}
+              style={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--hover-bg)', border: '1px solid var(--border-color)', color: 'var(--text-color)', outline: 'none', fontSize: '14px' }}
+            />
+          </div>
+
+          {passwordError && <p style={{ margin: 0, fontSize: '12px', color: 'var(--danger)' }}>{passwordError}</p>}
+          {passwordSuccess && <p style={{ margin: 0, fontSize: '12px', color: '#10b981' }}>{passwordSuccess}</p>}
         </div>
       </Modal>
       <div 
@@ -286,7 +377,11 @@ export default function Home() {
           </div>
           <div className={styles.userInfo}>
             <span className={styles.userName}>{user.name}</span>
-            <button onClick={logout} className={styles.logoutBtn}>Logout</button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button onClick={() => setIsSettingsModalOpen(true)} className={styles.logoutBtn} style={{ color: 'var(--text-secondary)' }}>Settings</button>
+              <span style={{ color: 'var(--border-color)' }}>•</span>
+              <button onClick={logout} className={styles.logoutBtn}>Logout</button>
+            </div>
           </div>
         </div>
       </div>
