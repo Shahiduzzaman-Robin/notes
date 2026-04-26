@@ -30,11 +30,20 @@ const useStore = create((set, get) => ({
     try {
       set({ isLoading: true });
       const user = JSON.parse(localStorage.getItem('user'));
-      if (!user) return;
+      if (!user) {
+        set({ isLoading: false });
+        return;
+      }
+
+      console.log('Syncing data from:', API_URL);
+      const start = Date.now();
 
       const res = await axios.get(`${API_URL}/sync/bootstrap`, {
-        headers: { Authorization: `Bearer ${user.token}` }
+        headers: { Authorization: `Bearer ${user.token}` },
+        timeout: 10000 // 10 second timeout
       });
+
+      console.log(`Sync completed in ${Date.now() - start}ms`);
 
       set({ 
         notes: res.data.notes,
@@ -46,7 +55,10 @@ const useStore = create((set, get) => ({
         isLoadingBoards: false
       });
     } catch (error) {
-      console.error('Bootstrap failed:', error);
+      console.error('Bootstrap failed:', error.message);
+      if (error.code === 'ECONNABORTED') {
+        console.error('Request timed out');
+      }
       set({ isLoading: false });
     }
   },

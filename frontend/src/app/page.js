@@ -385,7 +385,11 @@ export default function Home() {
 
           {/* Hierarchical Folder Tree for Notes */}
           <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
-            <FolderTree folders={noteFolders} notes={notes} boards={boards} type="notes" />
+            {isLoading ? (
+              <div style={{ padding: '8px', fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.6 }}>Syncing...</div>
+            ) : (
+              <FolderTree folders={noteFolders} notes={notes} boards={boards} type="notes" />
+            )}
           </div>
 
           <div className={styles.sidebarDivider} />
@@ -422,7 +426,11 @@ export default function Home() {
 
           {/* Hierarchical Folder Tree for Boards */}
           <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
-            <FolderTree folders={boardFolders} notes={notes} boards={boards} type="boards" />
+            {isLoading ? (
+              <div style={{ padding: '8px', fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.6 }}>Syncing...</div>
+            ) : (
+              <FolderTree folders={boardFolders} notes={notes} boards={boards} type="boards" />
+            )}
           </div>
         </nav>
 
