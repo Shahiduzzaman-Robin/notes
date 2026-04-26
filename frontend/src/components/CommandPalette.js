@@ -12,7 +12,8 @@ export default function CommandPalette() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        console.log('Command Palette Triggered');
         e.preventDefault();
         setIsOpen(prev => !prev);
       }
@@ -20,8 +21,8 @@ export default function CommandPalette() {
         setIsOpen(false);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, []);
 
   useEffect(() => {

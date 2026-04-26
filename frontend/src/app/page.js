@@ -144,6 +144,7 @@ export default function Home() {
 
   return (
     <div className={styles.dashboard}>
+      <CommandPalette />
       <Modal 
         isOpen={isFolderModalOpen} 
         onClose={() => setIsFolderModalOpen(false)}
