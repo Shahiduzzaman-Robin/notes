@@ -213,7 +213,7 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
         <div 
           key={note._id}
           className="tree-item note-item"
-          onClick={() => setActiveNoteId(note._id)}
+          onClick={() => { setActiveNoteId(note._id); setActiveTab('notes'); }}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -241,7 +241,7 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
         <div 
           key={board._id}
           className="tree-item board-item"
-          onClick={() => setActiveBoardId(board._id)}
+          onClick={() => { setActiveBoardId(board._id); setActiveTab('boards'); }}
           style={{
             display: 'flex',
             alignItems: 'center',
