@@ -38,8 +38,11 @@ export default function Home() {
   const router = useRouter();
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [newBoardName, setNewBoardName] = useState('');
+  const [newNoteName, setNewNoteName] = useState('');
+  const [targetFolderId, setTargetFolderId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
@@ -67,12 +70,22 @@ export default function Home() {
     setActiveFolderId(null, tab);
   };
 
-  const handleAddNote = async (e) => {
-    e.stopPropagation();
-    setActiveTab('notes');
-    const newNote = await addNote({ title: '', content: '' });
-    if (newNote) {
-      setActiveNoteId(newNote._id);
+  const handleAddNote = (e) => {
+    if (e) e.stopPropagation();
+    setNewNoteName('');
+    setTargetFolderId(null);
+    setIsNoteModalOpen(true);
+  };
+
+  const handleNoteCreateSubmit = async () => {
+    if (newNoteName.trim()) {
+      setActiveTab('notes');
+      const newNote = await addNote({ title: newNoteName, content: '', folder: targetFolderId });
+      if (newNote) {
+        setActiveNoteId(newNote._id);
+      }
+      setNewNoteName('');
+      setIsNoteModalOpen(false);
     }
   };
 
@@ -161,6 +174,49 @@ export default function Home() {
             onChange={(e) => setNewFolderName(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleFolderCreateSubmit(); }}
             placeholder="Enter name..."
+            style={{ 
+              padding: '10px 12px', 
+              borderRadius: '8px', 
+              background: 'var(--hover-bg)', 
+              border: '1px solid var(--border-color)', 
+              color: 'var(--text-color)',
+              outline: 'none',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+      </Modal>
+
+      <Modal 
+        isOpen={isNoteModalOpen} 
+        onClose={() => setIsNoteModalOpen(false)}
+        title="Create New Note"
+        footer={
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button 
+              onClick={() => setIsNoteModalOpen(false)}
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: 'var(--text-secondary)', background: 'transparent' }}
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handleNoteCreateSubmit}
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: '#fff', background: 'var(--primary)', border: 'none', fontWeight: 500, cursor: 'pointer' }}
+            >
+              Create Note
+            </button>
+          </div>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Note Title</label>
+          <input 
+            autoFocus
+            type="text"
+            value={newNoteName}
+            onChange={(e) => setNewNoteName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleNoteCreateSubmit(); }}
+            placeholder="Enter title..."
             style={{ 
               padding: '10px 12px', 
               borderRadius: '8px', 

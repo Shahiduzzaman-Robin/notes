@@ -85,12 +85,8 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
     }
   }, [activeNoteId, activeBoardId, notes, boards, folders]);
 
-  const handleAddSubNote = async (folderId) => {
-    const newNote = await addNote({ title: '', content: '', folder: folderId });
-    if (newNote) {
-      setActiveNoteId(newNote._id);
-    }
-    if (!expandedFolders[folderId]) toggleFolder(folderId);
+  const handleAddSubNote = (folderId) => {
+    setModal({ isOpen: true, type: 'createNote', folder: { _id: folderId }, value: '' });
   };
 
   const handleAddSubBoard = (folderId) => {
@@ -115,13 +111,13 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
         await addFolder({ name: modal.value, parentFolder: modal.folder._id, type });
         if (!expandedFolders[modal.folder._id]) toggleFolder(modal.folder._id);
       }
-    } else if (modal.type === 'createBoard') {
+        if (!expandedFolders[modal.folder._id]) toggleFolder(modal.folder._id);
+      }
+    } else if (modal.type === 'createNote') {
       if (modal.value.trim()) {
-        const newBoard = await createBoard(modal.value, modal.folder._id);
-        if (newBoard) {
-          setActiveBoardId(newBoard._id);
-          // Assuming we want to switch tab or just show it?
-          // page.js handles tab state, FolderTree just handles clicking
+        const newNote = await addNote({ title: modal.value, content: '', folder: modal.folder._id });
+        if (newNote) {
+          setActiveNoteId(newNote._id);
         }
         if (!expandedFolders[modal.folder._id]) toggleFolder(modal.folder._id);
       }
@@ -271,6 +267,7 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
         title={
           modal.type === 'create' ? 'Create Subfolder' : 
           modal.type === 'createBoard' ? 'Create New Board' :
+          modal.type === 'createNote' ? 'Create New Note' :
           modal.type === 'rename' ? 'Rename Folder' : 
           'Delete Folder'
         }
@@ -290,7 +287,7 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              {modal.type === 'createBoard' ? 'Board Name' : 'Folder Name'}
+              {modal.type === 'createBoard' ? 'Board Name' : modal.type === 'createNote' ? 'Note Title' : 'Folder Name'}
             </label>
             <input 
               autoFocus
