@@ -141,6 +141,17 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
     }
   });
 
+  // Debounced auto-save logic
+  useEffect(() => {
+    if (!editor || !isFocused) return;
+
+    const timeout = setTimeout(() => {
+      onSave();
+    }, 3000); // Auto-save after 3 seconds of inactivity
+
+    return () => clearTimeout(timeout);
+  }, [editor?.state.doc.content, isFocused, onSave]);
+
   // Track slash input for the menu
   const handleSlashTracking = useCallback((editor) => {
     const { state } = editor;
