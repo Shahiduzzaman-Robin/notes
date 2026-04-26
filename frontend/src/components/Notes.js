@@ -19,21 +19,11 @@ export default function Notes() {
   const handleDownloadPDF = async () => {
     const html2pdf = (await import('html2pdf.js')).default;
     
-    // Create a temporary element to hold the styled content for PDF
-    const element = document.createElement('div');
-    element.innerHTML = `
-      <div style="font-family: 'Inter', sans-serif; color: #000; background: #fff; width: 100%;">
-        <div style="padding: 40px;">
-          <h1 style="font-size: 32px; margin-bottom: 10px; color: #1a1a1a;">${currentNote.title || 'Untitled'}</h1>
-          <div style="font-size: 12px; color: #666; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-            Last edited: ${currentNote.updatedAt ? new Date(currentNote.updatedAt).toLocaleString() : 'Just now'}
-          </div>
-          <div class="tiptap-content">
-            ${currentNote.content}
-          </div>
-        </div>
-      </div>
+    const pdfStyles = `
       <style>
+        .pdf-container { font-family: 'Inter', sans-serif; color: #000; background: #fff; width: 100%; padding: 40px; }
+        .pdf-title { font-size: 32px; margin-bottom: 10px; color: #1a1a1a; }
+        .pdf-meta { font-size: 12px; color: #666; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .tiptap-content table { 
           border-collapse: collapse; 
           width: 100%; 
@@ -50,6 +40,20 @@ export default function Notes() {
         .tiptap-content h2 { font-size: 20px; margin-top: 15px; }
         .tiptap-content p { line-height: 1.6; margin-bottom: 10px; }
       </style>
+    `;
+
+    const element = document.createElement('div');
+    element.innerHTML = `
+      ${pdfStyles}
+      <div class="pdf-container">
+        <h1 class="pdf-title">${currentNote.title || 'Untitled'}</h1>
+        <div class="pdf-meta">
+          Last edited: ${currentNote.updatedAt ? new Date(currentNote.updatedAt).toLocaleString() : 'Just now'}
+        </div>
+        <div class="tiptap-content">
+          ${currentNote.content}
+        </div>
+      </div>
     `;
 
     const opt = {
