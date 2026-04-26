@@ -66,4 +66,15 @@ const deleteNote = async (req, res) => {
   }
 };
 
-module.exports = { getNotes, createNote, updateNote, deleteNote };
+const getNoteById = async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) return res.status(404).json({ message: 'Note not found' });
+    if (note.user.toString() !== req.user._id.toString()) return res.status(401).json({ message: 'Not authorized' });
+    res.json(note);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { getNotes, getNoteById, createNote, updateNote, deleteNote };

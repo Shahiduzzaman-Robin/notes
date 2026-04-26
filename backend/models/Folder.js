@@ -7,4 +7,6 @@ const folderSchema = new mongoose.Schema({
   type: { type: String, enum: ['notes', 'boards'], default: 'notes' }
 }, { timestamps: true });
 
+folderSchema.index({ user: 1 });
+
 module.exports = mongoose.model('Folder', folderSchema);

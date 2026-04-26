@@ -9,6 +9,7 @@ const noteSchema = new mongoose.Schema({
   folder: { type: mongoose.Schema.Types.ObjectId, ref: 'Folder', default: null }
 }, { timestamps: true });
 
+noteSchema.index({ user: 1 });
 noteSchema.index({ title: 'text', content: 'text', tags: 'text' });
 
 module.exports = mongoose.model('Note', noteSchema);
