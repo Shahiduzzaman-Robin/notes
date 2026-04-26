@@ -158,6 +158,16 @@ export default function Notes() {
             padding: 20px 16px !important;
           }
         }
+        .loading-dots:after {
+          content: ' .';
+          animation: dots 1s steps(5, end) infinite;
+        }
+        @keyframes dots {
+          0%, 20% { content: ' .'; }
+          40% { content: ' . .'; }
+          60% { content: ' . . .'; }
+          80%, 100% { content: ' . . . .'; }
+        }
       `}</style>
       
       {/* Editor Area (The "Page") */}
@@ -229,7 +239,12 @@ export default function Notes() {
                   style={{ fontSize: '42px', fontWeight: 700, background: 'transparent', border: 'none', color: 'var(--text-color)', width: '100%', marginBottom: '20px', outline: 'none' }}
                 />
                 
-                <div style={{ flex: 1, minHeight: '500px' }}>
+                <div style={{ flex: 1, minHeight: '500px', position: 'relative' }}>
+                  {currentNote.content === undefined && (
+                    <div style={{ position: 'absolute', top: '100px', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
+                      <div className="loading-dots">Loading content</div>
+                    </div>
+                  )}
                   <TiptapEditor 
                     noteId={currentNote._id}
                     initialContent={currentNote.content || ''}

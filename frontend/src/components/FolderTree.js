@@ -27,9 +27,9 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
     const query = globalSearchQuery.toLowerCase();
     if (itemType === 'note') {
       const inTitle = (item.title || '').toLowerCase().includes(query);
-      const inContent = (item.content || '').toLowerCase().includes(query);
+      // Removed inContent check to improve performance significantly
       const inTags = (item.tags || []).some(t => t.toLowerCase().includes(query));
-      return inTitle || inContent || inTags;
+      return inTitle || inTags;
     } else if (itemType === 'board') {
       return (item.name || '').toLowerCase().includes(query);
     }
@@ -37,8 +37,8 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
   };
 
   const currentFolders = folders.filter(f => f.parentFolder === parentId);
-  const currentNotes = type === 'boards' ? [] : notes.filter(n => n.folder === parentId).filter(n => matchesSearch(n, 'note'));
-  const currentBoards = type === 'notes' ? [] : boards.filter(b => b.folder === parentId).filter(b => matchesSearch(b, 'board'));
+  const currentNotes = type === 'boards' ? [] : notes.filter(n => n.folder === parentId && matchesSearch(n, 'note'));
+  const currentBoards = type === 'notes' ? [] : boards.filter(b => b.folder === parentId && matchesSearch(b, 'board'));
 
   useEffect(() => {
     if (globalSearchQuery) {
