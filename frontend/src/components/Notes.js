@@ -16,6 +16,42 @@ export default function Notes() {
   const [newTag, setNewTag] = useState('');
   const contentRef = useRef('');
 
+  const handleDownloadPDF = async () => {
+    const html2pdf = (await import('html2pdf.js')).default;
+    
+    // Create a temporary element to hold the styled content for PDF
+    const element = document.createElement('div');
+    element.innerHTML = `
+      <div style="padding: 40px; font-family: 'Inter', sans-serif; color: #000; background: #fff;">
+        <h1 style="font-size: 32px; margin-bottom: 10px; color: #1a1a1a;">${currentNote.title || 'Untitled'}</h1>
+        <div style="font-size: 12px; color: #666; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+          Last edited: ${currentNote.updatedAt ? new Date(currentNote.updatedAt).toLocaleString() : 'Just now'}
+        </div>
+        <div class="tiptap-content">
+          ${currentNote.content}
+        </div>
+      </div>
+      <style>
+        .tiptap-content table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+        .tiptap-content table td, .tiptap-content table th { border: 1px solid #ddd; padding: 8px; }
+        .tiptap-content h1 { font-size: 24px; margin-top: 20px; }
+        .tiptap-content h2 { font-size: 20px; margin-top: 15px; }
+        .tiptap-content p { line-height: 1.6; margin-bottom: 10px; }
+        .tiptap-content .search-result-highlight { background: yellow; }
+      </style>
+    `;
+
+    const opt = {
+      margin: [10, 10],
+      filename: `${currentNote.title || 'Note'}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().from(element).set(opt).save();
+  };
+
   useEffect(() => {
     if (activeNoteId) {
       const note = notes.find(n => n._id === activeNoteId);
@@ -266,10 +302,37 @@ export default function Notes() {
                   <span style={{ color: 'var(--text-secondary)' }}>{wordCount}</span>
                 </div>
                 <div className="meta-item">
-                  <Type size={16} className="meta-icon" />
+                  <AlignLeft size={16} className="meta-icon" />
                   <span style={{ flex: 1 }}>Characters</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>{charCount}</span>
+                  <span>{currentNote.content ? currentNote.content.length : 0}</span>
                 </div>
+              </div>
+
+              <div className="meta-group">
+                <h4>Actions</h4>
+                <button 
+                  onClick={handleDownloadPDF}
+                  style={{ 
+                    width: '100%', 
+                    padding: '10px', 
+                    borderRadius: '8px', 
+                    background: 'var(--hover-bg)', 
+                    border: '1px solid var(--border-color)', 
+                    color: 'var(--text-color)', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '10px', 
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
+                  onMouseOut={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                >
+                  <FileText size={16} />
+                  Export as PDF
+                </button>
               </div>
 
               <div className="meta-group">
