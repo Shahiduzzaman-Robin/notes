@@ -280,6 +280,7 @@ h1, h2, h3, h4 {
   line-height: 1.6;
   color: var(--text-color);
   min-height: 400px;
+  padding-bottom: 45vh; /* Added space for typewriter-style scrolling */
 }
 
 .tiptap-wrapper .tiptap > * + * {

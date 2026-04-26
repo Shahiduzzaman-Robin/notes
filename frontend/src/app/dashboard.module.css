@@ -73,6 +73,7 @@
   flex: 1;
   padding: 40px 60px; /* More white space like Notion default */
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 .userProfile {

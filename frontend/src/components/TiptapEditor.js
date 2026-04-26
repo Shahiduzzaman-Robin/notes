@@ -95,6 +95,27 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
     },
     onSelectionUpdate: ({ editor }) => {
       setShowTableMenu(editor.isActive('table'));
+      
+      // Typewriter scrolling: if cursor is low on screen, scroll it up
+      const { selection } = editor.state;
+      const { $from } = selection;
+      try {
+        const coords = editor.view.coordsAtPos($from.pos);
+        const viewportHeight = window.innerHeight;
+        
+        // If cursor is in the bottom 40% of the screen
+        if (coords.bottom > viewportHeight * 0.6) {
+          const scrollContainer = document.querySelector('[class*="contentArea"]');
+          if (scrollContainer) {
+            scrollContainer.scrollBy({
+              top: 100,
+              behavior: 'smooth'
+            });
+          }
+        }
+      } catch (e) {
+        // Ignore coords errors
+      }
     },
     onFocus: () => {
       setIsFocused(true);
