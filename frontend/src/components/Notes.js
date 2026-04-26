@@ -25,20 +25,22 @@ export default function Notes() {
         .pdf-title { font-size: 32px; margin-bottom: 10px; color: #1a1a1a; }
         .pdf-meta { font-size: 12px; color: #666; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .tiptap-content table { 
+          display: block;
           border-collapse: collapse; 
           width: 100%; 
-          margin: 20px 0; 
+          margin: 25px 0; 
           page-break-inside: avoid !important;
           break-inside: avoid !important;
         }
-        .tiptap-content tr, .tiptap-content td, .tiptap-content th { 
+        .tiptap-content tr { 
           page-break-inside: avoid !important;
           break-inside: avoid !important;
         }
-        .tiptap-content table td, .tiptap-content table th { border: 1px solid #ddd; padding: 8px; }
+        .tiptap-content table td, .tiptap-content table th { border: 1px solid #ddd; padding: 10px; }
         .tiptap-content h1 { font-size: 24px; margin-top: 20px; }
         .tiptap-content h2 { font-size: 20px; margin-top: 15px; }
-        .tiptap-content p { line-height: 1.6; margin-bottom: 10px; }
+        .tiptap-content p { line-height: 1.6; margin-bottom: 12px; }
+        .tiptap-content .search-result-highlight { background: #ffeb3b; padding: 2px; }
       </style>
     `;
 
@@ -57,8 +59,13 @@ export default function Notes() {
     `;
 
     const opt = {
-      margin: 10,
+      margin: 15,
       filename: `${currentNote.title || 'Note'}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: 'avoid-all' }
+    };
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, logging: false },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
