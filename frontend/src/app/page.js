@@ -32,7 +32,7 @@ export default function Home() {
     globalSearchQuery, setGlobalSearchQuery, 
     boards, activeBoardId, setActiveBoardId, 
     notes, fetchNotes, activeNoteId, setActiveNoteId, addNote,
-    noteFolders, boardFolders, fetchFolders, addFolder,
+    noteFolders, boardFolders, fetchFolders, addFolder, fetchBoards,
     activeFolderId
   } = useStore();
   const router = useRouter();
