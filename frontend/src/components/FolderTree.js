@@ -36,9 +36,9 @@ export default function FolderTree({ folders, notes = [], boards = [], parentId 
     return false;
   };
 
-  const currentFolders = folders.filter(f => f.parentFolder === parentId);
-  const currentNotes = type === 'boards' ? [] : notes.filter(n => n.folder === parentId && matchesSearch(n, 'note'));
-  const currentBoards = type === 'notes' ? [] : boards.filter(b => b.folder === parentId && matchesSearch(b, 'board'));
+  const currentFolders = folders.filter(f => !f.parentFolder && !parentId || f.parentFolder === parentId);
+  const currentNotes = type === 'boards' ? [] : notes.filter(n => (!n.folder && !parentId || n.folder === parentId) && matchesSearch(n, 'note'));
+  const currentBoards = type === 'notes' ? [] : boards.filter(b => (!b.folder && !parentId || b.folder === parentId) && matchesSearch(b, 'board'));
 
   useEffect(() => {
     if (globalSearchQuery) {

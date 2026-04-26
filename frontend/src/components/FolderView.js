@@ -15,9 +15,9 @@ export default function FolderView({ folderId, type }) {
     ? allFolders.find(f => f._id === folderId) 
     : { name: type === 'notes' ? 'Personal Notes' : 'Management', _id: null };
 
-  const subFolders = allFolders.filter(f => f.parentFolder === (folderId || null));
-  const currentNotes = notes.filter(n => n.folder === (folderId || null));
-  const currentBoards = boards.filter(b => b.folder === (folderId || null));
+  const subFolders = allFolders.filter(f => !f.parentFolder && !folderId || f.parentFolder === folderId);
+  const currentNotes = notes.filter(n => !n.folder && !folderId || n.folder === folderId);
+  const currentBoards = boards.filter(b => !b.folder && !folderId || b.folder === folderId);
 
   if (!currentFolder && folderId) return null;
 
