@@ -8,5 +8,7 @@ const folderSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 folderSchema.index({ user: 1 });
+folderSchema.index({ parentFolder: 1 });
+folderSchema.index({ type: 1 });
 
 module.exports = mongoose.model('Folder', folderSchema);

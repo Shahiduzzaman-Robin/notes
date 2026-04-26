@@ -17,4 +17,8 @@ const taskSchema = new mongoose.Schema({
   order: { type: Number, default: 0 }
 }, { timestamps: true });
 
+taskSchema.index({ user: 1 });
+taskSchema.index({ board: 1 });
+taskSchema.index({ columnId: 1 });
+
 module.exports = mongoose.model('Task', taskSchema);

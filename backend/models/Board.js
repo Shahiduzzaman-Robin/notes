@@ -11,4 +11,7 @@ const boardSchema = new mongoose.Schema({
   folder: { type: mongoose.Schema.Types.ObjectId, ref: 'Folder', default: null }
 }, { timestamps: true });
 
+boardSchema.index({ user: 1 });
+boardSchema.index({ folder: 1 });
+
 module.exports = mongoose.model('Board', boardSchema);
