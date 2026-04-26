@@ -27,11 +27,12 @@ export default function Notes() {
     if (!currentNote.content) return;
     setAiLoading(true);
     try {
+      const user = JSON.parse(localStorage.getItem('user'));
       const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/ai/summarize`, {
         content: currentNote.content,
         title: currentNote.title
       }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${user?.token}` }
       });
       setAiSummary(res.data.summary);
     } catch (err) {
@@ -52,13 +53,14 @@ export default function Notes() {
     setAiLoading(true);
 
     try {
+      const user = JSON.parse(localStorage.getItem('user'));
       const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/ai/chat`, {
         content: currentNote.content,
         title: currentNote.title,
         message: msgToSend,
         history: chatHistory
       }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${user?.token}` }
       });
       
       setChatHistory(prev => [...prev, { role: 'model', parts: [{ text: res.data.reply }] }]);
@@ -74,11 +76,12 @@ export default function Notes() {
   const handleAISuggestTags = async () => {
     setAiLoading(true);
     try {
+      const user = JSON.parse(localStorage.getItem('user'));
       const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/ai/suggest-tags`, {
         content: currentNote.content,
         title: currentNote.title
       }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${user?.token}` }
       });
       
       const uniqueTags = [...new Set([...(currentNote.tags || []), ...res.data.tags])];
