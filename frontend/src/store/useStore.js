@@ -25,8 +25,11 @@ const useStore = create((set, get) => ({
   globalSearchQuery: '',
   
   setGlobalSearchQuery: (query) => set({ globalSearchQuery: query }),
-  setActiveNoteId: (id) => set({ activeNoteId: id, activeFolderId: null }),
-  setActiveBoardId: (id) => set({ activeBoardId: id, activeFolderId: null }),
+  setActiveNoteId: (id) => set({ activeNoteId: id, activeFolderId: null, activeBoardId: null }),
+  setActiveBoardId: (id) => {
+    set({ activeBoardId: id, activeFolderId: null, activeNoteId: null });
+    get().fetchTasks(id);
+  },
   setActiveFolderId: (id) => set({ activeFolderId: id, activeNoteId: null, activeBoardId: null }),
   
   // Folder Actions
@@ -212,10 +215,7 @@ const useStore = create((set, get) => ({
       console.error(error);
     }
   },
-  setActiveBoardId: (id) => {
-    set({ activeBoardId: id });
-    get().fetchTasks(id);
-  },
+
 
   // Task Actions
   fetchTasks: async (boardId) => {
