@@ -1,5 +1,5 @@
 "use client";
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Table, TableRow, TableCell, TableHeader } from '@tiptap/extension-table';
 import TaskList from '@tiptap/extension-task-list';
@@ -10,6 +10,7 @@ import Superscript from '@tiptap/extension-superscript';
 import Youtube from '@tiptap/extension-youtube';
 import Placeholder from '@tiptap/extension-placeholder';
 import Highlight from '@tiptap/extension-highlight';
+import BubbleMenuExtension from '@tiptap/extension-bubble-menu';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { 
   Bold, Italic, Underline as UnderlineIcon, Strikethrough, Code,
@@ -25,7 +26,6 @@ import Modal from './Modal';
 // SLASH_ITEMS moved inside component to access state
 
 export default function TiptapEditor({ noteId, initialContent, onChange, onSave }) {
-  const [showTableMenu, setShowTableMenu] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   
   // Slash menu state
@@ -80,6 +80,7 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
       Subscript,
       Superscript,
       Highlight,
+      BubbleMenuExtension,
       Youtube.configure({
         inline: false,
         HTMLAttributes: { class: 'youtube-embed' },
@@ -90,12 +91,9 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
-      setShowTableMenu(editor.isActive('table'));
       handleSlashTracking(editor);
     },
     onSelectionUpdate: ({ editor }) => {
-      setShowTableMenu(editor.isActive('table'));
-      
       // Typewriter scrolling: if cursor is low on screen, scroll it up
       const { selection } = editor.state;
       const { $from } = selection;
@@ -394,18 +392,24 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave 
       )}
 
       {/* Table controls */}
-      {showTableMenu && (
-        <div className="table-bubble-menu">
-          <button onClick={() => editor.chain().focus().addColumnBefore().run()} title="Add column before"><Columns size={14} /><Plus size={10}/></button>
-          <button onClick={() => editor.chain().focus().addColumnAfter().run()} title="Add column after"><Columns size={14} /><Plus size={10}/></button>
-          <button onClick={() => editor.chain().focus().deleteColumn().run()} title="Delete column" className="danger"><Columns size={14} /><Trash size={10}/></button>
-          <div className="divider" />
-          <button onClick={() => editor.chain().focus().addRowBefore().run()} title="Add row before"><Rows size={14} /><Plus size={10}/></button>
-          <button onClick={() => editor.chain().focus().addRowAfter().run()} title="Add row after"><Rows size={14} /><Plus size={10}/></button>
-          <button onClick={() => editor.chain().focus().deleteRow().run()} title="Delete row" className="danger"><Rows size={14} /><Trash size={10}/></button>
-          <div className="divider" />
-          <button onClick={() => { editor.chain().focus().deleteTable().run(); setShowTableMenu(false); }} title="Delete table" className="danger"><Trash size={14} /> Table</button>
-        </div>
+      {editor && (
+        <BubbleMenu 
+          editor={editor} 
+          tippyOptions={{ duration: 100, offset: [0, 10], zIndex: 9999 }} 
+          shouldShow={({ editor }) => editor.isActive('table')}
+        >
+          <div className="table-bubble-menu">
+            <button onClick={() => editor.chain().focus().addColumnBefore().run()} title="Add column before"><Columns size={14} /><Plus size={10}/></button>
+            <button onClick={() => editor.chain().focus().addColumnAfter().run()} title="Add column after"><Columns size={14} /><Plus size={10}/></button>
+            <button onClick={() => editor.chain().focus().deleteColumn().run()} title="Delete column" className="danger"><Columns size={14} /><Trash size={10}/></button>
+            <div className="divider" />
+            <button onClick={() => editor.chain().focus().addRowBefore().run()} title="Add row before"><Rows size={14} /><Plus size={10}/></button>
+            <button onClick={() => editor.chain().focus().addRowAfter().run()} title="Add row after"><Rows size={14} /><Plus size={10}/></button>
+            <button onClick={() => editor.chain().focus().deleteRow().run()} title="Delete row" className="danger"><Rows size={14} /><Trash size={10}/></button>
+            <div className="divider" />
+            <button onClick={() => editor.chain().focus().deleteTable().run()} title="Delete table" className="danger"><Trash size={14} /> Table</button>
+          </div>
+        </BubbleMenu>
       )}
 
       <EditorContent editor={editor} />

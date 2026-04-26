@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
+    "@tiptap/extension-bubble-menu": "^3.22.4",
     "@tiptap/extension-highlight": "^3.22.4",
     "@tiptap/extension-placeholder": "^3.22.4",
     "@tiptap/extension-subscript": "^3.22.4",
