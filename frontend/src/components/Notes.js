@@ -27,7 +27,7 @@ export default function Notes() {
     if (!currentNote.content) return;
     setAiLoading(true);
     try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/summarize`, {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/ai/summarize`, {
         content: currentNote.content,
         title: currentNote.title
       }, {
@@ -52,7 +52,7 @@ export default function Notes() {
     setAiLoading(true);
 
     try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/chat`, {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/ai/chat`, {
         content: currentNote.content,
         title: currentNote.title,
         message: msgToSend,
@@ -72,7 +72,7 @@ export default function Notes() {
   const handleAISuggestTags = async () => {
     setAiLoading(true);
     try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/suggest-tags`, {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/ai/suggest-tags`, {
         content: currentNote.content,
         title: currentNote.title
       }, {
