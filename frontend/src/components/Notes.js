@@ -108,7 +108,20 @@ export default function Notes() {
   }
 
   const updatedAt = currentNote.updatedAt ? format(new Date(currentNote.updatedAt), 'MMM d, h:mm a') : 'Just now';
-  const wordCount = currentNote.content ? currentNote.content.replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(w => w.length > 0).length : 0;
+  
+  // Improved word and character count logic
+  const plainText = currentNote.content 
+    ? currentNote.content
+        .replace(/<br\s*\/?>/gi, ' ') // Replace breaks with spaces
+        .replace(/<\/p>|<\/div>|<\/h\d>|<\/li>|<\/td>|<\/tr>/gi, ' ') // Replace closing tags with spaces
+        .replace(/<[^>]*>/g, '') // Strip remaining tags
+        .replace(/&nbsp;/g, ' ') // Handle non-breaking spaces
+        .replace(/\s+/g, ' ') // Collapse multiple spaces
+        .trim() 
+    : '';
+
+  const wordCount = plainText ? plainText.split(/\s+/).length : 0;
+  const charCount = plainText.length;
 
   return (
     <div className="notes-layout">
@@ -183,8 +196,8 @@ export default function Notes() {
             <div className="meta-item">
               <div className="meta-icon"><AlignLeft size={16} /></div>
               <div className="meta-content">
-                <span className="meta-label">Words</span>
-                <span className="meta-value">{wordCount} words</span>
+                <span className="meta-label">Statistics</span>
+                <span className="meta-value">{wordCount} words • {charCount} chars</span>
               </div>
             </div>
 
