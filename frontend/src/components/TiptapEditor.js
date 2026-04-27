@@ -358,22 +358,20 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
     }
   }, [selectedIndex, slashMenuOpen]);
 
-  // When note ID or initial content changes, sync the editor
+  // Only sync content when noteId changes (switching notes)
   useEffect(() => {
     if (editor && initialContent !== undefined) {
       const currentHTML = editor.getHTML();
-      // Only update if the ID changed OR if the content is truly different
-      // This prevents cursor jumping and accidental wipes
+      // Only set content if the editor is empty OR if we're switching notes
+      // This is the key to preventing character skipping/jumping
       if (currentHTML !== initialContent) {
-        // Use emitUpdate: false to prevent the editor from calling onChange 
-        // with the temporary state during initialization
         editor.commands.setContent(initialContent || '', false);
       }
       setSlashMenuOpen(false);
       setTableMenuOpen(false);
       setColorMenuOpen(false);
     }
-  }, [noteId, initialContent, editor]);
+  }, [noteId, editor]); // Removed initialContent from dependencies
 
   if (!editor) return null;
 
