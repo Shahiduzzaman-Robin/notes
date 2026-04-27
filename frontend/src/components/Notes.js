@@ -22,26 +22,21 @@ export default function Notes() {
       const note = notes.find(n => n._id === activeNoteId);
       if (!note) return;
 
-      // Only reload if:
-      // 1. We switched to a completely different note
-      // 2. We're on the same note but the content finally arrived (was undefined/null)
       const isNewNote = lastSyncedNoteIdRef.current !== activeNoteId;
-      const contentHasArrived = currentNote._id === activeNoteId && (currentNote.content === undefined || currentNote.content === null) && note.content !== undefined && note.content !== null;
+      const contentArrived = currentNote._id === activeNoteId && !currentNote.content && note.content;
 
-      if (isNewNote || contentHasArrived) {
+      if (isNewNote || contentArrived) {
         lastSyncedNoteIdRef.current = activeNoteId;
-        setIsLoading(true);
         setCurrentNote(note);
         setLastSavedNote(note);
-        const timer = setTimeout(() => setIsLoading(false), 200);
-        return () => clearTimeout(timer);
+        setIsLoading(false); // Turn off loading immediately once we have the note
       }
     } else {
       lastSyncedNoteIdRef.current = null;
       setCurrentNote({ title: '', content: '', tags: [], folder: null });
       setIsLoading(false);
     }
-  }, [activeNoteId, notes, currentNote.content, currentNote._id]);
+  }, [activeNoteId, notes, currentNote._id, currentNote.content]);
 
   // Auto-save logic
   useEffect(() => {
