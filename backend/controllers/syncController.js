@@ -7,7 +7,7 @@ exports.getBootstrapData = async (req, res) => {
     const userId = req.user._id;
 
     const [notes, noteFolders, boardFolders, boards] = await Promise.all([
-      Note.find({ user: userId }).select('-content').sort({ updatedAt: -1 }),
+      Note.find({ user: userId }).sort({ updatedAt: -1 }),
       Folder.find({ user: userId, type: 'notes' }),
       Folder.find({ user: userId, type: 'boards' }),
       Board.find({ user: userId })

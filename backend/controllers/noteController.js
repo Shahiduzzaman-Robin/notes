@@ -36,17 +36,21 @@ const createNote = async (req, res) => {
 
 const updateNote = async (req, res) => {
   try {
-    const note = await Note.findById(req.params.id);
-    if (!note) return res.status(404).json({ message: 'Note not found' });
-    if (note.user.toString() !== req.user._id.toString()) return res.status(401).json({ message: 'Not authorized' });
+    const { title, content, isPinned, tags, folder } = req.body;
+    const updates = {};
+    if (title !== undefined) updates.title = title;
+    if (content !== undefined) updates.content = content;
+    if (isPinned !== undefined) updates.isPinned = isPinned;
+    if (tags !== undefined) updates.tags = tags;
+    if (folder !== undefined) updates.folder = folder;
 
-    note.title = req.body.title || note.title;
-    note.content = req.body.content !== undefined ? req.body.content : note.content;
-    note.isPinned = req.body.isPinned !== undefined ? req.body.isPinned : note.isPinned;
-    note.tags = req.body.tags || note.tags;
-    note.folder = req.body.folder || note.folder;
+    const updatedNote = await Note.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
 
-    const updatedNote = await note.save();
+    if (!updatedNote) return res.status(404).json({ message: 'Note not found or not authorized' });
     res.json(updatedNote);
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -66,29 +66,12 @@ const useStore = create((set, get) => ({
     set({ activeTab: tab });
     localStorage.setItem('activeTab', tab);
   },
-  setActiveNoteId: async (id) => {
+  setActiveNoteId: (id) => {
     if (!id) {
       set({ activeNoteId: null });
       return;
     }
-    
     set({ activeNoteId: id, activeFolderId: null, activeBoardId: null, activeTab: 'notes' });
-    
-    // Check if we need to fetch the full note content
-    const currentNote = get().notes.find(n => n._id === id);
-    if (currentNote && currentNote.content === undefined) {
-      try {
-        const user = JSON.parse(localStorage.getItem('user'));
-        const res = await axios.get(`${API_URL}/notes/${id}`, {
-          headers: { Authorization: `Bearer ${user.token}` }
-        });
-        set((state) => ({
-          notes: state.notes.map(n => n._id === id ? res.data : n)
-        }));
-      } catch (error) {
-        console.error('Failed to fetch full note:', error);
-      }
-    }
   },
   setActiveBoardId: (id) => {
     set({ activeBoardId: id, activeFolderId: null, activeNoteId: null, activeTab: 'boards' });
