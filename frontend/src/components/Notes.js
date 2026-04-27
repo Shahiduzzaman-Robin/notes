@@ -9,6 +9,7 @@ const TiptapEditor = dynamic(() => import('./TiptapEditor'), { ssr: false });
 
 export default function Notes() {
   const { notes, updateNote, deleteNote, activeNoteId, setActiveNoteId, noteFolders } = useStore();
+  const [isLoading, setIsLoading] = useState(false);
   const [currentNote, setCurrentNote] = useState({ title: '', content: '', tags: [], folder: null });
   const [tagInput, setTagInput] = useState('');
   const [isAddingTag, setIsAddingTag] = useState(false);
@@ -19,17 +20,22 @@ export default function Notes() {
     if (activeNoteId) {
       const note = notes.find(n => n._id === activeNoteId);
       if (note) {
+        setIsLoading(true);
         setCurrentNote(note);
         setLastSavedNote(note);
+        // Simulate a tiny load time for that smooth Notion feel
+        const timer = setTimeout(() => setIsLoading(false), 300);
+        return () => clearTimeout(timer);
       }
     } else {
       setCurrentNote({ title: '', content: '', tags: [], folder: null });
+      setIsLoading(false);
     }
   }, [activeNoteId, notes]);
 
   // Auto-save logic
   useEffect(() => {
-    if (!currentNote._id) return;
+    if (!currentNote._id || isLoading) return;
     
     const timer = setTimeout(() => {
       // Hard Safety Guard: Never save empty content if we are editing an existing note.
@@ -54,7 +60,7 @@ export default function Notes() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [currentNote, lastSavedNote, updateNote]);
+  }, [currentNote, lastSavedNote, updateNote, isLoading]);
 
   const handleAddTag = (e) => {
     if (e.key === 'Enter' && tagInput.trim()) {
@@ -92,6 +98,26 @@ export default function Notes() {
       setActiveNoteId(null);
     }
   };
+
+  const NoteSkeleton = () => (
+    <div className="skeleton-container">
+      <div className="skeleton title" />
+      <div className="skeleton line short" />
+      <div className="skeleton line" />
+      <div className="skeleton line" />
+      <div className="skeleton line mid" />
+      <style jsx>{`
+        .skeleton-container { width: 100%; }
+        .skeleton { background: var(--hover-bg); border-radius: 4px; position: relative; overflow: hidden; margin-bottom: 12px; }
+        .skeleton::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); animation: shimmer 1.5s infinite; transform: translateX(-100%); }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        .title { height: 42px; width: 60%; margin-bottom: 40px; }
+        .line { height: 16px; width: 100%; }
+        .line.short { width: 40%; margin-bottom: 24px; }
+        .line.mid { width: 70%; }
+      `}</style>
+    </div>
+  );
 
   if (!currentNote._id) {
     return (
@@ -152,28 +178,34 @@ export default function Notes() {
       <div className="notes-editor-container">
         <div id="editor-scroll-container">
           <div className="notes-editor-inner">
-            <input
-              type="text"
-              className="note-title-input"
-              value={currentNote.title || ''}
-              onChange={(e) => setCurrentNote(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="Note Title"
-              style={{
-                fontSize: '32px',
-                fontWeight: '700',
-                border: 'none',
-                outline: 'none',
-                width: '100%',
-                marginBottom: '20px',
-                background: 'transparent',
-                color: 'var(--text-color)'
-              }}
-            />
-            <TiptapEditor
-              noteId={currentNote._id}
-              initialContent={currentNote.content || ''}
-              onChange={(content) => setCurrentNote(prev => ({ ...prev, content }))}
-            />
+            {isLoading ? (
+              <NoteSkeleton />
+            ) : (
+              <>
+                <input
+                  type="text"
+                  className="note-title-input"
+                  value={currentNote.title || ''}
+                  onChange={(e) => setCurrentNote(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Note Title"
+                  style={{
+                    fontSize: '32px',
+                    fontWeight: '700',
+                    border: 'none',
+                    outline: 'none',
+                    width: '100%',
+                    marginBottom: '20px',
+                    background: 'transparent',
+                    color: 'var(--text-color)'
+                  }}
+                />
+                <TiptapEditor
+                  noteId={currentNote._id}
+                  initialContent={currentNote.content || ''}
+                  onChange={(content) => setCurrentNote(prev => ({ ...prev, content }))}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>
