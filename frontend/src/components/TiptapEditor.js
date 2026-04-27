@@ -370,7 +370,7 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
       setTableMenuOpen(false);
       setColorMenuOpen(false);
     }
-  }, [noteId, editor]); // Removed initialContent from dependencies
+  }, [noteId, editor, initialContent]);
 
   if (!editor) return null;
 
