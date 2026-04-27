@@ -15,9 +15,12 @@ export default function Notes() {
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [lastSavedNote, setLastSavedNote] = useState({ title: '', content: '', tags: [], folder: null });
 
-  // Sync state with store
+  // Sync state with store - ONLY when the active note ID changes
   useEffect(() => {
     if (activeNoteId) {
+      // Check if we're already viewing this note to avoid redundant reloads
+      if (currentNote._id === activeNoteId) return;
+
       const note = notes.find(n => n._id === activeNoteId);
       if (note) {
         setIsLoading(true);
@@ -31,7 +34,7 @@ export default function Notes() {
       setCurrentNote({ title: '', content: '', tags: [], folder: null });
       setIsLoading(false);
     }
-  }, [activeNoteId, notes]);
+  }, [activeNoteId]); // Removed 'notes' from dependencies to stop reloads while typing
 
   // Auto-save logic
   useEffect(() => {
