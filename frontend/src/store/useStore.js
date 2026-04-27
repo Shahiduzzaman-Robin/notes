@@ -191,16 +191,24 @@ const useStore = create((set, get) => ({
     }
   },
   updateNote: async (id, updates) => {
+    // Optimistic Update: update local state immediately
+    set((state) => ({
+      notes: state.notes.map(n => n._id === id ? { ...n, ...updates, updatedAt: new Date().toISOString() } : n)
+    }));
+
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       const res = await axios.put(`${API_URL}/notes/${id}`, updates, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
+      
+      // Update with final data from server (id, correct timestamps, etc.)
       set((state) => ({
         notes: state.notes.map(n => n._id === id ? res.data : n)
       }));
     } catch (error) {
-      console.error(error);
+      console.error('Failed to sync note with server:', error);
+      // Optional: rollback state if critical, but for auto-save, we usually just log it
     }
   },
   deleteNote: async (id) => {
