@@ -20,19 +20,20 @@ export default function Notes() {
   useEffect(() => {
     if (activeNoteId) {
       const note = notes.find(n => n._id === activeNoteId);
-      if (!note) return; // Note not in store yet (bootstrap still loading)
+      if (!note) return;
 
-      // Only reload if we're switching to a DIFFERENT note
-      // OR if the note content just arrived (was undefined, now has content)
+      // Only reload if:
+      // 1. We switched to a completely different note
+      // 2. We're on the same note but the content finally arrived (was undefined/null)
       const isNewNote = lastSyncedNoteIdRef.current !== activeNoteId;
-      const contentJustArrived = currentNote._id === activeNoteId && currentNote.content === undefined && note.content !== undefined;
+      const contentHasArrived = currentNote._id === activeNoteId && (currentNote.content === undefined || currentNote.content === null) && note.content !== undefined && note.content !== null;
 
-      if (isNewNote || contentJustArrived) {
+      if (isNewNote || contentHasArrived) {
         lastSyncedNoteIdRef.current = activeNoteId;
         setIsLoading(true);
         setCurrentNote(note);
         setLastSavedNote(note);
-        const timer = setTimeout(() => setIsLoading(false), 250);
+        const timer = setTimeout(() => setIsLoading(false), 200);
         return () => clearTimeout(timer);
       }
     } else {
@@ -40,7 +41,7 @@ export default function Notes() {
       setCurrentNote({ title: '', content: '', tags: [], folder: null });
       setIsLoading(false);
     }
-  }, [activeNoteId, notes]); // notes is back — the ref prevents reload-while-typing
+  }, [activeNoteId, notes, currentNote.content, currentNote._id]);
 
   // Auto-save logic
   useEffect(() => {
