@@ -570,15 +570,14 @@ h1, h2, h3, h4 {
 
 
 .tiptap mark {
-  background-color: #fef08a;
-  color: #854d0e;
-  padding: 0.1em 0.3em;
-  border-radius: 3px;
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
 }
 
 [data-theme='dark'] .tiptap mark {
-  background-color: #854d0e;
-  color: #fef08a;
+  color: inherit;
 }
 
 @media (max-width: 768px) {
