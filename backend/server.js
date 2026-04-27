@@ -27,10 +27,10 @@ app.use('/api/sync', syncRoutes);
 
 
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb+srv://admin:admin123@cluster0.f2ddfrw.mongodb.net/note_taking_app?retryWrites=true&w=majority&appName=Cluster0';
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/productivity-app';
 
-if (!process.env.MONGO_URI && !process.env.MONGODB_URI) {
-  console.log('NOTICE: Using fallback MongoDB URI');
+if (!process.env.MONGO_URI && !process.env.MONGODB_URI && process.env.NODE_ENV === 'production') {
+  console.warn('WARNING: No production MongoDB URI found, falling back to local database.');
 }
 
 mongoose.connect(MONGO_URI)
