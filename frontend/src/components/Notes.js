@@ -14,27 +14,33 @@ export default function Notes() {
   const [tagInput, setTagInput] = useState('');
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [lastSavedNote, setLastSavedNote] = useState({ title: '', content: '', tags: [], folder: null });
+  const lastSyncedNoteIdRef = useRef(null);
 
-  // Sync state with store - ONLY when the active note ID changes
+  // Sync state with store
   useEffect(() => {
     if (activeNoteId) {
-      // Check if we're already viewing this note to avoid redundant reloads
-      if (currentNote._id === activeNoteId) return;
-
       const note = notes.find(n => n._id === activeNoteId);
-      if (note) {
+      if (!note) return; // Note not in store yet (bootstrap still loading)
+
+      // Only reload if we're switching to a DIFFERENT note
+      // OR if the note content just arrived (was undefined, now has content)
+      const isNewNote = lastSyncedNoteIdRef.current !== activeNoteId;
+      const contentJustArrived = currentNote._id === activeNoteId && currentNote.content === undefined && note.content !== undefined;
+
+      if (isNewNote || contentJustArrived) {
+        lastSyncedNoteIdRef.current = activeNoteId;
         setIsLoading(true);
         setCurrentNote(note);
         setLastSavedNote(note);
-        // Simulate a tiny load time for that smooth Notion feel
-        const timer = setTimeout(() => setIsLoading(false), 300);
+        const timer = setTimeout(() => setIsLoading(false), 250);
         return () => clearTimeout(timer);
       }
     } else {
+      lastSyncedNoteIdRef.current = null;
       setCurrentNote({ title: '', content: '', tags: [], folder: null });
       setIsLoading(false);
     }
-  }, [activeNoteId]); // Removed 'notes' from dependencies to stop reloads while typing
+  }, [activeNoteId, notes]); // notes is back — the ref prevents reload-while-typing
 
   // Auto-save logic
   useEffect(() => {
