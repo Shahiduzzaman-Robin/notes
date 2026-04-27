@@ -27,7 +27,11 @@ app.use('/api/sync', syncRoutes);
 
 
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/productivity-app';
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/productivity-app';
+
+if (!process.env.MONGO_URI && !process.env.MONGODB_URI && process.env.NODE_ENV === 'production') {
+  console.error('CRITICAL: No MongoDB URI found in environment variables!');
+}
 
 mongoose.connect(MONGO_URI)
   .then(() => {
