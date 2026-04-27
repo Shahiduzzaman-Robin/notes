@@ -13,7 +13,7 @@ export default function FolderView({ folderId, type }) {
   const allFolders = type === 'notes' ? noteFolders : boardFolders;
   const currentFolder = folderId 
     ? allFolders.find(f => f._id === folderId) 
-    : { name: type === 'notes' ? 'Personal Notes' : 'Management', _id: null };
+    : { name: type === 'notes' ? 'Personal Notes' : 'Workflow Tracker', _id: null };
 
   const subFolders = allFolders.filter(f => !f.parentFolder && !folderId || f.parentFolder === folderId);
   const currentNotes = notes.filter(n => !n.folder && !folderId || n.folder === folderId);
@@ -29,7 +29,7 @@ export default function FolderView({ folderId, type }) {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px', opacity: 0.5, fontSize: '14px' }}>
-        <span>{type === 'notes' ? 'Personal Notes' : 'Management'}</span>
+        <span>{type === 'notes' ? 'Personal Notes' : 'Workflow Tracker'}</span>
         {folderId && (
           <>
             <ChevronRight size={14} />
