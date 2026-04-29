@@ -154,6 +154,28 @@ export default function Notes() {
   const wordCount = plainText ? plainText.split(/\s+/).length : 0;
   const charCount = plainText.length;
 
+  // Helper to get folder path
+  const getFolderPath = () => {
+    if (!currentNote.folder) return [];
+    const path = [];
+    let currentId = currentNote.folder;
+    
+    let depth = 0;
+    while (currentId && depth < 10) {
+      const folder = noteFolders.find(f => f._id === currentId);
+      if (folder) {
+        path.unshift(folder);
+        currentId = folder.parentFolder;
+        depth++;
+      } else {
+        break;
+      }
+    }
+    return path;
+  };
+
+  const folderPath = getFolderPath();
+
   return (
     <div className="notes-layout">
       <style jsx>{`
@@ -163,6 +185,11 @@ export default function Notes() {
         .notes-editor-inner { max-width: 900px; width: 100%; padding: 60px 80px; margin: 0 auto; }
         .notes-metadata-panel { width: 300px; border-left: 1px solid var(--border-color); background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; }
         
+        .breadcrumbs { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--text-secondary); font-size: 13px; opacity: 0.8; }
+        .breadcrumb-item { cursor: pointer; transition: color 0.2s; }
+        .breadcrumb-item:hover { color: var(--text-color); text-decoration: underline; }
+        .breadcrumb-separator { opacity: 0.4; }
+
         @media (max-width: 1024px) {
           .notes-editor-inner { padding: 40px; }
           .notes-metadata-panel { width: 260px; }
@@ -198,6 +225,20 @@ export default function Notes() {
               <NoteSkeleton />
             ) : (
               <>
+                <div className="breadcrumbs">
+                  <span className="breadcrumb-item" onClick={() => { setActiveNoteId(null); setActiveFolderId(null); }}>Notes</span>
+                  {folderPath.map((folder) => (
+                    <React.Fragment key={folder._id}>
+                      <span className="breadcrumb-separator">/</span>
+                      <span 
+                        className="breadcrumb-item"
+                        onClick={() => setActiveFolderId(folder._id, 'notes')}
+                      >
+                        {folder.name}
+                      </span>
+                    </React.Fragment>
+                  ))}
+                </div>
                 <input
                   type="text"
                   className="note-title-input"

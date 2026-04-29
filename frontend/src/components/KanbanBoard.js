@@ -351,45 +351,39 @@ export default function KanbanBoard() {
   return (
     <div className="animate-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Breadcrumbs for Board */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px', overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '4px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <Kanban size={14} />
-          <span>Workflow</span>
-        </div>
-        {activeBoard?.folder && (() => {
+      <style jsx>{`
+        .breadcrumbs { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--text-secondary); font-size: 13px; opacity: 0.8; }
+        .breadcrumb-item { cursor: pointer; transition: color 0.2s; }
+        .breadcrumb-item:hover { color: var(--text-color); text-decoration: underline; }
+        .breadcrumb-separator { opacity: 0.4; }
+      `}</style>
+
+      <div className="breadcrumbs">
+        <span className="breadcrumb-item" onClick={() => { setActiveBoardId(null); useStore.getState().setActiveFolderId(null, 'boards'); }}>Workflow</span>
+        {(() => {
           const path = [];
           let currentId = activeBoard.folder;
-          while (currentId) {
+          let depth = 0;
+          while (currentId && depth < 10) {
             const folder = boardFolders.find(f => f._id === currentId);
             if (folder) {
               path.unshift(folder);
               currentId = folder.parentFolder;
+              depth++;
             } else break;
           }
-          return (
-            <>
-              {path.map(f => (
-                <div key={f._id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <ChevronRight size={12} style={{ opacity: 0.5 }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Folder size={14} style={{ color: 'var(--primary)', opacity: 0.8 }} />
-                    <span>{f.name}</span>
-                  </div>
-                </div>
-              ))}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ChevronRight size={12} style={{ opacity: 0.5 }} />
-                <span style={{ color: 'var(--text-color)', fontWeight: 500 }}>{activeBoard.name}</span>
-              </div>
-            </>
-          );
+          return path.map(f => (
+            <React.Fragment key={f._id}>
+              <span className="breadcrumb-separator">/</span>
+              <span 
+                className="breadcrumb-item"
+                onClick={() => useStore.getState().setActiveFolderId(f._id, 'boards')}
+              >
+                {f.name}
+              </span>
+            </React.Fragment>
+          ));
         })()}
-        {!activeBoard?.folder && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ChevronRight size={12} style={{ opacity: 0.5 }} />
-            <span style={{ color: 'var(--text-color)', fontWeight: 500 }}>{activeBoard?.name}</span>
-          </div>
-        )}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', position: 'relative', zIndex: 50 }}>
