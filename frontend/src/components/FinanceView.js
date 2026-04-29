@@ -75,21 +75,21 @@ export default function FinanceView() {
             <div className="stat-icon"><Wallet size={24} /></div>
             <div className="stat-info">
               <span className="stat-label">Total Balance</span>
-              <h2 className="stat-value">${stats.balance.toLocaleString()}</h2>
+              <h2 className="stat-value">৳{stats.balance.toLocaleString()}</h2>
             </div>
           </div>
           <div className="stat-card income">
             <div className="stat-icon"><TrendingUp size={24} /></div>
             <div className="stat-info">
               <span className="stat-label">Total Income</span>
-              <h2 className="stat-value text-success">+${stats.income.toLocaleString()}</h2>
+              <h2 className="stat-value text-success">+৳{stats.income.toLocaleString()}</h2>
             </div>
           </div>
           <div className="stat-card expense">
             <div className="stat-icon"><TrendingDown size={24} /></div>
             <div className="stat-info">
               <span className="stat-label">Total Expenses</span>
-              <h2 className="stat-value text-danger">-${stats.expenses.toLocaleString()}</h2>
+              <h2 className="stat-value text-danger">-৳{stats.expenses.toLocaleString()}</h2>
             </div>
           </div>
         </div>
@@ -172,7 +172,7 @@ export default function FinanceView() {
                     </div>
                   </div>
                   <div className={`tx-amount ${tx.type}`}>
-                    {tx.type === 'income' ? '+' : '-'}${tx.amount.toLocaleString()}
+                    {tx.type === 'income' ? '+' : '-'}৳{tx.amount.toLocaleString()}
                   </div>
                   <button className="delete-tx" onClick={() => deleteTransaction(tx._id)}>
                     <Trash2 size={16} />
