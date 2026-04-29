@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '../../lib/db/mongodb';
-import { verifyAuth } from '../../lib/db/auth';
-import Task from '../../models/Task';
+import dbConnect from '@/lib/db/mongodb';
+import { verifyAuth } from '@/lib/db/auth';
+import Task from '@/models/Task';
 
 export async function POST(req) {
   try {

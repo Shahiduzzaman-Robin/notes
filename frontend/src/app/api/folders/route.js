@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '../../lib/db/mongodb';
-import { verifyAuth } from '../../lib/db/auth';
-import Folder from '../../models/Folder';
+import dbConnect from '@/lib/db/mongodb';
+import { verifyAuth } from '@/lib/db/auth';
+import Folder from '@/models/Folder';
 
 export async function GET(req) {
   try {
