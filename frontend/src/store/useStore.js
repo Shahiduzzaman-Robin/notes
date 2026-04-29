@@ -38,10 +38,11 @@ const useStore = create((set, get) => ({
       console.log(`Sync completed in ${Date.now() - start}ms`);
 
       set({ 
-        notes: res.data.notes,
-        noteFolders: res.data.noteFolders,
-        boardFolders: res.data.boardFolders,
-        boards: res.data.boards,
+        notes: res.data.notes || [],
+        noteFolders: (res.data.folders || []).filter(f => f.type === 'notes'),
+        boardFolders: (res.data.folders || []).filter(f => f.type === 'boards'),
+        boards: res.data.boards || [],
+        tasks: res.data.tasks || [],
         isLoading: false,
         isLoadingFolders: false,
         isLoadingBoards: false
