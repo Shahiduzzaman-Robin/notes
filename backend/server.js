@@ -48,10 +48,15 @@ if (!process.env.MONGO_URI && !process.env.MONGODB_URI && process.env.NODE_ENV =
   console.warn('WARNING: No production MongoDB URI found, falling back to local database.');
 }
 
-// Connect to MongoDB
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// MongoDB Connection with improved logging for Vercel
+mongoose.connection.on('connected', () => console.log('✅ MongoDB connected successfully'));
+mongoose.connection.on('error', (err) => console.error('❌ MongoDB connection error:', err));
+mongoose.connection.on('disconnected', () => console.log('⚠️ MongoDB disconnected'));
+
+mongoose.connect(MONGO_URI, {
+  serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds instead of 30
+})
+.catch(err => console.error('❌ Initial MongoDB connection failed:', err));
 
 // Only start the server if not running on Vercel
 if (process.env.NODE_ENV !== 'production') {
