@@ -23,8 +23,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const hostname = typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1';
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || `http://${hostname}:5005/api`;
+      const apiUrl = '/api';
       const { data } = await axios.post(`${apiUrl}/auth/login`, { email, password });
       setUser(data);
       localStorage.setItem('user', JSON.stringify(data));
@@ -37,7 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5005/api';
+      const apiUrl = '/api';
       const { data } = await axios.post(`${apiUrl}/auth/register`, { name, email, password });
       setUser(data);
       localStorage.setItem('user', JSON.stringify(data));
@@ -50,8 +49,7 @@ export const AuthProvider = ({ children }) => {
 
   const changePassword = async (currentPassword, newPassword) => {
     try {
-      const hostname = typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1';
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || `http://${hostname}:5005/api`;
+      const apiUrl = '/api';
       await axios.put(`${apiUrl}/auth/change-password`, 
         { currentPassword, newPassword },
         { headers: { Authorization: `Bearer ${user.token}` } }
