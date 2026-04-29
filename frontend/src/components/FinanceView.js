@@ -57,6 +57,10 @@ export default function FinanceView() {
         return txDate.toDateString() === now.toDateString();
       } else if (filterRange === 'month') {
         return txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear();
+      } else if (filterRange === 'last30') {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(now.getDate() - 30);
+        return txDate >= thirtyDaysAgo && txDate <= now;
       } else if (filterRange === 'year') {
         return txDate.getFullYear() === now.getFullYear();
       }
@@ -147,6 +151,7 @@ export default function FinanceView() {
               <select value={filterRange} onChange={(e) => setFilterRange(e.target.value)}>
                 <option value="all">All Time</option>
                 <option value="today">Today</option>
+                <option value="last30">Last 30 Days</option>
                 <option value="month">This Month</option>
                 <option value="year">This Year</option>
               </select>
