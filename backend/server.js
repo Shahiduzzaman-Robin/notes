@@ -33,11 +33,16 @@ if (!process.env.MONGO_URI && !process.env.MONGODB_URI && process.env.NODE_ENV =
   console.warn('WARNING: No production MongoDB URI found, falling back to local database.');
 }
 
+// Connect to MongoDB
 mongoose.connect(MONGO_URI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  })
+  .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
+
+// Only start the server if not running on Vercel
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
