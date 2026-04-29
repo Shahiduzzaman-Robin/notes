@@ -16,6 +16,7 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import useStore from '../store/useStore';
 import { format } from 'date-fns';
+import Modal from './Modal';
 
 export default function FinanceView() {
   const { theme } = useTheme();
@@ -26,6 +27,8 @@ export default function FinanceView() {
   const [category, setCategory] = useState('General');
   const [searchQuery, setSearchQuery] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [txToDelete, setTxToDelete] = useState(null);
 
   // Categories list
   const categories = ['General', 'Food', 'Transport', 'Salary', 'Shopping', 'Rent', 'Entertainment', 'Health', 'Travel'];
@@ -174,7 +177,10 @@ export default function FinanceView() {
                   <div className={`tx-amount ${tx.type}`}>
                     {tx.type === 'income' ? '+' : '-'}৳{tx.amount.toLocaleString()}
                   </div>
-                  <button className="delete-tx" onClick={() => deleteTransaction(tx._id)}>
+                  <button className="delete-tx" onClick={() => {
+                    setTxToDelete(tx);
+                    setIsDeleteModalOpen(true);
+                  }}>
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -183,6 +189,34 @@ export default function FinanceView() {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Transaction?"
+        footer={
+          <>
+            <button className="btn-secondary" onClick={() => setIsDeleteModalOpen(false)}>Cancel</button>
+            <button className="btn-danger" onClick={async () => {
+              if (txToDelete) {
+                await deleteTransaction(txToDelete._id);
+                setIsDeleteModalOpen(false);
+                setTxToDelete(null);
+              }
+            }}>Delete</button>
+          </>
+        }
+      >
+        <p>Are you sure you want to delete this transaction?</p>
+        {txToDelete && (
+          <div className="delete-preview">
+            <span className="preview-desc">{txToDelete.description}</span>
+            <span className={`preview-amount ${txToDelete.type}`}>
+              {txToDelete.type === 'income' ? '+' : '-'}৳{txToDelete.amount.toLocaleString()}
+            </span>
+          </div>
+        )}
+      </Modal>
 
       <style jsx>{`
         .finance-container {
@@ -414,6 +448,40 @@ export default function FinanceView() {
           gap: 12px;
           color: var(--text-secondary);
         }
+
+        .btn-secondary {
+          background: var(--hover-bg);
+          border: 1px solid var(--border-color);
+          color: var(--text-color);
+          padding: 8px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+
+        .btn-danger {
+          background: #f43f5e;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+
+        .delete-preview {
+          margin-top: 12px;
+          padding: 12px;
+          background: var(--hover-bg);
+          border-radius: 8px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .preview-desc { font-weight: 500; }
+        .preview-amount.income { color: #10b981; font-weight: 700; }
+        .preview-amount.expense { color: #f43f5e; font-weight: 700; }
 
         @media (max-width: 768px) {
           .quick-add-form { flex-direction: column; }
