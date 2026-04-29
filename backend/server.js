@@ -18,6 +18,11 @@ app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
 
+// Root route for health check
+app.get('/', (req, res) => {
+  res.send('Productivity App API is running...');
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/boards', boardRoutes);
