@@ -29,16 +29,47 @@ export default function FinanceView() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [txToDelete, setTxToDelete] = useState(null);
+  const [filterRange, setFilterRange] = useState('month');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterType, setFilterType] = useState('all');
 
   // Categories list
   const categories = ['General', 'Food', 'Transport', 'Salary', 'Shopping', 'Rent', 'Entertainment', 'Health', 'Travel'];
 
-  // Analytics
+  // Apply filters to transactions
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(t => {
+      // Search filter
+      const matchesSearch = t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           t.category.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchesSearch) return false;
+
+      // Category filter
+      if (filterCategory !== 'all' && t.category !== filterCategory) return false;
+
+      // Type filter
+      if (filterType !== 'all' && t.type !== filterType) return false;
+
+      // Time range filter
+      const txDate = new Date(t.date);
+      const now = new Date();
+      if (filterRange === 'today') {
+        return txDate.toDateString() === now.toDateString();
+      } else if (filterRange === 'month') {
+        return txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear();
+      } else if (filterRange === 'year') {
+        return txDate.getFullYear() === now.getFullYear();
+      }
+      return true;
+    });
+  }, [transactions, searchQuery, filterRange, filterCategory, filterType]);
+
+  // Analytics based on FILTERED transactions
   const stats = useMemo(() => {
-    const income = transactions
+    const income = filteredTransactions
       .filter(t => t.type === 'income')
       .reduce((sum, t) => sum + t.amount, 0);
-    const expenses = transactions
+    const expenses = filteredTransactions
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
     return {
@@ -46,12 +77,7 @@ export default function FinanceView() {
       expenses,
       balance: income - expenses
     };
-  }, [transactions]);
-
-  const filteredTransactions = transactions.filter(t => 
-    t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  }, [filteredTransactions]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -107,11 +133,40 @@ export default function FinanceView() {
                 <Search size={16} />
                 <input 
                   type="text" 
-                  placeholder="Search transactions..." 
+                  placeholder="Search..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
+            </div>
+          </div>
+
+          <div className="filter-bar">
+            <div className="filter-group">
+              <Calendar size={14} />
+              <select value={filterRange} onChange={(e) => setFilterRange(e.target.value)}>
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <TagIcon size={14} />
+              <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+                <option value="all">All Categories</option>
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <Filter size={14} />
+              <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+                <option value="all">All Types</option>
+                <option value="income">Income Only</option>
+                <option value="expense">Expense Only</option>
+              </select>
             </div>
           </div>
 
@@ -318,6 +373,35 @@ export default function FinanceView() {
           color: var(--text-color);
           font-size: 13px;
           width: 100%;
+        }
+
+        .filter-bar {
+          display: flex;
+          gap: 16px;
+          margin-bottom: 24px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid var(--border-color);
+        }
+
+        .filter-group {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--text-secondary);
+        }
+
+        .filter-group select {
+          background: transparent;
+          border: none;
+          color: var(--text-color);
+          font-size: 13px;
+          font-weight: 600;
+          outline: none;
+          cursor: pointer;
+        }
+
+        .filter-group select:hover {
+          color: var(--primary);
         }
 
         .quick-add-form {
