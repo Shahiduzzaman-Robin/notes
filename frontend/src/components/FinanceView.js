@@ -29,7 +29,7 @@ export default function FinanceView() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [txToDelete, setTxToDelete] = useState(null);
-  const [filterRange, setFilterRange] = useState('month');
+  const [filterRange, setFilterRange] = useState('last50');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterType, setFilterType] = useState('all');
   const [startDate, setStartDate] = useState('');
@@ -63,6 +63,10 @@ export default function FinanceView() {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(now.getDate() - 30);
         return txDate >= thirtyDaysAgo && txDate <= now;
+      } else if (filterRange === 'last50') {
+        const fiftyDaysAgo = new Date();
+        fiftyDaysAgo.setDate(now.getDate() - 50);
+        return txDate >= fiftyDaysAgo && txDate <= now;
       } else if (filterRange === 'year') {
         return txDate.getFullYear() === now.getFullYear();
       } else if (filterRange === 'custom') {
@@ -161,6 +165,7 @@ export default function FinanceView() {
                 <option value="all">All Time</option>
                 <option value="today">Today</option>
                 <option value="last30">Last 30 Days</option>
+                <option value="last50">Last 50 Days</option>
                 <option value="month">This Month</option>
                 <option value="year">This Year</option>
                 <option value="custom">Custom Range</option>
