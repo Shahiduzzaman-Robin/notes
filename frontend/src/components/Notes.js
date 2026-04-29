@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import useStore from '../store/useStore';
 import { Trash2, FileText, Clock, AlignLeft, Tag, X, Folder, Download } from 'lucide-react';
 import { format } from 'date-fns';
