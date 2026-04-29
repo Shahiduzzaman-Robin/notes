@@ -1,33 +1,33 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { verifyAuth } from '@/lib/db/auth';
-import Note from '@/models/Note';
+import Board from '@/models/Board';
 
+// PUT (Update) a board
 export async function PUT(req, { params }) {
   try {
     const user = await verifyAuth(req);
     if (!user) return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
 
     const { id } = await params;
-    const updates = await req.json();
+    const { name, folderId } = await req.json();
 
     await dbConnect();
-    const updatedNote = await Note.findOneAndUpdate(
+    const board = await Board.findOneAndUpdate(
       { _id: id, user: user._id },
-      { $set: updates },
-      { returnDocument: 'after', runValidators: true }
+      { name, folder: folderId },
+      { new: true }
     );
 
-    if (!updatedNote) {
-      return NextResponse.json({ message: 'Note not found' }, { status: 404 });
-    }
+    if (!board) return NextResponse.json({ message: 'Board not found' }, { status: 404 });
 
-    return NextResponse.json(updatedNote);
+    return NextResponse.json(board);
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
 
+// DELETE a board
 export async function DELETE(req, { params }) {
   try {
     const user = await verifyAuth(req);
@@ -36,13 +36,11 @@ export async function DELETE(req, { params }) {
     const { id } = await params;
 
     await dbConnect();
-    const deletedNote = await Note.findOneAndDelete({ _id: id, user: user._id });
+    const board = await Board.findOneAndDelete({ _id: id, user: user._id });
 
-    if (!deletedNote) {
-      return NextResponse.json({ message: 'Note not found' }, { status: 404 });
-    }
+    if (!board) return NextResponse.json({ message: 'Board not found' }, { status: 404 });
 
-    return NextResponse.json({ message: 'Note deleted successfully' });
+    return NextResponse.json({ message: 'Board removed' });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

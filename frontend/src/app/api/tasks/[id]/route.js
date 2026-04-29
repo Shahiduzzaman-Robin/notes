@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { verifyAuth } from '@/lib/db/auth';
-import Note from '@/models/Note';
+import Task from '@/models/Task';
 
+// PUT (Update) a task
 export async function PUT(req, { params }) {
   try {
     const user = await verifyAuth(req);
@@ -12,22 +13,21 @@ export async function PUT(req, { params }) {
     const updates = await req.json();
 
     await dbConnect();
-    const updatedNote = await Note.findOneAndUpdate(
+    const task = await Task.findOneAndUpdate(
       { _id: id, user: user._id },
       { $set: updates },
-      { returnDocument: 'after', runValidators: true }
+      { new: true }
     );
 
-    if (!updatedNote) {
-      return NextResponse.json({ message: 'Note not found' }, { status: 404 });
-    }
+    if (!task) return NextResponse.json({ message: 'Task not found' }, { status: 404 });
 
-    return NextResponse.json(updatedNote);
+    return NextResponse.json(task);
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
 
+// DELETE a task
 export async function DELETE(req, { params }) {
   try {
     const user = await verifyAuth(req);
@@ -36,13 +36,11 @@ export async function DELETE(req, { params }) {
     const { id } = await params;
 
     await dbConnect();
-    const deletedNote = await Note.findOneAndDelete({ _id: id, user: user._id });
+    const task = await Task.findOneAndDelete({ _id: id, user: user._id });
 
-    if (!deletedNote) {
-      return NextResponse.json({ message: 'Note not found' }, { status: 404 });
-    }
+    if (!task) return NextResponse.json({ message: 'Task not found' }, { status: 404 });
 
-    return NextResponse.json({ message: 'Note deleted successfully' });
+    return NextResponse.json({ message: 'Task removed' });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

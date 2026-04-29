@@ -9,7 +9,7 @@ export async function PUT(req, { params }) {
     const user = await verifyAuth(req);
     if (!user) return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
 
-    const { id } = params;
+    const { id } = await params;
     const { description, amount, type, category, date } = await req.json();
 
     await dbConnect();
@@ -33,7 +33,7 @@ export async function DELETE(req, { params }) {
     const user = await verifyAuth(req);
     if (!user) return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
 
-    const { id } = params;
+    const { id } = await params;
 
     await dbConnect();
     const transaction = await Transaction.findOneAndDelete({ _id: id, user: user._id });

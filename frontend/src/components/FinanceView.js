@@ -13,16 +13,19 @@ import {
   Calendar,
   Tag as TagIcon
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 import useStore from '../store/useStore';
 import { format } from 'date-fns';
 
 export default function FinanceView() {
+  const { theme } = useTheme();
   const { transactions = [], addTransaction, deleteTransaction } = useStore();
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('expense');
   const [category, setCategory] = useState('General');
   const [searchQuery, setSearchQuery] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   // Categories list
   const categories = ['General', 'Food', 'Transport', 'Salary', 'Shopping', 'Rent', 'Entertainment', 'Health', 'Travel'];
@@ -56,15 +59,16 @@ export default function FinanceView() {
       amount: parseFloat(amount),
       type,
       category,
-      date: new Date()
+      date: new Date(date)
     });
 
     setDescription('');
     setAmount('');
+    setDate(new Date().toISOString().split('T')[0]);
   };
 
   return (
-    <div className="finance-container">
+    <div className="finance-container" style={{ '--calendar-invert': theme === 'dark' ? 1 : 0 }}>
       <header className="finance-header">
         <div className="stats-grid">
           <div className="stat-card balance">
@@ -122,6 +126,12 @@ export default function FinanceView() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
+            />
+            <input 
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="date-input"
             />
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
@@ -298,6 +308,11 @@ export default function FinanceView() {
 
         .quick-add-form input:first-child { flex: 2; }
         .quick-add-form input:nth-child(2) { flex: 1; }
+
+        .date-input::-webkit-calendar-picker-indicator {
+          filter: invert(var(--calendar-invert, 1));
+          cursor: pointer;
+        }
 
         .type-toggle {
           display: flex;
