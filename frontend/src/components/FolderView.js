@@ -5,12 +5,12 @@ import useStore from '../store/useStore';
 import Modal from './Modal';
 
 export default function FolderView({ folderId, type }) {
-  const { notes, boards, noteFolders, boardFolders, setActiveNoteId, setActiveBoardId, setActiveFolderId, addNote, createBoard } = useStore();
+  const { notes = [], boards = [], noteFolders = [], boardFolders = [], setActiveNoteId, setActiveBoardId, setActiveFolderId, addNote, createBoard } = useStore();
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
   const [newName, setNewName] = useState('');
   
-  const allFolders = type === 'notes' ? noteFolders : boardFolders;
+  const allFolders = (type === 'notes' ? noteFolders : boardFolders) || [];
   const currentFolder = folderId 
     ? allFolders.find(f => f._id === folderId) 
     : { name: type === 'notes' ? 'Personal Notes' : 'Workflow Tracker', _id: null };
@@ -19,7 +19,7 @@ export default function FolderView({ folderId, type }) {
   const currentNotes = notes.filter(n => !n.folder && !folderId || n.folder === folderId);
   const currentBoards = boards.filter(b => !b.folder && !folderId || b.folder === folderId);
 
-  if (!currentFolder && folderId) return null;
+  if (!currentFolder && folderId) return <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>Folder not found</div>;
 
   const stripHtml = (html) => {
     if (!html) return '';
