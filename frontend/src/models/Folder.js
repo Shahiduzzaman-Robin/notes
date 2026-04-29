@@ -1,0 +1,14 @@
+import mongoose from 'mongoose';
+
+const folderSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  parentFolder: { type: mongoose.Schema.Types.ObjectId, ref: 'Folder', default: null },
+  type: { type: String, enum: ['notes', 'boards'], default: 'notes' }
+}, { timestamps: true });
+
+folderSchema.index({ user: 1 });
+folderSchema.index({ parentFolder: 1 });
+folderSchema.index({ type: 1 });
+
+export default mongoose.models.Folder || mongoose.model('Folder', folderSchema);
