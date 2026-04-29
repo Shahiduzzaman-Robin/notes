@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Folder, ChevronRight, ChevronDown, FileText, Plus, MoreVertical, Edit2, Trash2, FolderPlus, Kanban } from 'lucide-react';
 import useStore from '../store/useStore';
 import Modal from './Modal';

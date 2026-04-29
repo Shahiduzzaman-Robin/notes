@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useStore from '../store/useStore';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Plus, MoreVertical, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2, Check, X, Settings, Kanban, Folder } from 'lucide-react';

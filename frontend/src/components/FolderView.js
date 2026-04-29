@@ -1,6 +1,6 @@
 "use client";
 import { FileText, Kanban, Plus, ChevronRight, Folder } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import useStore from '../store/useStore';
 import Modal from './Modal';
 
