@@ -4,7 +4,7 @@ import { Folder, ChevronRight, ChevronDown, FileText, Plus, MoreVertical, Edit2,
 import useStore from '../store/useStore';
 import Modal from './Modal';
 
-export default function FolderTree({ folders, notes = [], boards = [], parentId = null, depth = 0, type = 'all' }) {
+export default function FolderTree({ folders = [], notes = [], boards = [], parentId = null, depth = 0, type = 'all' }) {
   const { 
     activeNoteId, setActiveNoteId, addNote, 
     activeBoardId, setActiveBoardId, createBoard,
