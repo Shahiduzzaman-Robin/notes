@@ -1,7 +1,23 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { verifyAuth } from '@/lib/db/auth';
 import Board from '@/models/Board';
+
+// GET all boards for the user
+export async function GET(req) {
+  try {
+    const user = await verifyAuth(req);
+    if (!user) return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
+
+    await dbConnect();
+    const boards = await Board.find({ user: user._id }).sort({ updatedAt: -1 });
+
+    return NextResponse.json(boards);
+  } catch (error) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}
 
 export async function POST(req) {
   try {

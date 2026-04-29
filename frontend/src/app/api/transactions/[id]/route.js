@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { verifyAuth } from '@/lib/db/auth';
@@ -5,6 +6,7 @@ import Transaction from '@/models/Transaction';
 
 // PUT (Update) a transaction
 export async function PUT(req, { params }) {
+  console.log('📝 PUT Transaction API hit');
   try {
     const user = await verifyAuth(req);
     if (!user) return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
@@ -29,6 +31,7 @@ export async function PUT(req, { params }) {
 
 // DELETE a transaction
 export async function DELETE(req, { params }) {
+  console.log('🗑️ DELETE Transaction API hit');
   try {
     const user = await verifyAuth(req);
     if (!user) return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
