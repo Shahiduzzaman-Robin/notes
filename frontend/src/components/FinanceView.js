@@ -32,6 +32,8 @@ export default function FinanceView() {
   const [filterRange, setFilterRange] = useState('month');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterType, setFilterType] = useState('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   // Categories list
   const categories = ['General', 'Food', 'Transport', 'Salary', 'Shopping', 'Rent', 'Entertainment', 'Health', 'Travel'];
@@ -63,10 +65,17 @@ export default function FinanceView() {
         return txDate >= thirtyDaysAgo && txDate <= now;
       } else if (filterRange === 'year') {
         return txDate.getFullYear() === now.getFullYear();
+      } else if (filterRange === 'custom') {
+        if (!startDate || !endDate) return true;
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        return txDate >= start && txDate <= end;
       }
       return true;
     });
-  }, [transactions, searchQuery, filterRange, filterCategory, filterType]);
+  }, [transactions, searchQuery, filterRange, filterCategory, filterType, startDate, endDate]);
 
   // Analytics based on FILTERED transactions
   const stats = useMemo(() => {
@@ -154,8 +163,29 @@ export default function FinanceView() {
                 <option value="last30">Last 30 Days</option>
                 <option value="month">This Month</option>
                 <option value="year">This Year</option>
+                <option value="custom">Custom Range</option>
               </select>
             </div>
+
+            {filterRange === 'custom' && (
+              <div className="custom-date-range">
+                <input 
+                  type="date" 
+                  value={startDate} 
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="date-input"
+                  title="From Date"
+                />
+                <span className="date-sep">to</span>
+                <input 
+                  type="date" 
+                  value={endDate} 
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="date-input"
+                  title="To Date"
+                />
+              </div>
+            )}
 
             <div className="filter-group">
               <TagIcon size={14} />
@@ -407,6 +437,37 @@ export default function FinanceView() {
 
         .filter-group select:hover {
           color: var(--primary);
+        }
+
+        .custom-date-range {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: var(--hover-bg);
+          padding: 4px 12px;
+          border-radius: 10px;
+          border: 1px solid var(--border-color);
+          animation: slideIn 0.2s ease-out;
+        }
+
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(-10px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+
+        .custom-date-range input {
+          background: transparent;
+          border: none;
+          color: var(--text-color);
+          font-size: 12px;
+          font-weight: 500;
+          outline: none;
+        }
+
+        .date-sep {
+          font-size: 12px;
+          color: var(--text-secondary);
+          font-weight: 600;
         }
 
         .quick-add-form {
