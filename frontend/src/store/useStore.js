@@ -9,6 +9,7 @@ const useStore = create((set, get) => ({
   tasks: [],
   noteFolders: [],
   boardFolders: [],
+  transactions: [],
   activeBoardId: null,
   activeNoteId: null,
   activeFolderId: null,
@@ -43,6 +44,7 @@ const useStore = create((set, get) => ({
         boardFolders: (res.data.folders || []).filter(f => f.type === 'boards'),
         boards: res.data.boards || [],
         tasks: res.data.tasks || [],
+        transactions: res.data.transactions || [],
         isLoading: false,
         isLoadingFolders: false,
         isLoadingBoards: false
@@ -337,6 +339,56 @@ const useStore = create((set, get) => ({
       await axios.put(`${API_URL}/tasks/reorder`, { tasks: payload }, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
+  // Transaction Actions
+  fetchTransactions: async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const res = await axios.get(`${API_URL}/transactions`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      set({ transactions: res.data });
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  addTransaction: async (txData) => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const res = await axios.post(`${API_URL}/transactions`, txData, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      set((state) => ({ transactions: [res.data, ...state.transactions] }));
+      return res.data;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  updateTransaction: async (id, updates) => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const res = await axios.put(`${API_URL}/transactions/${id}`, updates, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      set((state) => ({
+        transactions: state.transactions.map(tx => tx._id === id ? res.data : tx)
+      }));
+      return res.data;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  deleteTransaction: async (id) => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      await axios.delete(`${API_URL}/transactions/${id}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      set((state) => ({ transactions: state.transactions.filter(tx => tx._id !== id) }));
     } catch (error) {
       console.error(error);
     }

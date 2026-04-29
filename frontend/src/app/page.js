@@ -15,7 +15,8 @@ import {
   Plus,
   FolderPlus,
   Menu,
-  X
+  X,
+  DollarSign
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import useStore from '../store/useStore';
@@ -25,6 +26,7 @@ import FolderTree from '../components/FolderTree';
 import FolderView from '../components/FolderView';
 import Modal from '../components/Modal';
 import CommandPalette from '../components/CommandPalette';
+import FinanceView from '../components/FinanceView';
 
 export default function Home() {
   const { user, loading, logout, changePassword } = useAuth();
@@ -447,6 +449,19 @@ export default function Home() {
               <FolderTree folders={boardFolders} notes={notes} boards={boards} type="boards" />
             )}
           </div>
+
+          <div className={styles.sidebarDivider} />
+          
+          <div className={styles.sectionLabel}>Finance</div>
+          <div 
+            className={`${styles.navItem} ${activeTab === 'finance' ? styles.active : ''}`}
+            onClick={() => handleTabChange('finance')}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <DollarSign size={18} />
+              <span>Personal Finance</span>
+            </div>
+          </div>
         </nav>
 
         <div className={styles.userProfile}>
@@ -497,8 +512,10 @@ export default function Home() {
             <FolderView folderId={activeFolderId} type={activeTab} />
           ) : activeTab === 'notes' ? (
             <Notes />
-          ) : (
+          ) : activeTab === 'boards' ? (
             <KanbanBoard />
+          ) : (
+            <FinanceView />
           )}
         </main>
       </div>

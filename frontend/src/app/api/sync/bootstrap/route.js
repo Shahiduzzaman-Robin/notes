@@ -5,6 +5,7 @@ import Note from '@/models/Note';
 import Board from '@/models/Board';
 import Folder from '@/models/Folder';
 import Task from '@/models/Task';
+import Transaction from '@/models/Transaction';
 
 export async function GET(req) {
   console.log('🚀 Bootstrap API started');
@@ -20,20 +21,22 @@ export async function GET(req) {
 
     // Fetch all data in parallel
     console.log('📦 Querying all collections...');
-    const [notes, boards, folders, tasks] = await Promise.all([
+    const [notes, boards, folders, tasks, transactions] = await Promise.all([
       Note.find({ user: user._id }).sort({ updatedAt: -1 }).lean(),
       Board.find({ user: user._id }).sort({ updatedAt: -1 }).lean(),
       Folder.find({ user: user._id }).sort({ updatedAt: -1 }).lean(),
-      Task.find({ user: user._id }).lean()
+      Task.find({ user: user._id }).lean(),
+      Transaction.find({ user: user._id }).sort({ date: -1 }).lean()
     ]);
 
-    console.log(`✅ Success: Found ${notes.length} notes, ${boards.length} boards, ${folders.length} folders, ${tasks.length} tasks`);
+    console.log(`✅ Success: Found ${notes.length} notes, ${boards.length} boards, ${folders.length} folders, ${tasks.length} tasks, ${transactions.length} transactions`);
 
     return NextResponse.json({
       notes,
       boards,
       folders,
-      tasks
+      tasks,
+      transactions
     });
   } catch (error) {
     console.error('❌ FATAL Bootstrap API error:', error.message);
