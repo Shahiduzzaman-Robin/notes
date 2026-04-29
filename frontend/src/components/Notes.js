@@ -163,6 +163,17 @@ export default function Notes() {
         .notes-editor-inner { max-width: 900px; width: 100%; padding: 60px 80px; margin: 0 auto; }
         .notes-metadata-panel { width: 300px; border-left: 1px solid var(--border-color); background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; }
         
+        @media (max-width: 1024px) {
+          .notes-editor-inner { padding: 40px; }
+          .notes-metadata-panel { width: 260px; }
+        }
+
+        @media (max-width: 768px) {
+          .notes-metadata-panel { display: none; }
+          .notes-editor-inner { padding: 20px 15px; }
+          .note-title-input { font-size: 24px !important; }
+        }
+
         .meta-group { display: flex; flex-direction: column; gap: 16px; }
         .meta-item { display: flex; align-items: center; gap: 12px; }
         .meta-icon { color: var(--text-secondary); opacity: 0.7; }
