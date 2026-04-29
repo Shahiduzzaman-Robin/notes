@@ -15,20 +15,30 @@ const syncRoutes = require('./routes/syncRoutes');
 const app = express();
 
 app.use(morgan('dev'));
-app.use(cors());
+app.use(cors({
+  origin: ['https://noteall.vercel.app', 'http://localhost:3000'],
+  credentials: true
+}));
 app.use(express.json());
 
-// Root route for health check
-app.get('/', (req, res) => {
-  res.send('Productivity App API is running...');
-});
+// Health check
+app.get('/', (req, res) => res.status(200).json({ status: 'ok', message: 'Backend is live' }));
+app.get('/api', (req, res) => res.status(200).json({ status: 'ok', message: 'API is live' }));
 
-app.use('/api/auth', authRoutes);
-app.use('/api/notes', noteRoutes);
-app.use('/api/boards', boardRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/folders', folderRoutes);
-app.use('/api/sync', syncRoutes);
+// Use a function to mount routes both with and without /api prefix for maximum compatibility
+const mountRoutes = (router) => {
+  router.use('/auth', authRoutes);
+  router.use('/notes', noteRoutes);
+  router.use('/boards', boardRoutes);
+  router.use('/tasks', taskRoutes);
+  router.use('/folders', folderRoutes);
+  router.use('/sync', syncRoutes);
+};
+
+mountRoutes(app); // Mount at root
+const apiRouter = express.Router();
+mountRoutes(apiRouter);
+app.use('/api', apiRouter); // Also mount at /api
 
 
 const PORT = process.env.PORT || 5000;
