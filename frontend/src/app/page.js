@@ -27,7 +27,7 @@ import Modal from '../components/Modal';
 import CommandPalette from '../components/CommandPalette';
 
 export default function Home() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, changePassword } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { 
     globalSearchQuery, setGlobalSearchQuery, 
@@ -37,7 +37,11 @@ export default function Home() {
     activeFolderId, setActiveFolderId, activeTab, setActiveTab,
     bootstrap, isLoading
   } = useStore();
+  
   const router = useRouter();
+  
+  // State for modals and UI
+  const [mounted, setMounted] = useState(false);
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
@@ -50,20 +54,29 @@ export default function Home() {
   const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
-  const { changePassword } = useAuth();
 
+  // 1. Handle Mounting (SSR safety)
   useEffect(() => {
-    if (!loading && !user) {
+    setMounted(true);
+  }, []);
+
+  // 2. Handle Auth and Bootstrap
+  useEffect(() => {
+    if (!mounted || loading) return;
+
+    if (!user) {
       router.push('/login');
-    } else if (user) {
+    } else {
       bootstrap();
     }
-  }, [user, loading, router, bootstrap]);
+  }, [user, loading, router, bootstrap, mounted]);
 
+  // 3. Handle Saved Tab
   useEffect(() => {
+    if (!mounted) return;
     const savedTab = localStorage.getItem('activeTab');
     if (savedTab) setActiveTab(savedTab);
-  }, [setActiveTab]);
+  }, [setActiveTab, mounted]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -138,9 +151,11 @@ export default function Home() {
     }
   };
 
-  if (loading || !user) {
-    return <div className="flex-center" style={{ height: '100vh' }}>Loading...</div>;
+  if (!mounted || loading) {
+    return <div className="flex-center" style={{ height: '100vh', background: 'var(--bg-color)', color: 'var(--text-color)' }}>Loading...</div>;
   }
+
+  if (!user) return null;
 
   return (
     <div className={styles.dashboard}>
@@ -385,7 +400,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* Hierarchical Folder Tree for Notes */}
           <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
             {isLoading ? (
               <div style={{ padding: '8px', fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.6 }}>Syncing...</div>
@@ -426,7 +440,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* Hierarchical Folder Tree for Boards */}
           <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
             {isLoading ? (
               <div style={{ padding: '8px', fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.6 }}>Syncing...</div>
