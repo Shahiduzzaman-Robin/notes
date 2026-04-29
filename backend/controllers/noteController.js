@@ -47,7 +47,7 @@ const updateNote = async (req, res) => {
     const updatedNote = await Note.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
       { $set: updates },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!updatedNote) return res.status(404).json({ message: 'Note not found or not authorized' });
