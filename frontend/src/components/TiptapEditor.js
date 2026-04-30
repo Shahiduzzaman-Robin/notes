@@ -193,7 +193,15 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
       SearchHighlight.configure({ searchQuery }),
       Extension.create({
         name: 'slashPlugin',
+        addStorage() {
+          return {
+            lastQuery: null,
+            lastOpen: false,
+            lastPos: -1,
+          }
+        },
         addProseMirrorPlugins() {
+          const storage = this.storage;
           return [
             new Plugin({
               key: SlashPlugin,
@@ -205,23 +213,26 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
                   const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
                   const slashMatch = textBefore.match(/(?:^|\s)\/([a-zA-Z0-9 ]*)$/);
 
-                  if (slashMatch) {
-                    const slashQuery = slashMatch[1].toLowerCase();
-                    const fullMatch = slashMatch[0];
-                    const actualSlashIndex = fullMatch.indexOf('/');
-                    const slashStartPos = $from.pos - (fullMatch.length - actualSlashIndex);
+                  const isOpen = !!slashMatch;
+                  const query = slashMatch ? slashMatch[1].toLowerCase() : '';
+                  const fullMatch = slashMatch ? slashMatch[0] : '';
+                  const actualSlashIndex = fullMatch.indexOf('/');
+                  const pos = slashMatch ? $from.pos - (fullMatch.length - actualSlashIndex) : -1;
+
+                  // ONLY dispatch if something meaningful changed
+                  if (isOpen !== storage.lastOpen || query !== storage.lastQuery || pos !== storage.lastPos) {
+                    storage.lastOpen = isOpen;
+                    storage.lastQuery = query;
+                    storage.lastPos = pos;
                     
-                    // Call the component's internal handler
                     window.dispatchEvent(new CustomEvent('tiptap-slash', { 
                       detail: { 
-                        open: true, 
-                        query: slashQuery, 
-                        pos: slashStartPos,
-                        coords: view.coordsAtPos($from.pos)
+                        open: isOpen, 
+                        query: query, 
+                        pos: pos,
+                        coords: isOpen ? view.coordsAtPos($from.pos) : null
                       } 
                     }));
-                  } else {
-                    window.dispatchEvent(new CustomEvent('tiptap-slash', { detail: { open: false } }));
                   }
                 }
               })
@@ -368,10 +379,21 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
     }
   }, [noteId, editor]);
 
-  // Unified Slash Menu Listener (Stabilized dependency array)
+  const lastSlashState = useRef({ open: false, query: '', pos: -1 });
+
+  // Unified Slash Menu Listener (Stabilized with Ref guard)
   useEffect(() => {
     const handler = (e) => {
       const { open, query, pos, coords } = e.detail;
+      
+      // Prevent redundant state updates
+      if (open === lastSlashState.current.open && 
+          query === lastSlashState.current.query && 
+          pos === lastSlashState.current.pos &&
+          !open) return;
+
+      lastSlashState.current = { open, query, pos };
+
       if (open) {
         setSlashQuery(query || '');
         setSlashStartPos(pos);
@@ -392,7 +414,7 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
     };
     window.addEventListener('tiptap-slash', handler);
     return () => window.removeEventListener('tiptap-slash', handler);
-  }, [editor]); // Only depend on editor for stable size
+  }, [editor]);
 
   // Remove the old position updater as it's now handled by the event
 
