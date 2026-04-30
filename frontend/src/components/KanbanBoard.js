@@ -390,6 +390,8 @@ export default function KanbanBoard() {
           border: 1px solid var(--border-color);
           box-shadow: 0 4px 20px rgba(0,0,0,0.02);
           backdrop-filter: blur(10px);
+          max-height: calc(100vh - 200px);
+          overflow: hidden;
           transition: background 0.3s ease, border-color 0.3s ease;
         }
         .new-board-btn {
@@ -665,7 +667,10 @@ export default function KanbanBoard() {
                       flexDirection: 'column',
                       gap: '4px',
                       minHeight: '200px',
-                      padding: '4px 0',
+                      padding: '4px 8px',
+                      overflowY: 'auto',
+                      overflowX: 'hidden',
+                      scrollbarWidth: 'none',
                       transition: 'background 0.2s ease',
                       background: snapshot.isDraggingOver ? 'var(--hover-bg)' : 'transparent',
                       borderRadius: '4px'
