@@ -38,6 +38,7 @@ export default function FinanceView() {
   const [expandedTx, setExpandedTx] = useState(null);
   const [editingDetails, setEditingDetails] = useState('');
   const [isSavingDetails, setIsSavingDetails] = useState(false);
+  const [showSavedToast, setShowSavedToast] = useState(false);
 
   // Categories list
   const categories = ['General', 'Food', 'Transport', 'Salary', 'Shopping', 'Rent', 'Entertainment', 'Health', 'Travel'];
@@ -123,8 +124,9 @@ export default function FinanceView() {
     setIsSavingDetails(true);
     try {
       await useStore.getState().updateTransaction(txId, { details: editingDetails });
-      // Update local expandedTx state to show new details
       setIsSavingDetails(false);
+      setShowSavedToast(true);
+      setTimeout(() => setShowSavedToast(false), 3000);
     } catch (error) {
       console.error('Failed to update details:', error);
       setIsSavingDetails(false);
@@ -300,7 +302,10 @@ export default function FinanceView() {
                       {tx.type === 'income' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                     </div>
                     <div className="tx-info">
-                      <span className="tx-desc">{tx.description}</span>
+                      <div className="tx-desc-row">
+                        <span className="tx-desc">{tx.description}</span>
+                        {tx.details && <span className="tx-details-preview">{tx.details.substring(0, 40)}{tx.details.length > 40 ? '...' : ''}</span>}
+                      </div>
                       <div className="tx-meta">
                         <span className="tx-category">{tx.category}</span>
                         <span className="meta-dot">•</span>
@@ -333,6 +338,7 @@ export default function FinanceView() {
                           onChange={(e) => setEditingDetails(e.target.value)}
                         />
                         <div className="editor-footer">
+                          {showSavedToast && <span className="save-success-msg">Changes saved!</span>}
                           <button 
                             className="save-details-btn"
                             disabled={isSavingDetails || editingDetails === (tx.details || '')}
@@ -670,13 +676,15 @@ export default function FinanceView() {
         .tx-icon.income { background: rgba(16, 185, 129, 0.1); color: #10b981; }
         .tx-icon.expense { background: rgba(244, 63, 94, 0.1); color: #f43f5e; }
 
-        .tx-info { flex: 1; display: flex; flex-direction: column; }
-        .tx-desc { font-weight: 500; font-size: 14px; }
+        .tx-info { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .tx-desc-row { display: flex; align-items: baseline; gap: 12px; }
+        .tx-desc { font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tx-details-preview { font-size: 11px; color: var(--text-secondary); opacity: 0.6; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; }
         .tx-meta { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
         .meta-dot { opacity: 0.3; }
         .tx-has-details { color: var(--primary); font-weight: 600; font-size: 10px; text-transform: uppercase; }
 
-        .tx-amount { font-weight: 700; font-size: 15px; }
+        .tx-amount { font-weight: 700; font-size: 15px; flex-shrink: 0; }
         .tx-amount.income { color: #10b981; }
         .tx-amount.expense { color: #f43f5e; }
 
@@ -753,6 +761,15 @@ export default function FinanceView() {
         .editor-footer {
           display: flex;
           justify-content: flex-end;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .save-success-msg {
+          font-size: 11px;
+          color: #10b981;
+          font-weight: 600;
+          animation: fadeIn 0.3s ease-out;
         }
 
         .save-details-btn {

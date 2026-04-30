@@ -26,16 +26,20 @@ export async function POST(req) {
 
     const { description, amount, type, category, date, details } = await req.json();
 
+    console.log('💰 Creating transaction with details:', !!details);
+    
     await dbConnect();
     const transaction = await Transaction.create({
       user: user._id,
       description,
-      amount,
+      amount: Number(amount),
       type,
       category,
       date: date || Date.now(),
-      details
+      details: details || ''
     });
+
+    console.log('✅ Transaction saved successfully');
 
     return NextResponse.json(transaction, { status: 201 });
   } catch (error) {

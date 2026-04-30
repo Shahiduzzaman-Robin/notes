@@ -17,8 +17,15 @@ export async function PUT(req, { params }) {
     await dbConnect();
     const transaction = await Transaction.findOneAndUpdate(
       { _id: id, user: user._id },
-      { description, amount, type, category, date, details },
-      { new: true }
+      { 
+        description, 
+        amount: Number(amount), 
+        type, 
+        category, 
+        date, 
+        details: details || '' 
+      },
+      { new: true, runValidators: true }
     );
 
     if (!transaction) return NextResponse.json({ message: 'Transaction not found' }, { status: 404 });
