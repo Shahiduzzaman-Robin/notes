@@ -30,7 +30,8 @@ const transactionSchema = new mongoose.Schema({
   },
   details: {
     type: String,
-    trim: true
+    trim: true,
+    default: ''
   }
 }, {
   timestamps: true

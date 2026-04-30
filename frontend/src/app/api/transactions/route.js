@@ -10,7 +10,7 @@ export async function GET(req) {
     if (!user) return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
 
     await dbConnect();
-    const transactions = await Transaction.find({ user: user._id }).sort({ date: -1 });
+    const transactions = await Transaction.find({ user: user._id }).sort({ date: -1 }).select('+details');
 
     return NextResponse.json(transactions);
   } catch (error) {

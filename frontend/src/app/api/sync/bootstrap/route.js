@@ -26,7 +26,7 @@ export async function GET(req) {
       Board.find({ user: user._id }).sort({ updatedAt: -1 }).lean(),
       Folder.find({ user: user._id }).sort({ updatedAt: -1 }).lean(),
       Task.find({ user: user._id }).lean(),
-      Transaction.find({ user: user._id }).sort({ date: -1 }).lean()
+      Transaction.find({ user: user._id }).sort({ date: -1 }).select('+details').lean()
     ]);
 
     console.log(`✅ Success: Found ${notes.length} notes, ${boards.length} boards, ${folders.length} folders, ${tasks.length} tasks, ${transactions.length} transactions`);
