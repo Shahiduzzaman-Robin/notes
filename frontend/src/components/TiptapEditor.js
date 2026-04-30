@@ -32,6 +32,61 @@ import Modal from './Modal';
 // Engine-level Slash Command Tracking
 const SlashPlugin = new PluginKey('slashPlugin');
 
+const SLASH_ITEMS = [
+  { title: 'Text', description: 'Plain text paragraph', icon: Type, 
+    command: (editor) => editor.chain().focus().setParagraph().run() },
+  { title: 'Heading 1', description: 'Large heading', icon: Heading1, 
+    command: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run() },
+  { title: 'Heading 2', description: 'Medium heading', icon: Heading2, 
+    command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run() },
+  { title: 'Heading 3', description: 'Small heading', icon: Heading3, 
+    command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run() },
+  { title: 'Bullet List', description: 'Unordered list', icon: List, 
+    command: (editor) => editor.chain().focus().toggleBulletList().run() },
+  { title: 'Numbered List', description: 'Ordered list', icon: ListOrdered, 
+    command: (editor) => editor.chain().focus().toggleOrderedList().run() },
+  { title: 'To-do List', description: 'Task checklist', icon: CheckSquare, 
+    command: (editor) => editor.chain().focus().toggleTaskList().run() },
+  { title: 'Quote', description: 'Blockquote', icon: Quote, 
+    command: (editor) => editor.chain().focus().toggleBlockquote().run() },
+  { title: 'Code Block', description: 'Code snippet', icon: Code, 
+    command: (editor) => editor.chain().focus().toggleCodeBlock().run() },
+  { title: 'Divider', description: 'Horizontal line', icon: Minus, 
+    command: (editor) => editor.chain().focus().setHorizontalRule().run() },
+  { title: 'Highlight', description: 'Highlight text', icon: Highlighter, 
+    command: (editor) => editor.chain().focus().toggleHighlight().run() },
+  { title: 'Table', description: '3×3 table', icon: Grid3X3, 
+    command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() },
+  { title: 'YouTube', description: 'Embed a video', icon: CirclePlay,
+    command: () => window.dispatchEvent(new CustomEvent('open-youtube-modal')) },
+];
+
+const TEXT_COLORS = [
+  { name: 'Default', color: 'inherit' },
+  { name: 'Gray', color: '#787774' },
+  { name: 'Brown', color: '#976d57' },
+  { name: 'Orange', color: '#d9730d' },
+  { name: 'Yellow', color: '#cb912f' },
+  { name: 'Green', color: '#448361' },
+  { name: 'Blue', color: '#337ea9' },
+  { name: 'Purple', color: '#9065b0' },
+  { name: 'Pink', color: '#c14c8a' },
+  { name: 'Red', color: '#d44c47' },
+];
+
+const HIGHLIGHT_COLORS = [
+  { name: 'Default', color: 'transparent' },
+  { name: 'Gray', color: '#f1f1ef' },
+  { name: 'Brown', color: '#f4eeee' },
+  { name: 'Orange', color: '#fbeced' },
+  { name: 'Yellow', color: '#fbf3db' },
+  { name: 'Green', color: '#edf3ec' },
+  { name: 'Blue', color: '#ebf5f7' },
+  { name: 'Purple', color: '#f5f0f7' },
+  { name: 'Pink', color: '#f9f0f5' },
+  { name: 'Red', color: '#fdebec' },
+];
+
 const SearchHighlight = Extension.create({
   name: 'searchHighlight',
   addOptions() {
@@ -108,60 +163,13 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
   const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
   const menuRef = useRef(null);
 
-  const SLASH_ITEMS = [
-    { title: 'Text', description: 'Plain text paragraph', icon: Type, 
-      command: (editor) => editor.chain().focus().setParagraph().run() },
-    { title: 'Heading 1', description: 'Large heading', icon: Heading1, 
-      command: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run() },
-    { title: 'Heading 2', description: 'Medium heading', icon: Heading2, 
-      command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run() },
-    { title: 'Heading 3', description: 'Small heading', icon: Heading3, 
-      command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run() },
-    { title: 'Bullet List', description: 'Unordered list', icon: List, 
-      command: (editor) => editor.chain().focus().toggleBulletList().run() },
-    { title: 'Numbered List', description: 'Ordered list', icon: ListOrdered, 
-      command: (editor) => editor.chain().focus().toggleOrderedList().run() },
-    { title: 'To-do List', description: 'Task checklist', icon: CheckSquare, 
-      command: (editor) => editor.chain().focus().toggleTaskList().run() },
-    { title: 'Quote', description: 'Blockquote', icon: Quote, 
-      command: (editor) => editor.chain().focus().toggleBlockquote().run() },
-    { title: 'Code Block', description: 'Code snippet', icon: Code, 
-      command: (editor) => editor.chain().focus().toggleCodeBlock().run() },
-    { title: 'Divider', description: 'Horizontal line', icon: Minus, 
-      command: (editor) => editor.chain().focus().setHorizontalRule().run() },
-    { title: 'Highlight', description: 'Highlight text', icon: Highlighter, 
-      command: (editor) => editor.chain().focus().toggleHighlight().run() },
-    { title: 'Table', description: '3×3 table', icon: Grid3X3, 
-      command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() },
-    { title: 'YouTube', description: 'Embed a video', icon: CirclePlay,
-      command: () => setIsYoutubeModalOpen(true) },
-  ];
+  // Modal listener for YouTube (needed because SLASH_ITEMS is now outside)
+  useEffect(() => {
+    const handler = () => setIsYoutubeModalOpen(true);
+    window.addEventListener('open-youtube-modal', handler);
+    return () => window.removeEventListener('open-youtube-modal', handler);
+  }, []);
 
-  const TEXT_COLORS = [
-    { name: 'Default', color: 'inherit' },
-    { name: 'Gray', color: '#787774' },
-    { name: 'Brown', color: '#976d57' },
-    { name: 'Orange', color: '#d9730d' },
-    { name: 'Yellow', color: '#cb912f' },
-    { name: 'Green', color: '#448361' },
-    { name: 'Blue', color: '#337ea9' },
-    { name: 'Purple', color: '#9065b0' },
-    { name: 'Pink', color: '#c14c8a' },
-    { name: 'Red', color: '#d44c47' },
-  ];
-
-  const HIGHLIGHT_COLORS = [
-    { name: 'Default', color: 'transparent' },
-    { name: 'Gray', color: '#f1f1ef' },
-    { name: 'Brown', color: '#f4eeee' },
-    { name: 'Orange', color: '#fbeced' },
-    { name: 'Yellow', color: '#fbf3db' },
-    { name: 'Green', color: '#edf3ec' },
-    { name: 'Blue', color: '#ebf5f7' },
-    { name: 'Purple', color: '#f5f0f7' },
-    { name: 'Pink', color: '#f9f0f5' },
-    { name: 'Red', color: '#fdebec' },
-  ];
 
   const editor = useEditor({
     extensions: [
@@ -473,18 +481,20 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
     }
   }, [selectedIndex, slashMenuOpen]);
 
-  // Only sync content when noteId changes (switching notes)
+  // Clean up menus when switching notes
+  useEffect(() => {
+    setSlashMenuOpen(false);
+    setTableMenuOpen(false);
+    setColorMenuOpen(false);
+  }, [noteId]);
+
+  // Sync content only when switching notes or if editor is empty
   useEffect(() => {
     if (editor && initialContent !== undefined) {
       const currentHTML = editor.getHTML();
-      // Only set content if the editor is empty OR if we're switching notes
-      // This is the key to preventing character skipping/jumping
-      if (currentHTML !== initialContent) {
+      if (!currentHTML || currentHTML === '<p></p>') {
         editor.commands.setContent(initialContent || '', false);
       }
-      setSlashMenuOpen(false);
-      setTableMenuOpen(false);
-      setColorMenuOpen(false);
     }
   }, [noteId, editor, initialContent]);
 
