@@ -29,6 +29,9 @@ import {
 } from 'lucide-react';
 import Modal from './Modal';
 
+// Engine-level Slash Command Tracking
+const SlashPlugin = new PluginKey('slashPlugin');
+
 const SearchHighlight = Extension.create({
   name: 'searchHighlight',
   addOptions() {
@@ -188,6 +191,44 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
       }),
       Placeholder.configure({ placeholder: 'Type / for commands, or just start writing...' }),
       SearchHighlight.configure({ searchQuery }),
+      Extension.create({
+        name: 'slashPlugin',
+        addProseMirrorPlugins() {
+          return [
+            new Plugin({
+              key: SlashPlugin,
+              view: () => ({
+                update: (view) => {
+                  const { state } = view;
+                  const { selection } = state;
+                  const { $from } = selection;
+                  const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
+                  const slashMatch = textBefore.match(/(?:^|\s)\/([a-zA-Z0-9 ]*)$/);
+
+                  if (slashMatch) {
+                    const slashQuery = slashMatch[1].toLowerCase();
+                    const fullMatch = slashMatch[0];
+                    const actualSlashIndex = fullMatch.indexOf('/');
+                    const slashStartPos = $from.pos - (fullMatch.length - actualSlashIndex);
+                    
+                    // Call the component's internal handler
+                    window.dispatchEvent(new CustomEvent('tiptap-slash', { 
+                      detail: { 
+                        open: true, 
+                        query: slashQuery, 
+                        pos: slashStartPos,
+                        coords: view.coordsAtPos($from.pos)
+                      } 
+                    }));
+                  } else {
+                    window.dispatchEvent(new CustomEvent('tiptap-slash', { detail: { open: false } }));
+                  }
+                }
+              })
+            })
+          ];
+        }
+      }),
     ],
     editorProps: {
       handlePaste: (view, event) => {
@@ -252,28 +293,6 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
-      
-      // Slash Tracking logic
-      const { state } = editor;
-      const { $from } = state.selection;
-      const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
-      
-      // Much more lenient regex for slash: matches '/' at start of line or after space
-      const slashMatch = textBefore.match(/(?:^|\s)\/([a-zA-Z0-9 ]*)$/);
-      
-      if (slashMatch) {
-        setSlashQuery(slashMatch[1].toLowerCase());
-        setSelectedIndex(0);
-        if (!slashMenuOpen) {
-          // Calculate start pos including the optional space and '/'
-          const fullMatch = slashMatch[0];
-          const actualSlashIndex = fullMatch.indexOf('/');
-          setSlashStartPos($from.pos - (fullMatch.length - actualSlashIndex));
-          setSlashMenuOpen(true);
-        }
-      } else if (slashMenuOpen) {
-        setSlashMenuOpen(false);
-      }
     },
     onSelectionUpdate: ({ editor }) => {
       // 1. Table menu tracking
@@ -362,24 +381,33 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
     }
   }, [noteId, editor]);
 
-  // Slash menu position updater
+  // Unified Slash Menu Listener
   useEffect(() => {
-    if (editor && slashMenuOpen) {
-      const { selection } = editor.state;
-      const { $from } = selection;
-      try {
-        const coords = editor.view.coordsAtPos($from.pos);
-        const editorDOM = editor.view.dom.closest('.tiptap-wrapper');
-        if (editorDOM) {
-          const editorRect = editorDOM.getBoundingClientRect();
-          setSlashMenuPos({
-            top: coords.bottom - editorRect.top + 4,
-            left: coords.left - editorRect.left,
-          });
+    const handler = (e) => {
+      const { open, query, pos, coords } = e.detail;
+      if (open) {
+        setSlashQuery(query);
+        setSlashStartPos(pos);
+        if (coords && editor) {
+          const editorDOM = editor.view.dom.closest('.tiptap-wrapper');
+          if (editorDOM) {
+            const editorRect = editorDOM.getBoundingClientRect();
+            setSlashMenuPos({
+              top: coords.bottom - editorRect.top + 4,
+              left: coords.left - editorRect.left,
+            });
+          }
         }
-      } catch (e) {}
-    }
-  }, [editor, slashMenuOpen, editor?.state.selection]);
+        if (!slashMenuOpen) setSlashMenuOpen(true);
+      } else {
+        if (slashMenuOpen) setSlashMenuOpen(false);
+      }
+    };
+    window.addEventListener('tiptap-slash', handler);
+    return () => window.removeEventListener('tiptap-slash', handler);
+  }, [editor, slashMenuOpen]);
+
+  // Remove the old position updater as it's now handled by the event
 
   // Filtered items
   const filteredItems = SLASH_ITEMS.filter(item =>
