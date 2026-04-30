@@ -24,7 +24,7 @@ export async function POST(req) {
     const user = await verifyAuth(req);
     if (!user) return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
 
-    const { description, amount, type, category, date } = await req.json();
+    const { description, amount, type, category, date, details } = await req.json();
 
     await dbConnect();
     const transaction = await Transaction.create({
@@ -33,7 +33,8 @@ export async function POST(req) {
       amount,
       type,
       category,
-      date: date || Date.now()
+      date: date || Date.now(),
+      details
     });
 
     return NextResponse.json(transaction, { status: 201 });

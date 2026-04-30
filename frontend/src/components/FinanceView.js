@@ -34,6 +34,8 @@ export default function FinanceView() {
   const [filterType, setFilterType] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [details, setDetails] = useState('');
+  const [expandedTx, setExpandedTx] = useState(null);
 
   // Categories list
   const categories = ['General', 'Food', 'Transport', 'Salary', 'Shopping', 'Rent', 'Entertainment', 'Health', 'Travel'];
@@ -105,11 +107,13 @@ export default function FinanceView() {
       amount: parseFloat(amount),
       type,
       category,
-      date: new Date(date)
+      date: new Date(date),
+      details
     });
 
     setDescription('');
     setAmount('');
+    setDetails('');
     setDate(new Date().toISOString().split('T')[0]);
   };
 
@@ -210,44 +214,56 @@ export default function FinanceView() {
             </div>
           </div>
 
-          <form className="quick-add-form" onSubmit={handleSubmit}>
-            <input 
-              type="text" 
-              placeholder="What was it for?" 
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-            />
-            <input 
-              type="number" 
-              placeholder="Amount" 
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-            />
-            <input 
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="date-input"
-            />
-            <select value={category} onChange={(e) => setCategory(e.target.value)}>
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <div className="type-toggle">
-              <button 
-                type="button" 
-                className={type === 'income' ? 'active income' : ''} 
-                onClick={() => setType('income')}
-              >In</button>
-              <button 
-                type="button" 
-                className={type === 'expense' ? 'active expense' : ''} 
-                onClick={() => setType('expense')}
-              >Out</button>
-            </div>
-            <button type="submit" className="add-btn"><Plus size={18} /></button>
-          </form>
+          <div className="form-wrapper">
+            <form className="quick-add-form" onSubmit={handleSubmit}>
+              <div className="form-main">
+                <input 
+                  type="text" 
+                  placeholder="What was it for?" 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                />
+                <input 
+                  type="number" 
+                  placeholder="Amount" 
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                />
+                <input 
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="date-input"
+                />
+                <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <div className="type-toggle">
+                  <button 
+                    type="button" 
+                    className={type === 'income' ? 'active income' : ''} 
+                    onClick={() => setType('income')}
+                  >In</button>
+                  <button 
+                    type="button" 
+                    className={type === 'expense' ? 'active expense' : ''} 
+                    onClick={() => setType('expense')}
+                  >Out</button>
+                </div>
+                <button type="submit" className="add-btn"><Plus size={18} /></button>
+              </div>
+              <div className="form-details">
+                <textarea 
+                  placeholder="Add more details or notes... (optional)"
+                  value={details}
+                  onChange={(e) => setDetails(e.target.value)}
+                  rows={1}
+                />
+              </div>
+            </form>
+          </div>
 
           <div className="transaction-list">
             {filteredTransactions.length === 0 ? (
@@ -257,27 +273,43 @@ export default function FinanceView() {
               </div>
             ) : (
               filteredTransactions.map(tx => (
-                <div key={tx._id} className="transaction-item">
-                  <div className={`tx-icon ${tx.type}`}>
-                    {tx.type === 'income' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                  </div>
-                  <div className="tx-info">
-                    <span className="tx-desc">{tx.description}</span>
-                    <div className="tx-meta">
-                      <span className="tx-category">{tx.category}</span>
-                      <span className="meta-dot">•</span>
-                      <span className="tx-date">{format(new Date(tx.date), 'MMM d, yyyy')}</span>
+                <div key={tx._id} className={`transaction-wrapper ${expandedTx === tx._id ? 'expanded' : ''}`}>
+                  <div className="transaction-item" onClick={() => setExpandedTx(expandedTx === tx._id ? null : tx._id)}>
+                    <div className={`tx-icon ${tx.type}`}>
+                      {tx.type === 'income' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                    </div>
+                    <div className="tx-info">
+                      <span className="tx-desc">{tx.description}</span>
+                      <div className="tx-meta">
+                        <span className="tx-category">{tx.category}</span>
+                        <span className="meta-dot">•</span>
+                        <span className="tx-date">{format(new Date(tx.date), 'MMM d, yyyy')}</span>
+                        {tx.details && <span className="meta-dot">•</span>}
+                        {tx.details && <span className="tx-has-details">Has notes</span>}
+                      </div>
+                    </div>
+                    <div className={`tx-amount ${tx.type}`}>
+                      {tx.type === 'income' ? '+' : '-'}৳{tx.amount.toLocaleString()}
+                    </div>
+                    <div className="tx-actions">
+                      <ChevronRight size={16} className="expand-icon" />
+                      <button className="delete-tx" onClick={(e) => {
+                        e.stopPropagation();
+                        setTxToDelete(tx);
+                        setIsDeleteModalOpen(true);
+                      }}>
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </div>
-                  <div className={`tx-amount ${tx.type}`}>
-                    {tx.type === 'income' ? '+' : '-'}৳{tx.amount.toLocaleString()}
-                  </div>
-                  <button className="delete-tx" onClick={() => {
-                    setTxToDelete(tx);
-                    setIsDeleteModalOpen(true);
-                  }}>
-                    <Trash2 size={16} />
-                  </button>
+                  {expandedTx === tx._id && tx.details && (
+                    <div className="tx-details-expanded">
+                      <div className="details-content">
+                        <h6>Notes & Details</h6>
+                        <p>{tx.details}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))
             )}
@@ -477,12 +509,32 @@ export default function FinanceView() {
 
         .quick-add-form {
           display: flex;
+          flex-direction: column;
           gap: 12px;
           padding: 16px;
           background: var(--hover-bg);
           border: 1px solid var(--border-color);
           border-radius: 12px;
           margin-bottom: 24px;
+        }
+
+        .form-main {
+          display: flex;
+          gap: 12px;
+        }
+
+        .form-details textarea {
+          width: 100%;
+          background: var(--bg-color);
+          border: 1px solid var(--border-color);
+          color: var(--text-color);
+          padding: 8px 12px;
+          border-radius: 8px;
+          outline: none;
+          font-size: 13px;
+          font-family: inherit;
+          resize: vertical;
+          min-height: 40px;
         }
 
         .quick-add-form input, .quick-add-form select {
@@ -495,8 +547,8 @@ export default function FinanceView() {
           font-size: 14px;
         }
 
-        .quick-add-form input:first-child { flex: 2; }
-        .quick-add-form input:nth-child(2) { flex: 1; }
+        .form-main input:first-child { flex: 2; }
+        .form-main input:nth-child(2) { flex: 1; }
 
         .date-input::-webkit-calendar-picker-indicator {
           filter: invert(var(--calendar-invert, 1));
@@ -546,20 +598,30 @@ export default function FinanceView() {
           gap: 8px;
         }
 
+        .transaction-wrapper {
+          border-radius: 12px;
+          border: 1px solid transparent;
+          transition: all 0.2s;
+          background: var(--bg-color);
+        }
+
+        .transaction-wrapper.expanded {
+          background: var(--hover-bg);
+          border-color: var(--border-color);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
         .transaction-item {
           display: flex;
           align-items: center;
           gap: 16px;
           padding: 12px 16px;
-          border-radius: 12px;
-          border: 1px solid transparent;
-          transition: all 0.2s;
           cursor: pointer;
+          border-radius: 12px;
         }
 
         .transaction-item:hover {
           background: var(--hover-bg);
-          border-color: var(--border-color);
         }
 
         .tx-icon {
@@ -578,10 +640,28 @@ export default function FinanceView() {
         .tx-desc { font-weight: 500; font-size: 14px; }
         .tx-meta { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
         .meta-dot { opacity: 0.3; }
+        .tx-has-details { color: var(--primary); font-weight: 600; font-size: 10px; text-transform: uppercase; }
 
         .tx-amount { font-weight: 700; font-size: 15px; }
         .tx-amount.income { color: #10b981; }
         .tx-amount.expense { color: #f43f5e; }
+
+        .tx-actions {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .expand-icon {
+          color: var(--text-secondary);
+          transition: transform 0.2s;
+          opacity: 0.5;
+        }
+
+        .transaction-wrapper.expanded .expand-icon {
+          transform: rotate(90deg);
+          opacity: 1;
+        }
 
         .delete-tx {
           opacity: 0;
@@ -594,6 +674,39 @@ export default function FinanceView() {
 
         .transaction-item:hover .delete-tx { opacity: 1; }
         .delete-tx:hover { color: #f43f5e; }
+
+        .tx-details-expanded {
+          padding: 0 16px 16px 68px;
+          animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .details-content {
+          padding: 12px;
+          background: var(--bg-color);
+          border-radius: 8px;
+          border-left: 3px solid var(--primary);
+        }
+
+        .details-content h6 {
+          margin: 0 0 4px 0;
+          font-size: 10px;
+          text-transform: uppercase;
+          color: var(--text-secondary);
+          letter-spacing: 0.05em;
+        }
+
+        .details-content p {
+          margin: 0;
+          font-size: 13px;
+          color: var(--text-color);
+          line-height: 1.5;
+          white-space: pre-wrap;
+        }
 
         .empty-state {
           padding: 60px;

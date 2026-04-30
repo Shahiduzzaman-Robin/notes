@@ -12,12 +12,12 @@ export async function PUT(req, { params }) {
     if (!user) return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
 
     const { id } = await params;
-    const { description, amount, type, category, date } = await req.json();
+    const { description, amount, type, category, date, details } = await req.json();
 
     await dbConnect();
     const transaction = await Transaction.findOneAndUpdate(
       { _id: id, user: user._id },
-      { description, amount, type, category, date },
+      { description, amount, type, category, date, details },
       { new: true }
     );
 
