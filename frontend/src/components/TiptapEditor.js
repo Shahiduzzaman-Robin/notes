@@ -241,43 +241,30 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
         if (tableLines.length >= 2) {
           event.preventDefault();
           
-          // Construct table data structure
-          const tableData = tableLines.map((line, rIndex) => {
+          // Construct HTML Table for robust insertion
+          let html = '<table class="tiptap-table"><tbody>';
+          tableLines.forEach((line, rIndex) => {
+            if (line.includes('---') && !line.match(/[a-zA-Z0-9]/)) return;
+            
+            html += '<tr>';
             const cells = line.split('|').filter((c, i, a) => {
-              // Keep cells that are between pipes, or at least have content
               if (i === 0 && !c.trim()) return false;
               if (i === a.length - 1 && !c.trim()) return false;
               return true;
             });
-            
-            return {
-              type: 'tableRow',
-              content: cells.map(cell => ({
-                type: 'tableCell', // Simple td for all rows for maximum compatibility
-                content: [{ 
-                  type: 'paragraph', 
-                  content: cell.trim() ? [{ type: 'text', text: cell.trim() }] : [] 
-                }]
-              }))
-            };
+            cells.forEach(cell => {
+              const tag = (rIndex === 0) ? 'th' : 'td';
+              html += `<${tag}><p>${cell.trim()}</p></${tag}>`;
+            });
+            html += '</tr>';
           });
-
-          // Normalize column counts
-          const maxCols = Math.max(...tableData.map(r => r.content.length));
-          tableData.forEach(row => {
-            while (row.content.length < maxCols) {
-              row.content.push({
-                type: 'tableCell',
-                content: [{ type: 'paragraph', content: [] }]
-              });
-            }
-          });
+          html += '</tbody></table>';
           
-          view.dispatch(view.state.tr.replaceSelectionWith(view.state.schema.nodeFromJSON({
-            type: 'table',
-            content: tableData
-          })));
-          return true;
+          // Use Tiptap's internal command for 100% reliability
+          const { state } = view;
+          const { tr } = state;
+          const node = view.state.schema.nodes.table ? editor.commands.insertContent(html) : null;
+          return !!node;
         }
         return false;
       },
@@ -381,12 +368,12 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
     }
   }, [noteId, editor]);
 
-  // Unified Slash Menu Listener
+  // Unified Slash Menu Listener (Stabilized dependency array)
   useEffect(() => {
     const handler = (e) => {
       const { open, query, pos, coords } = e.detail;
       if (open) {
-        setSlashQuery(query);
+        setSlashQuery(query || '');
         setSlashStartPos(pos);
         if (coords && editor) {
           const editorDOM = editor.view.dom.closest('.tiptap-wrapper');
@@ -398,22 +385,26 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
             });
           }
         }
-        if (!slashMenuOpen) setSlashMenuOpen(true);
+        setSlashMenuOpen(true);
       } else {
-        if (slashMenuOpen) setSlashMenuOpen(false);
+        setSlashMenuOpen(false);
       }
     };
     window.addEventListener('tiptap-slash', handler);
     return () => window.removeEventListener('tiptap-slash', handler);
-  }, [editor, slashMenuOpen]);
+  }, [editor]); // Only depend on editor for stable size
 
   // Remove the old position updater as it's now handled by the event
 
-  // Filtered items
-  const filteredItems = SLASH_ITEMS.filter(item =>
-    item.title.toLowerCase().includes(slashQuery) ||
-    item.description.toLowerCase().includes(slashQuery)
-  );
+  // Filtered items (Always show some items if query is just slashes)
+  const filteredItems = useMemo(() => {
+    const query = slashQuery.replace(/^\/+/, '').toLowerCase();
+    if (!query) return SLASH_ITEMS;
+    return SLASH_ITEMS.filter(item =>
+      item.title.toLowerCase().includes(query) ||
+      item.description.toLowerCase().includes(query)
+    );
+  }, [slashQuery, SLASH_ITEMS]);
 
   // Execute a slash command
   const executeSlashCommand = useCallback((item) => {
