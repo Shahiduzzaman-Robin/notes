@@ -29,35 +29,6 @@ import {
 } from 'lucide-react';
 import Modal from './Modal';
 
-// Custom Extension for Slash Command tracking
-const SlashCommand = Extension.create({
-  name: 'slashCommand',
-  addOptions() {
-    return {
-      onSlash: () => {},
-    }
-  },
-  addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        key: new PluginKey('slashCommand'),
-        appendTransaction: (transactions, oldState, newState) => {
-          const { selection } = newState;
-          const { $from } = selection;
-          const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
-          
-          // Trigger when typing '/' or updating after '/'
-          if (textBefore.match(/\/([a-zA-Z0-9 ]*)$/)) {
-            this.options.onSlash(newState);
-          } else {
-            this.options.onSlash(null);
-          }
-        }
-      }),
-    ]
-  },
-});
-
 const SearchHighlight = Extension.create({
   name: 'searchHighlight',
   addOptions() {
@@ -217,69 +188,57 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
       }),
       Placeholder.configure({ placeholder: 'Type / for commands, or just start writing...' }),
       SearchHighlight.configure({ searchQuery }),
-      SlashCommand.configure({
-        onSlash: (state) => {
-          if (!state) {
-            setSlashMenuOpen(false);
-            return;
-          }
-          const { $from } = state.selection;
-          const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
-          const slashMatch = textBefore.match(/\/([a-zA-Z0-9 ]*)$/);
-          
-          if (slashMatch) {
-            setSlashQuery(slashMatch[1].toLowerCase());
-            if (!slashMenuOpen) {
-              // Position will be handled by the update callback below
-              setSlashStartPos($from.pos - slashMatch[0].length);
-              setSlashMenuOpen(true);
-            }
-          }
-        }
-      }),
     ],
     editorProps: {
       handlePaste: (view, event) => {
         const text = event.clipboardData.getData('text/plain');
         
-        // Detect Markdown Table: | Title | Header | ...
-        if (text.includes('|') && text.includes('---')) {
-          const lines = text.trim().split('\n');
-          const tableLines = lines.filter(l => l.includes('|'));
+        // Lenient Table Detection: At least 2 lines with multiple pipes
+        const lines = text.trim().split('\n');
+        const tableLines = lines.filter(l => (l.match(/\|/g) || []).length >= 2);
+        
+        if (tableLines.length >= 2) {
+          event.preventDefault();
           
-          if (tableLines.length >= 2) {
-            event.preventDefault();
-            
-            // Simple MD Table to HTML converter
-            let html = '<table class="tiptap-table"><tbody>';
-            tableLines.forEach((line, index) => {
-              // Skip the separator line (e.g. |---|---|)
-              if (line.includes('---') && !line.match(/[a-zA-Z0-9]/)) return;
-              
-              html += '<tr>';
-              const cells = line.split('|').filter((c, i, a) => i > 0 && i < a.length - 1);
-              cells.forEach(cell => {
-                const tag = index === 0 ? 'th' : 'td';
-                html += `<${tag}>${cell.trim()}</${tag}>`;
+          // Construct table data structure
+          const tableData = tableLines
+            .filter(l => !(l.includes('---') && !l.match(/[a-zA-Z0-9]/)))
+            .map((line, rIndex) => {
+              const cells = line.split('|').filter((c, i, a) => {
+                // Keep cells that are between pipes, or at least have content
+                if (i === 0 && !c.trim()) return false;
+                if (i === a.length - 1 && !c.trim()) return false;
+                return true;
               });
-              html += '</tr>';
-            });
-            html += '</tbody></table>';
-            
-            view.dispatch(view.state.tr.replaceSelectionWith(view.state.schema.nodeFromJSON({
-              type: 'table',
-              content: tableLines
-                .filter(l => !(l.includes('---') && !l.match(/[a-zA-Z0-9]/)))
-                .map((line, rIndex) => ({
-                  type: 'tableRow',
-                  content: line.split('|').filter((c, i, a) => i > 0 && i < a.length - 1).map(cell => ({
-                    type: rIndex === 0 ? 'tableHeader' : 'tableCell',
-                    content: [{ type: 'paragraph', content: cell.trim() ? [{ type: 'text', text: cell.trim() }] : [] }]
-                  }))
+              
+              return {
+                type: 'tableRow',
+                content: cells.map(cell => ({
+                  type: rIndex === 0 && line.includes('---') ? 'tableHeader' : 'tableCell',
+                  content: [{ 
+                    type: 'paragraph', 
+                    content: cell.trim() ? [{ type: 'text', text: cell.trim() }] : [] 
+                  }]
                 }))
-            })));
-            return true;
-          }
+              };
+            });
+
+          // Fallback if cell counts are inconsistent
+          const maxCols = Math.max(...tableData.map(r => r.content.length));
+          tableData.forEach(row => {
+            while (row.content.length < maxCols) {
+              row.content.push({
+                type: 'tableCell',
+                content: [{ type: 'paragraph', content: [] }]
+              });
+            }
+          });
+          
+          view.dispatch(view.state.tr.replaceSelectionWith(view.state.schema.nodeFromJSON({
+            type: 'table',
+            content: tableData
+          })));
+          return true;
         }
         return false;
       }
@@ -288,6 +247,23 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
+      
+      // Slash Tracking logic (moved back to onUpdate for better React state sync)
+      const { state } = editor;
+      const { $from } = state.selection;
+      const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
+      const slashMatch = textBefore.match(/\/([a-zA-Z0-9 ]*)$/);
+      
+      if (slashMatch) {
+        setSlashQuery(slashMatch[1].toLowerCase());
+        setSelectedIndex(0);
+        if (!slashMenuOpen) {
+          setSlashStartPos($from.pos - slashMatch[0].length);
+          setSlashMenuOpen(true);
+        }
+      } else if (slashMenuOpen) {
+        setSlashMenuOpen(false);
+      }
     },
     onSelectionUpdate: ({ editor }) => {
       // 1. Table menu tracking
