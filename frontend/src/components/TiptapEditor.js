@@ -201,29 +201,27 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
           event.preventDefault();
           
           // Construct table data structure
-          const tableData = tableLines
-            .filter(l => !(l.includes('---') && !l.match(/[a-zA-Z0-9]/)))
-            .map((line, rIndex) => {
-              const cells = line.split('|').filter((c, i, a) => {
-                // Keep cells that are between pipes, or at least have content
-                if (i === 0 && !c.trim()) return false;
-                if (i === a.length - 1 && !c.trim()) return false;
-                return true;
-              });
-              
-              return {
-                type: 'tableRow',
-                content: cells.map(cell => ({
-                  type: rIndex === 0 && line.includes('---') ? 'tableHeader' : 'tableCell',
-                  content: [{ 
-                    type: 'paragraph', 
-                    content: cell.trim() ? [{ type: 'text', text: cell.trim() }] : [] 
-                  }]
-                }))
-              };
+          const tableData = tableLines.map((line, rIndex) => {
+            const cells = line.split('|').filter((c, i, a) => {
+              // Keep cells that are between pipes, or at least have content
+              if (i === 0 && !c.trim()) return false;
+              if (i === a.length - 1 && !c.trim()) return false;
+              return true;
             });
+            
+            return {
+              type: 'tableRow',
+              content: cells.map(cell => ({
+                type: 'tableCell', // Simple td for all rows for maximum compatibility
+                content: [{ 
+                  type: 'paragraph', 
+                  content: cell.trim() ? [{ type: 'text', text: cell.trim() }] : [] 
+                }]
+              }))
+            };
+          });
 
-          // Fallback if cell counts are inconsistent
+          // Normalize column counts
           const maxCols = Math.max(...tableData.map(r => r.content.length));
           tableData.forEach(row => {
             while (row.content.length < maxCols) {
@@ -241,6 +239,13 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
           return true;
         }
         return false;
+      },
+      handleKeyDown: (view, event) => {
+        if (event.key === '/') {
+          // Detection will happen in onUpdate/useEffect once state is updated
+          return false; 
+        }
+        return false;
       }
     },
     content: initialContent || '',
@@ -248,17 +253,22 @@ export default function TiptapEditor({ noteId, initialContent, onChange, onSave,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
       
-      // Slash Tracking logic (moved back to onUpdate for better React state sync)
+      // Slash Tracking logic
       const { state } = editor;
       const { $from } = state.selection;
       const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
-      const slashMatch = textBefore.match(/\/([a-zA-Z0-9 ]*)$/);
+      
+      // Much more lenient regex for slash: matches '/' at start of line or after space
+      const slashMatch = textBefore.match(/(?:^|\s)\/([a-zA-Z0-9 ]*)$/);
       
       if (slashMatch) {
         setSlashQuery(slashMatch[1].toLowerCase());
         setSelectedIndex(0);
         if (!slashMenuOpen) {
-          setSlashStartPos($from.pos - slashMatch[0].length);
+          // Calculate start pos including the optional space and '/'
+          const fullMatch = slashMatch[0];
+          const actualSlashIndex = fullMatch.indexOf('/');
+          setSlashStartPos($from.pos - (fullMatch.length - actualSlashIndex));
           setSlashMenuOpen(true);
         }
       } else if (slashMenuOpen) {
