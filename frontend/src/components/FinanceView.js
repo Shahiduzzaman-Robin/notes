@@ -36,6 +36,8 @@ export default function FinanceView() {
   const [endDate, setEndDate] = useState('');
   const [details, setDetails] = useState('');
   const [expandedTx, setExpandedTx] = useState(null);
+  const [editingDetails, setEditingDetails] = useState('');
+  const [isSavingDetails, setIsSavingDetails] = useState(false);
 
   // Categories list
   const categories = ['General', 'Food', 'Transport', 'Salary', 'Shopping', 'Rent', 'Entertainment', 'Health', 'Travel'];
@@ -115,6 +117,18 @@ export default function FinanceView() {
     setAmount('');
     setDetails('');
     setDate(new Date().toISOString().split('T')[0]);
+  };
+
+  const handleUpdateDetails = async (txId) => {
+    setIsSavingDetails(true);
+    try {
+      await useStore.getState().updateTransaction(txId, { details: editingDetails });
+      // Update local expandedTx state to show new details
+      setIsSavingDetails(false);
+    } catch (error) {
+      console.error('Failed to update details:', error);
+      setIsSavingDetails(false);
+    }
   };
 
   return (
@@ -274,7 +288,14 @@ export default function FinanceView() {
             ) : (
               filteredTransactions.map(tx => (
                 <div key={tx._id} className={`transaction-wrapper ${expandedTx === tx._id ? 'expanded' : ''}`}>
-                  <div className="transaction-item" onClick={() => setExpandedTx(expandedTx === tx._id ? null : tx._id)}>
+                  <div className="transaction-item" onClick={() => {
+                    if (expandedTx === tx._id) {
+                      setExpandedTx(null);
+                    } else {
+                      setExpandedTx(tx._id);
+                      setEditingDetails(tx.details || '');
+                    }
+                  }}>
                     <div className={`tx-icon ${tx.type}`}>
                       {tx.type === 'income' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                     </div>
@@ -302,11 +323,24 @@ export default function FinanceView() {
                       </button>
                     </div>
                   </div>
-                  {expandedTx === tx._id && tx.details && (
+                  {expandedTx === tx._id && (
                     <div className="tx-details-expanded">
-                      <div className="details-content">
+                      <div className="details-editor">
                         <h6>Notes & Details</h6>
-                        <p>{tx.details}</p>
+                        <textarea 
+                          placeholder="Add more details about this transaction..."
+                          value={editingDetails}
+                          onChange={(e) => setEditingDetails(e.target.value)}
+                        />
+                        <div className="editor-footer">
+                          <button 
+                            className="save-details-btn"
+                            disabled={isSavingDetails || editingDetails === (tx.details || '')}
+                            onClick={() => handleUpdateDetails(tx._id)}
+                          >
+                            {isSavingDetails ? 'Saving...' : 'Save Notes'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -685,27 +719,57 @@ export default function FinanceView() {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        .details-content {
+        .details-editor {
           padding: 12px;
           background: var(--bg-color);
           border-radius: 8px;
           border-left: 3px solid var(--primary);
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
         }
 
-        .details-content h6 {
-          margin: 0 0 4px 0;
+        .details-editor h6 {
+          margin: 0;
           font-size: 10px;
           text-transform: uppercase;
           color: var(--text-secondary);
           letter-spacing: 0.05em;
         }
 
-        .details-content p {
-          margin: 0;
-          font-size: 13px;
+        .details-editor textarea {
+          background: var(--hover-bg);
+          border: 1px solid var(--border-color);
           color: var(--text-color);
-          line-height: 1.5;
-          white-space: pre-wrap;
+          padding: 8px 12px;
+          border-radius: 6px;
+          outline: none;
+          font-size: 13px;
+          font-family: inherit;
+          resize: vertical;
+          min-height: 80px;
+        }
+
+        .editor-footer {
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        .save-details-btn {
+          background: var(--primary);
+          color: white;
+          border: none;
+          padding: 6px 16px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: opacity 0.2s;
+        }
+
+        .save-details-btn:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
         }
 
         .empty-state {
