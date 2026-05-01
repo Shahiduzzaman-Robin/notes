@@ -193,6 +193,37 @@ export default function PublicNoteView() {
           color: var(--text-color);
         }
 
+        .note-content :global(table) {
+          border-collapse: collapse;
+          table-layout: fixed;
+          width: 100%;
+          margin: 0;
+          overflow: hidden;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+        }
+
+        .note-content :global(table td),
+        .note-content :global(table th) {
+          min-width: 1em;
+          border: 1px solid #e2e8f0;
+          padding: 12px 15px;
+          vertical-align: top;
+          box-sizing: border-box;
+          position: relative;
+          text-align: left;
+        }
+
+        .note-content :global(table th) {
+          font-weight: bold;
+          text-align: left;
+          background-color: #f8fafc;
+        }
+
+        .note-content :global(table p) {
+          margin: 0;
+        }
+
         .public-footer {
           margin-top: 60px;
           padding-top: 24px;
