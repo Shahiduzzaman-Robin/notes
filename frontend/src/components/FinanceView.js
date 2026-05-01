@@ -65,6 +65,18 @@ function CustomSelect({ value, onChange, options, icon: Icon, labelPrefix = "", 
           display: inline-block;
         }
 
+        .custom-select-container.input {
+          display: block;
+          width: 100%;
+        }
+
+        @media (max-width: 768px) {
+          .custom-select-container {
+            display: block;
+            width: 100%;
+          }
+        }
+
         .custom-select-trigger {
           display: flex;
           align-items: center;
@@ -1056,6 +1068,10 @@ export default function FinanceView() {
             flex-direction: column;
             align-items: flex-start;
             gap: 16px;
+          }
+
+          .header-actions {
+            width: 100%;
           }
 
           .search-box {
