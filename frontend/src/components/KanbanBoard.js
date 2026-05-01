@@ -364,7 +364,7 @@ export default function KanbanBoard() {
     setShowBoardMenu(null);
   };
   return (
-    <div className="animate-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className="animate-fade-in kanban-root-wrapper">
       {/* Breadcrumbs for Board */}
       <style jsx>{`
         .breadcrumbs { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--text-secondary); font-size: 13px; opacity: 0.8; }
@@ -372,6 +372,12 @@ export default function KanbanBoard() {
         .breadcrumb-item:hover { color: var(--text-color); text-decoration: underline; }
         .breadcrumb-separator { opacity: 0.4; }
         
+        .kanban-root-wrapper {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+
         .kanban-board-container {
           display: flex;
           gap: 24px;
@@ -444,18 +450,25 @@ export default function KanbanBoard() {
         }
 
         @media (max-width: 768px) {
+          .kanban-root-wrapper {
+            height: auto;
+            min-height: 100%;
+          }
+
           .kanban-board-container { 
             flex-direction: column; 
-            overflow-x: hidden; 
+            overflow: visible !important; 
             gap: 24px; 
             padding: 0 12px 40px 12px; 
             width: 100%;
             box-sizing: border-box;
           }
+
           .kanban-column { 
             min-width: 100%; 
             width: 100%; 
-            max-height: none; /* Let columns grow to show all content */
+            max-height: none !important;
+            overflow: visible !important;
             box-sizing: border-box;
           }
         }
