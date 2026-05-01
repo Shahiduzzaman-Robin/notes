@@ -63,24 +63,14 @@ function CustomSelect({ value, onChange, options, icon: Icon, labelPrefix = "", 
       <style jsx>{`
         .custom-select-container {
           position: relative;
-          display: inline-block;
-        }
-
-        .custom-select-container.input {
-          display: block;
           width: 100%;
-        }
-
-        @media (max-width: 768px) {
-          .custom-select-container {
-            display: block;
-            width: 100%;
-          }
+          display: block;
         }
 
         .custom-select-trigger {
           display: flex;
           align-items: center;
+          justify-content: space-between;
           gap: 8px;
           background: transparent;
           border: 1px solid transparent;
@@ -92,6 +82,7 @@ function CustomSelect({ value, onChange, options, icon: Icon, labelPrefix = "", 
           cursor: pointer;
           transition: all 0.2s;
           white-space: nowrap;
+          width: 100%;
         }
 
         .custom-select-trigger.input {
@@ -1096,7 +1087,8 @@ export default function FinanceView() {
 
           .filter-row-top .custom-select-container {
             flex: 1;
-            min-width: 0; /* Allow shrinking */
+            width: 50%; /* Explicit share */
+            min-width: 0;
           }
 
           .custom-select-trigger {
