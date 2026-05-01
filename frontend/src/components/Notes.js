@@ -4,6 +4,7 @@ import useStore from '../store/useStore';
 import { Trash2, FileText, Clock, AlignLeft, Tag, X, Folder, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import dynamic from 'next/dynamic';
+import Modal from './Modal';
 
 const TiptapEditor = dynamic(() => import('./TiptapEditor'), { ssr: false });
 
@@ -14,6 +15,7 @@ export default function Notes() {
   const [tagInput, setTagInput] = useState('');
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [lastSavedNote, setLastSavedNote] = useState({ title: '', content: '', tags: [], folder: null });
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const lastSyncedNoteIdRef = useRef(null);
 
   // Sync state with store
@@ -98,10 +100,9 @@ export default function Notes() {
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this note?')) {
-      await deleteNote(currentNote._id);
-      setActiveNoteId(null);
-    }
+    await deleteNote(currentNote._id);
+    setActiveNoteId(null);
+    setIsDeleteModalOpen(false);
   };
 
   const NoteSkeleton = () => (
@@ -264,6 +265,30 @@ export default function Notes() {
                   initialContent={currentNote.content || ''}
                   onChange={(content) => setCurrentNote(prev => ({ ...prev, content }))}
                 />
+
+                <Modal
+                  isOpen={isDeleteModalOpen}
+                  onClose={() => setIsDeleteModalOpen(false)}
+                  title="Delete Note"
+                  footer={
+                    <>
+                      <button 
+                        onClick={() => setIsDeleteModalOpen(false)} 
+                        style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: 'var(--text-secondary)', background: 'transparent' }}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={handleDelete} 
+                        style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: '#fff', background: '#ef4444', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  }
+                >
+                  <p>Are you sure you want to delete this note? This action cannot be undone and you will lose all the content within this note.</p>
+                </Modal>
               </>
             )}
           </div>
@@ -343,7 +368,7 @@ export default function Notes() {
             <button className="action-btn" onClick={handleExportPDF}>
               <Download size={16} /> Export as PDF
             </button>
-            <button className="action-btn delete" onClick={handleDelete}>
+            <button className="action-btn delete" onClick={() => setIsDeleteModalOpen(true)}>
               <Trash2 size={16} /> Delete Note
             </button>
           </div>

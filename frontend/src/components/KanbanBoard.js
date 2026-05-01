@@ -1,7 +1,8 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
+import createPortal from 'react-dom';
 import useStore from '../store/useStore';
+import Modal from './Modal';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Plus, MoreVertical, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2, Check, X, Settings, Kanban, Folder, Layout, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -1009,53 +1010,53 @@ export default function KanbanBoard() {
           </div>
         </div>
       )}
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)' }} onClick={() => setShowDeleteModal(false)}>
-          <div style={{ background: 'var(--bg-color)', padding: '24px', borderRadius: '12px', width: '360px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid var(--border-color)' }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-color)', marginBottom: '8px' }}>Delete this task?</h3>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.5' }}>This will permanently remove the task and all its subtasks. This action cannot be undone.</p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 500, color: 'var(--text-color)', background: 'var(--hover-bg)', border: '1px solid var(--border-color)' }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => { deleteTask(localTask._id); setSelectedTask(null); setShowDeleteModal(false); }}
-                style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: '#ef4444', color: 'white', border: 'none' }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Delete this task?"
+        footer={
+          <>
+            <button
+              onClick={() => setShowDeleteModal(false)}
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 500, color: 'var(--text-color)', background: 'var(--hover-bg)', border: '1px solid var(--border-color)' }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => { deleteTask(localTask._id); setSelectedTask(null); setShowDeleteModal(false); }}
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer' }}
+            >
+              Delete
+            </button>
+          </>
+        }
+      >
+        <p>This will permanently remove the task and all its subtasks. This action cannot be undone.</p>
+      </Modal>
 
-      {/* Delete Board Confirmation Modal */}
-      {boardToDelete && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)' }} onClick={() => setBoardToDelete(null)}>
-          <div style={{ background: 'var(--bg-color)', padding: '24px', borderRadius: '12px', width: '360px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid var(--border-color)' }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-color)', marginBottom: '8px' }}>Delete board?</h3>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.5' }}>Are you sure you want to delete "{boardToDelete.name}"? All tasks will be permanently lost. This action cannot be undone.</p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setBoardToDelete(null)}
-                style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 500, color: 'var(--text-color)', background: 'var(--hover-bg)', border: '1px solid var(--border-color)' }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => { await deleteBoard(boardToDelete.id); setBoardToDelete(null); }}
-                style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: '#ef4444', color: 'white', border: 'none' }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={!!boardToDelete}
+        onClose={() => setBoardToDelete(null)}
+        title="Delete board?"
+        footer={
+          <>
+            <button
+              onClick={() => setBoardToDelete(null)}
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 500, color: 'var(--text-color)', background: 'var(--hover-bg)', border: '1px solid var(--border-color)' }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => { await deleteBoard(boardToDelete.id); setBoardToDelete(null); }}
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: 600, background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer' }}
+            >
+              Delete
+            </button>
+          </>
+        }
+      >
+        <p>Are you sure you want to delete "{boardToDelete?.name}"? All tasks will be permanently lost. This action cannot be undone.</p>
+      </Modal>
 
       <style jsx>{`
         div:hover > button {
