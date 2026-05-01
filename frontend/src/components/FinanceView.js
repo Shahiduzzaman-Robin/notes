@@ -1063,9 +1063,22 @@ export default function FinanceView() {
           }
 
           .filter-bar {
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 12px;
             padding-bottom: 12px;
+            align-items: stretch;
+          }
+
+          .custom-select-container {
+            width: 100%;
+          }
+
+          .custom-select-trigger {
+            width: 100%;
+            justify-content: space-between;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            height: 38px;
           }
 
           .form-main {
