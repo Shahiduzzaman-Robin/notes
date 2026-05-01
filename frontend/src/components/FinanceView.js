@@ -256,17 +256,25 @@ export default function FinanceView() {
                 <select value={category} onChange={(e) => setCategory(e.target.value)}>
                   {categories.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
-                <div className="type-toggle">
-                  <button 
-                    type="button" 
-                    className={type === 'income' ? 'active income' : ''} 
-                    onClick={() => setType('income')}
-                  >In</button>
-                  <button 
-                    type="button" 
-                    className={type === 'expense' ? 'active expense' : ''} 
-                    onClick={() => setType('expense')}
-                  >Out</button>
+                <div className="type-toggle-wrapper">
+                  <div className="type-toggle">
+                    <button 
+                      type="button" 
+                      className={type === 'income' ? 'active income' : ''} 
+                      onClick={() => setType('income')}
+                    >
+                      <TrendingUp size={14} />
+                      <span>Income</span>
+                    </button>
+                    <button 
+                      type="button" 
+                      className={type === 'expense' ? 'active expense' : ''} 
+                      onClick={() => setType('expense')}
+                    >
+                      <TrendingDown size={14} />
+                      <span>Expense</span>
+                    </button>
+                  </div>
                 </div>
                 <button type="submit" className="add-btn"><Plus size={18} /></button>
               </div>
@@ -595,27 +603,46 @@ export default function FinanceView() {
           cursor: pointer;
         }
 
+        .type-toggle-wrapper {
+          flex: 1;
+        }
+
         .type-toggle {
           display: flex;
           background: var(--bg-color);
           border: 1px solid var(--border-color);
-          border-radius: 8px;
-          padding: 2px;
+          border-radius: 10px;
+          padding: 3px;
+          height: 40px;
         }
-
+        
         .type-toggle button {
-          padding: 6px 12px;
-          border-radius: 6px;
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          border-radius: 8px;
           border: none;
           background: transparent;
           color: var(--text-secondary);
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 600;
           cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .type-toggle button.active.income { background: #10b981; color: white; }
-        .type-toggle button.active.expense { background: #f43f5e; color: white; }
+        .type-toggle button.active.income { 
+          background: #10b981; 
+          color: white;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        
+        .type-toggle button.active.expense { 
+          background: #f43f5e; 
+          color: white;
+          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2);
+        }
 
         .add-btn {
           background: var(--primary);
