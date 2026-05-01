@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import createPortal from 'react-dom';
+import { createPortal } from 'react-dom';
 import useStore from '../store/useStore';
 import Modal from './Modal';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
