@@ -7,6 +7,7 @@ import {
   Plus, 
   Trash2, 
   ChevronRight, 
+  ChevronDown,
   Search,
   Filter,
   PieChart,
@@ -34,7 +35,7 @@ function CustomSelect({ value, onChange, options, icon: Icon, labelPrefix = "", 
       >
         {Icon && <Icon size={14} className="trigger-icon" />}
         <span className="trigger-text">{labelPrefix}{selectedOption.label}</span>
-        <ChevronRight size={14} className={`chevron ${isOpen ? 'open' : ''}`} />
+        <ChevronDown size={14} className={`chevron ${isOpen ? 'open' : ''}`} />
       </button>
 
       {isOpen && (
@@ -119,11 +120,11 @@ function CustomSelect({ value, onChange, options, icon: Icon, labelPrefix = "", 
         .chevron {
           color: var(--text-secondary);
           opacity: 0.5;
-          transition: transform 0.2s;
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .chevron.open {
-          transform: rotate(90deg);
+          transform: rotate(180deg);
         }
 
         .select-overlay {
