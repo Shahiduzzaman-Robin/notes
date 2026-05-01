@@ -673,9 +673,9 @@ export default function KanbanBoard() {
                       flex: 1,
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '4px',
+                      gap: '8px',
                       minHeight: '200px',
-                      padding: '4px 8px',
+                      padding: '0 4px',
                       overflowY: 'auto',
                       overflowX: 'hidden',
                       scrollbarWidth: 'none',
@@ -706,8 +706,8 @@ export default function KanbanBoard() {
                                   onClick={() => setSelectedTask(task)}
                                   style={{
                                     position: 'relative',
-                                    padding: '16px',
-                                    borderRadius: '16px',
+                                    padding: '10px 14px',
+                                    borderRadius: '12px',
                                     background: 'var(--card-bg)',
                                     backdropFilter: 'blur(12px)',
                                     border: '1px solid var(--border-color)',
@@ -811,8 +811,8 @@ export default function KanbanBoard() {
                       style={{ marginTop: '4px' }}
                     >
                       <div style={{
-                        padding: '12px',
-                        borderRadius: '12px',
+                        padding: '8px 12px',
+                        borderRadius: '10px',
                         border: '2px dashed var(--border-color)',
                         display: 'flex',
                         alignItems: 'center',
