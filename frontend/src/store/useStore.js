@@ -16,6 +16,7 @@ const useStore = create((set, get) => ({
   isLoadingBoards: true,
   isLoadingFolders: true,
   globalSearchQuery: '',
+  setGlobalSearchQuery: (query) => set({ globalSearchQuery: query }),
   activeTab: 'notes',
   isLoading: false,
   

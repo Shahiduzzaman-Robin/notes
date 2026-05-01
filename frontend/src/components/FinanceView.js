@@ -184,12 +184,11 @@ function CustomSelect({ value, onChange, options, icon: Icon, labelPrefix = "", 
 
 export default function FinanceView() {
   const { theme } = useTheme();
-  const { transactions = [], addTransaction, deleteTransaction } = useStore();
+  const { transactions = [], addTransaction, deleteTransaction, globalSearchQuery, setGlobalSearchQuery } = useStore();
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('expense');
   const [category, setCategory] = useState('General');
-  const [searchQuery, setSearchQuery] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [txToDelete, setTxToDelete] = useState(null);
@@ -211,8 +210,8 @@ export default function FinanceView() {
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
       // Search filter
-      const matchesSearch = t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           t.category.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = t.description.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
+                           t.category.toLowerCase().includes(globalSearchQuery.toLowerCase());
       if (!matchesSearch) return false;
 
       // Category filter
@@ -334,9 +333,9 @@ export default function FinanceView() {
                 <Search size={16} />
                 <input 
                   type="text" 
-                  placeholder="Search..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search transactions..." 
+                  value={globalSearchQuery}
+                  onChange={(e) => setGlobalSearchQuery(e.target.value)}
                 />
               </div>
             </div>
