@@ -247,7 +247,7 @@ export default function FinanceView() {
       }
       return true;
     });
-  }, [transactions, searchQuery, filterRange, filterCategory, filterType, startDate, endDate]);
+  }, [transactions, globalSearchQuery, filterRange, filterCategory, filterType, startDate, endDate]);
 
   // Analytics based on FILTERED transactions
   const stats = useMemo(() => {
