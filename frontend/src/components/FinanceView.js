@@ -19,17 +19,17 @@ import { format } from 'date-fns';
 import Modal from './Modal';
 
 // Custom Dropdown Component
-function CustomSelect({ value, onChange, options, icon: Icon, labelPrefix = "" }) {
+function CustomSelect({ value, onChange, options, icon: Icon, labelPrefix = "", variant = "ghost" }) {
   const [isOpen, setIsOpen] = useState(false);
   const { theme } = useTheme();
 
   const selectedOption = options.find(opt => opt.value === value) || options[0];
 
   return (
-    <div className="custom-select-container">
+    <div className={`custom-select-container ${variant}`}>
       <button 
         type="button" 
-        className={`custom-select-trigger ${isOpen ? 'active' : ''}`}
+        className={`custom-select-trigger ${isOpen ? 'active' : ''} ${variant}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         {Icon && <Icon size={14} className="trigger-icon" />}
@@ -78,10 +78,25 @@ function CustomSelect({ value, onChange, options, icon: Icon, labelPrefix = "" }
           border-radius: 8px;
           cursor: pointer;
           transition: all 0.2s;
+          white-space: nowrap;
+        }
+
+        .custom-select-trigger.input {
+          background: var(--bg-color);
+          border: 1px solid var(--border-color);
+          padding: 8px 12px;
+          height: 38px;
+          min-width: 120px;
+          justify-content: space-between;
+          font-weight: 500;
         }
 
         .custom-select-trigger:hover, .custom-select-trigger.active {
           background: var(--hover-bg);
+        }
+
+        .custom-select-trigger.input:hover {
+          border-color: var(--primary);
         }
 
         .trigger-icon {
@@ -407,6 +422,7 @@ export default function FinanceView() {
                 <CustomSelect 
                   value={category} 
                   onChange={setCategory}
+                  variant="input"
                   options={categories.map(c => ({ value: c, label: c }))}
                 />
                 <div className="type-toggle-wrapper">
