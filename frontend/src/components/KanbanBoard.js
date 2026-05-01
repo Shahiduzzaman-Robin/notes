@@ -1137,6 +1137,8 @@ export default function KanbanBoard() {
         }
       >
         <p>Are you sure you want to delete "{boardToDelete?.name}"? All tasks will be permanently lost. This action cannot be undone.</p>
+      </Modal>
+
       <Modal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
