@@ -17,6 +17,7 @@ export default function Notes() {
   const [lastSavedNote, setLastSavedNote] = useState({ title: '', content: '', tags: [], folder: null });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isRegenerateModalOpen, setIsRegenerateModalOpen] = useState(false);
   const [showMobileMeta, setShowMobileMeta] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const lastSyncedNoteIdRef = useRef(null);
@@ -139,9 +140,12 @@ export default function Notes() {
   };
 
   const handleRegenerateLink = async () => {
-    if (confirm('Are you sure? This will permanently deactivate the old link and generate a brand-new one.')) {
-      await updateNote(currentNote._id, { regenerateSlug: true });
-    }
+    setIsRegenerateModalOpen(true);
+  };
+
+  const confirmRegenerate = async () => {
+    await updateNote(currentNote._id, { regenerateSlug: true });
+    setIsRegenerateModalOpen(false);
   };
 
   const NoteSkeleton = () => (
@@ -432,6 +436,32 @@ export default function Notes() {
                     )}
 
                   </div>
+                </Modal>
+
+                <Modal
+                  isOpen={isRegenerateModalOpen}
+                  onClose={() => setIsRegenerateModalOpen(false)}
+                  title="Regenerate Link"
+                  footer={
+                    <>
+                      <button 
+                        onClick={() => setIsRegenerateModalOpen(false)} 
+                        style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: 'var(--text-secondary)', background: 'transparent' }}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={confirmRegenerate} 
+                        style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: '#fff', background: 'var(--primary)', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+                      >
+                        Regenerate
+                      </button>
+                    </>
+                  }
+                >
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5' }}>
+                    Are you sure? This will permanently deactivate the current public link. Anyone with the old link will lose access immediately.
+                  </p>
                 </Modal>
               </>
             )}

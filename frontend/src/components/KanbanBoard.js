@@ -36,6 +36,7 @@ export default function KanbanBoard() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [boardToDelete, setBoardToDelete] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isRegenerateModalOpen, setIsRegenerateModalOpen] = useState(false);
   const [showMobileMeta, setShowMobileMeta] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
@@ -228,9 +229,12 @@ export default function KanbanBoard() {
   }
 
   const handleRegenerateLink = async () => {
-    if (confirm('Are you sure? This will permanently deactivate the old link and generate a brand-new one.')) {
-      await updateBoard(activeBoard._id, { regenerateSlug: true });
-    }
+    setIsRegenerateModalOpen(true);
+  };
+
+  const confirmRegenerate = async () => {
+    await updateBoard(activeBoard._id, { regenerateSlug: true });
+    setIsRegenerateModalOpen(false);
   };
 
   const activeBoard = boards.find(b => b._id === activeBoardId) || boards[0];
@@ -1248,6 +1252,32 @@ export default function KanbanBoard() {
           )}
 
         </div>
+      </Modal>
+
+      <Modal
+        isOpen={isRegenerateModalOpen}
+        onClose={() => setIsRegenerateModalOpen(false)}
+        title="Regenerate Link"
+        footer={
+          <>
+            <button 
+              onClick={() => setIsRegenerateModalOpen(false)} 
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: 'var(--text-color)', background: 'var(--hover-bg)', border: '1px solid var(--border-color)' }}
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={confirmRegenerate} 
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', color: '#fff', background: 'var(--primary)', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+            >
+              Regenerate
+            </button>
+          </>
+        }
+      >
+        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5' }}>
+          Are you sure? This will permanently deactivate the current public link for this workflow. Anyone with the old link will lose access immediately.
+        </p>
       </Modal>
 
       <style jsx>{`
