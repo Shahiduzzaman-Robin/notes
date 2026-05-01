@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { FileText, Calendar, Clock } from 'lucide-react';
+import { Lock, Clock, Tag, AlignLeft, Calendar, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function PublicNoteView() {
@@ -32,14 +32,62 @@ export default function PublicNoteView() {
     </div>
   );
 
-  if (error) return (
-    <div className="public-container flex-center">
-      <div className="error-card glass">
-        <h2>Note Not Available</h2>
-        <p>{error}</p>
+  if (!note) {
+    return (
+      <div className="error-container">
+        <div className="error-card">
+          <div className="icon-wrapper">
+            <Lock size={40} strokeWidth={1.5} />
+          </div>
+          <h1>Note Private or Missing</h1>
+          <p>This note is either not available or public sharing has been disabled by the owner.</p>
+          <div className="brand-footer">Notes by Robin</div>
+        </div>
+
+        <style jsx>{`
+          .error-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            padding: 20px;
+            font-family: 'Inter', system-ui, sans-serif;
+          }
+          .error-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 48px 32px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+          }
+          .icon-wrapper {
+            width: 80px;
+            height: 80px;
+            background: rgba(35, 131, 226, 0.1);
+            color: var(--primary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+          }
+          h1 { margin: 0 0 12px 0; font-size: 24px; font-weight: 800; color: #1e293b; letter-spacing: -0.02em; }
+          p { margin: 0; font-size: 15px; color: #64748b; lineHeight: 1.6; }
+          .brand-footer { margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(0,0,0,0.05); font-size: 13px; font-weight: 600; color: #94a3b8; letter-spacing: 0.05em; text-transform: uppercase; }
+        `}</style>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="public-container">
