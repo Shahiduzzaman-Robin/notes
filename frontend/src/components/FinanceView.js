@@ -189,6 +189,7 @@ export default function FinanceView() {
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('expense');
   const [category, setCategory] = useState('General');
+  const [searchQuery, setSearchQuery] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [txToDelete, setTxToDelete] = useState(null);
@@ -209,9 +210,10 @@ export default function FinanceView() {
   // Apply filters to transactions
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
-      // Search filter
-      const matchesSearch = t.description.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
-                           t.category.toLowerCase().includes(globalSearchQuery.toLowerCase());
+      // Combined search filter (Local Finance Search OR Global Search)
+      const combinedQuery = (searchQuery || globalSearchQuery).toLowerCase();
+      const matchesSearch = t.description.toLowerCase().includes(combinedQuery) ||
+                           t.category.toLowerCase().includes(combinedQuery);
       if (!matchesSearch) return false;
 
       // Category filter
@@ -247,7 +249,7 @@ export default function FinanceView() {
       }
       return true;
     });
-  }, [transactions, globalSearchQuery, filterRange, filterCategory, filterType, startDate, endDate]);
+  }, [transactions, searchQuery, globalSearchQuery, filterRange, filterCategory, filterType, startDate, endDate]);
 
   // Analytics based on FILTERED transactions
   const stats = useMemo(() => {
@@ -334,8 +336,8 @@ export default function FinanceView() {
                 <input 
                   type="text" 
                   placeholder="Search transactions..." 
-                  value={globalSearchQuery}
-                  onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
             </div>
