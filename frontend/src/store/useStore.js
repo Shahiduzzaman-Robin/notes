@@ -4,12 +4,12 @@ import axios from 'axios';
 const API_URL = '/api';
 
 const useStore = create((set, get) => ({
-  notes: [],
-  boards: [],
+  notes: typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('cached_notes') || '[]') : [],
+  boards: typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('cached_boards') || '[]') : [],
   tasks: [],
-  noteFolders: [],
-  boardFolders: [],
-  transactions: [],
+  noteFolders: typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('cached_noteFolders') || '[]') : [],
+  boardFolders: typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('cached_boardFolders') || '[]') : [],
+  transactions: typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('cached_transactions') || '[]') : [],
   activeBoardId: null,
   activeNoteId: null,
   activeFolderId: null,
@@ -38,13 +38,24 @@ const useStore = create((set, get) => ({
 
       console.log(`Sync completed in ${Date.now() - start}ms`);
 
-      set({ 
+      const data = {
         notes: res.data.notes || [],
         noteFolders: (res.data.folders || []).filter(f => f.type === 'notes'),
         boardFolders: (res.data.folders || []).filter(f => f.type === 'boards'),
         boards: res.data.boards || [],
         tasks: res.data.tasks || [],
-        transactions: res.data.transactions || [],
+        transactions: res.data.transactions || []
+      };
+
+      // Update cache
+      localStorage.setItem('cached_notes', JSON.stringify(data.notes));
+      localStorage.setItem('cached_noteFolders', JSON.stringify(data.noteFolders));
+      localStorage.setItem('cached_boardFolders', JSON.stringify(data.boardFolders));
+      localStorage.setItem('cached_boards', JSON.stringify(data.boards));
+      localStorage.setItem('cached_transactions', JSON.stringify(data.transactions));
+
+      set({ 
+        ...data,
         isLoading: false,
         isLoadingFolders: false,
         isLoadingBoards: false
@@ -123,7 +134,11 @@ const useStore = create((set, get) => ({
       });
       const type = folderData.type || 'notes';
       const key = type === 'notes' ? 'noteFolders' : 'boardFolders';
-      set((state) => ({ [key]: [...state[key], res.data] }));
+      set((state) => {
+        const newState = { [key]: [...state[key], res.data] };
+        localStorage.setItem(`cached_${key}`, JSON.stringify(newState[key]));
+        return newState;
+      });
       return res.data;
     } catch (error) {
       console.error(error);
@@ -178,7 +193,11 @@ const useStore = create((set, get) => ({
       const res = await axios.post(`${API_URL}/notes`, noteData, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
-      set((state) => ({ notes: [res.data, ...state.notes] }));
+      set((state) => {
+        const newNotes = [res.data, ...state.notes];
+        localStorage.setItem('cached_notes', JSON.stringify(newNotes));
+        return { notes: newNotes };
+      });
       return res.data;
     } catch (error) {
       console.error(error);
@@ -237,7 +256,11 @@ const useStore = create((set, get) => ({
       const res = await axios.post(`${API_URL}/boards`, { name, folder: folderId }, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
-      set((state) => ({ boards: [...state.boards, res.data] }));
+      set((state) => {
+        const newBoards = [...state.boards, res.data];
+        localStorage.setItem('cached_boards', JSON.stringify(newBoards));
+        return { boards: newBoards };
+      });
       if (!get().activeBoardId) {
         set({ activeBoardId: res.data._id });
       }
