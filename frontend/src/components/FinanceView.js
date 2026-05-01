@@ -445,7 +445,6 @@ export default function FinanceView() {
                     </button>
                   </div>
                 </div>
-                <button type="submit" className="add-btn"><Plus size={18} /></button>
               </div>
               <div className="form-details">
                 <textarea 
@@ -455,6 +454,7 @@ export default function FinanceView() {
                   rows={1}
                 />
               </div>
+              <button type="submit" className="add-btn"><Plus size={18} /> Add Transaction</button>
             </form>
           </div>
 
@@ -817,16 +817,25 @@ export default function FinanceView() {
           background: var(--primary);
           color: white;
           border: none;
-          width: 40px;
-          border-radius: 8px;
+          height: 40px;
+          padding: 0 20px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
+          gap: 8px;
           cursor: pointer;
-          transition: opacity 0.2s;
+          transition: all 0.2s;
+          font-weight: 600;
+          font-size: 14px;
+          margin-top: 4px;
         }
 
-        .add-btn:hover { opacity: 0.9; }
+        .add-btn:hover { 
+          opacity: 0.9;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+        }
 
         .transaction-list {
           display: flex;
@@ -1071,7 +1080,7 @@ export default function FinanceView() {
           .add-btn {
             width: 100%;
             height: 44px;
-            margin-top: 4px;
+            margin-top: 8px;
           }
 
           .transaction-item {
