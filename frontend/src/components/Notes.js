@@ -318,23 +318,6 @@ export default function Notes() {
               </div>
             </div>
 
-            <div className="meta-item">
-              <div className="meta-icon"><Folder size={16} /></div>
-              <div className="meta-content">
-                <span className="meta-label">Folder</span>
-                <select 
-                  className="meta-select"
-                  value={currentNote.folder || ''}
-                  onChange={(e) => setCurrentNote(prev => ({ ...prev, folder: e.target.value || null }))}
-                >
-                  <option value="">No Folder</option>
-                  {noteFolders.map(f => (
-                    <option key={f._id} value={f._id}>{f.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
             <div className="meta-item" style={{ alignItems: 'flex-start' }}>
               <div className="meta-icon" style={{ marginTop: '4px' }}><Tag size={16} /></div>
               <div className="meta-content">
