@@ -688,20 +688,19 @@ export default function KanbanBoard() {
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '4px',
-                      minHeight: '200px',
-                      padding: '0 4px',
-                      overflowY: 'auto',
-                      overflowX: 'hidden',
-                      scrollbarWidth: 'none',
-                      transition: 'background 0.2s ease',
-                      background: snapshot.isDraggingOver ? 'var(--hover-bg)' : 'transparent',
-                      borderRadius: '4px'
-                    }}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                        minHeight: '200px',
+                        padding: '0 4px',
+                        overflowY: typeof window !== 'undefined' && window.innerWidth <= 768 ? 'visible' : 'auto',
+                        scrollbarWidth: 'none',
+                        transition: 'background 0.2s ease',
+                        background: snapshot.isDraggingOver ? 'var(--hover-bg)' : 'transparent',
+                        borderRadius: '4px'
+                      }}
                   >
                     {getFilteredTasksByColumn(col.id).map((task, index) => {
                       return (
