@@ -270,10 +270,13 @@ const useStore = create((set, get) => ({
       console.error(error);
     }
   },
-  updateBoard: async (id, name) => {
+  updateBoard: async (id, updates) => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
-      const res = await axios.put(`${API_URL}/boards/${id}`, { name }, {
+      // If updates is a string, assume it's the name (for backward compatibility if needed)
+      const payload = typeof updates === 'string' ? { name: updates } : updates;
+      
+      const res = await axios.put(`${API_URL}/boards/${id}`, payload, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       set((state) => ({

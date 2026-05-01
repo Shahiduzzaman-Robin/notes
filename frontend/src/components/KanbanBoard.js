@@ -366,9 +366,10 @@ export default function KanbanBoard() {
     setShowBoardMenu(null);
   };
 
-  const handleToggleShare = async () => {
+  const handleToggleShare = async (e) => {
     if (!activeBoard) return;
-    await updateBoard(activeBoard._id, { isPublic: !activeBoard.isPublic });
+    const newVal = e.target.checked;
+    await updateBoard(activeBoard._id, { isPublic: newVal });
   };
 
   const copyShareLink = () => {
@@ -504,11 +505,11 @@ export default function KanbanBoard() {
         .copy-btn { padding: 6px 12px; border-radius: 6px; background: var(--primary); color: white; border: none; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; min-width: 60px; }
         .copy-btn.success { background: #10b981; }
         .share-tip { margin-top: 12px; font-size: 12px; color: var(--text-secondary); opacity: 0.7; font-style: italic; }
-
+        
         /* Switch Style */
-        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; inset: 0; background-color: var(--border-color); transition: .4s; border-radius: 24px; }
+        .switch { position: relative; display: inline-block; width: 46px; height: 24px; cursor: pointer; }
+        .switch input { position: absolute; width: 100%; height: 100%; opacity: 0; z-index: 2; cursor: pointer; margin: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: var(--border-color); transition: .4s; border-radius: 24px; z-index: 1; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(22px); }
