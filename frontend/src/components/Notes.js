@@ -232,6 +232,30 @@ export default function Notes() {
         .action-btn:hover { background: var(--border-color); transform: translateY(-1px); }
         .action-btn.delete { color: var(--danger); border-color: rgba(239, 68, 68, 0.2); }
         .action-btn.delete:hover { background: rgba(239, 68, 68, 0.1); }
+
+        /* Share Modal Styles */
+        .share-modal-content { padding: 8px 0; }
+        .share-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+        .share-icon-wrapper { width: 48px; height: 48px; border-radius: 12px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; }
+        .share-info { flex: 1; }
+        .share-info h4 { margin: 0 0 4px 0; font-size: 16px; font-weight: 600; }
+        .share-info p { margin: 0; font-size: 13px; color: var(--text-secondary); }
+        
+        .share-link-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color); }
+        .link-box { display: flex; align-items: center; gap: 10px; background: var(--hover-bg); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 10px; }
+        .link-icon { color: var(--text-secondary); }
+        .link-input { flex: 1; background: transparent; border: none; color: var(--text-color); font-size: 13px; outline: none; text-overflow: ellipsis; }
+        .copy-btn { padding: 6px 12px; border-radius: 6px; background: var(--primary); color: white; border: none; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; min-width: 60px; }
+        .copy-btn.success { background: #10b981; }
+        .share-tip { margin-top: 12px; font-size: 12px; color: var(--text-secondary); opacity: 0.7; font-style: italic; }
+
+        /* Switch Style */
+        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: var(--border-color); transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
       `}</style>
 
       <div className="notes-editor-container">
@@ -347,30 +371,6 @@ export default function Notes() {
                       </div>
                     )}
 
-                    <style jsx>{`
-                      .share-modal-content { padding: 8px 0; }
-                      .share-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-                      .share-icon-wrapper { width: 48px; height: 48px; border-radius: 12px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; }
-                      .share-info { flex: 1; }
-                      .share-info h4 { margin: 0 0 4px 0; font-size: 16px; font-weight: 600; }
-                      .share-info p { margin: 0; font-size: 13px; color: var(--text-secondary); }
-                      
-                      .share-link-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color); }
-                      .link-box { display: flex; align-items: center; gap: 10px; background: var(--hover-bg); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 10px; }
-                      .link-icon { color: var(--text-secondary); }
-                      .link-input { flex: 1; background: transparent; border: none; color: var(--text-color); font-size: 13px; outline: none; text-overflow: ellipsis; }
-                      .copy-btn { padding: 6px 12px; border-radius: 6px; background: var(--primary); color: white; border: none; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; min-width: 60px; }
-                      .copy-btn.success { background: #10b981; }
-                      .share-tip { margin-top: 12px; font-size: 12px; color: var(--text-secondary); opacity: 0.7; font-style: italic; }
-
-                      /* Switch Style */
-                      .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
-                      .switch input { opacity: 0; width: 0; height: 0; }
-                      .slider { position: absolute; cursor: pointer; inset: 0; background-color: var(--border-color); transition: .4s; border-radius: 24px; }
-                      .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-                      input:checked + .slider { background-color: var(--primary); }
-                      input:checked + .slider:before { transform: translateX(22px); }
-                    `}</style>
                   </div>
                 </Modal>
               </>
