@@ -673,7 +673,7 @@ export default function KanbanBoard() {
                       flex: 1,
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '8px',
+                      gap: '4px',
                       minHeight: '200px',
                       padding: '0 4px',
                       overflowY: 'auto',
@@ -706,7 +706,7 @@ export default function KanbanBoard() {
                                   onClick={() => setSelectedTask(task)}
                                   style={{
                                     position: 'relative',
-                                    padding: '10px 14px',
+                                    padding: '8px 12px',
                                     borderRadius: '12px',
                                     background: 'var(--card-bg)',
                                     backdropFilter: 'blur(12px)',
