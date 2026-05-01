@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import useStore from '../store/useStore';
-import { Trash2, FileText, Clock, AlignLeft, Tag, X, Folder, Download, Share2, Globe, Link, Check } from 'lucide-react';
+import { Trash2, FileText, Clock, AlignLeft, Tag, X, Folder, Download, Share2, Globe, Link, Check, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import dynamic from 'next/dynamic';
 import Modal from './Modal';
@@ -136,6 +136,12 @@ export default function Notes() {
     navigator.clipboard.writeText(shareUrl);
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
+  };
+
+  const handleRegenerateLink = async () => {
+    if (confirm('Are you sure? This will permanently deactivate the old link and generate a brand-new one.')) {
+      await updateNote(currentNote._id, { regenerateSlug: true });
+    }
   };
 
   const NoteSkeleton = () => (
@@ -416,6 +422,9 @@ export default function Notes() {
                           />
                           <button className={`copy-btn ${copySuccess ? 'success' : ''}`} onClick={copyShareLink}>
                             {copySuccess ? <Check size={16} /> : 'Copy'}
+                          </button>
+                          <button className="copy-btn" style={{ background: 'var(--hover-bg)', color: 'var(--text-secondary)', marginLeft: '8px' }} onClick={handleRegenerateLink} title="Generate new link">
+                            <RefreshCw size={16} />
                           </button>
                         </div>
                         <p className="share-tip">This link is unique and unguessable. Unshare anytime to revoke access.</p>

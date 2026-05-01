@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import useStore from '../store/useStore';
 import Modal from './Modal';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { Plus, MoreVertical, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2, Check, X, Settings, Kanban, Folder, Layout, Clock, Share2, Globe, Link } from 'lucide-react';
+import { Plus, MoreVertical, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2, Check, X, Settings, Kanban, Folder, Layout, Clock, Share2, Globe, Link, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 
@@ -226,6 +226,12 @@ export default function KanbanBoard() {
       </div>
     );
   }
+
+  const handleRegenerateLink = async () => {
+    if (confirm('Are you sure? This will permanently deactivate the old link and generate a brand-new one.')) {
+      await updateBoard(activeBoard._id, { regenerateSlug: true });
+    }
+  };
 
   const activeBoard = boards.find(b => b._id === activeBoardId) || boards[0];
   const columns = activeBoard.columns.sort((a, b) => a.order - b.order);
@@ -1232,6 +1238,9 @@ export default function KanbanBoard() {
                 />
                 <button className={`copy-btn ${copySuccess ? 'success' : ''}`} onClick={copyShareLink}>
                   {copySuccess ? <Check size={16} /> : 'Copy'}
+                </button>
+                <button className="copy-btn" style={{ background: 'var(--hover-bg)', color: 'var(--text-secondary)', marginLeft: '8px' }} onClick={handleRegenerateLink} title="Generate new link">
+                  <RefreshCw size={16} />
                 </button>
               </div>
               <p className="share-tip">This link is unique and unguessable. Unshare anytime to revoke access.</p>

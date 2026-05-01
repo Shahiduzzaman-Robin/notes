@@ -14,13 +14,14 @@ export async function PUT(req, { params }) {
     const { id } = await params;
     const updates = await req.json();
 
-    // If sharing is being turned on, ensure a slug exists
-    if (updates.isPublic) {
+    // If sharing is being turned on or manually regenerated, ensure/refresh a slug
+    if (updates.isPublic || updates.regenerateSlug) {
       await dbConnect();
       const existing = await Board.findOne({ _id: id, user: user._id });
-      if (existing && !existing.shareSlug) {
+      if (existing && (!existing.shareSlug || updates.regenerateSlug)) {
         updates.shareSlug = crypto.randomBytes(5).toString('hex');
       }
+      delete updates.regenerateSlug; // Clean up flag before saving
     } else {
       await dbConnect();
     }
