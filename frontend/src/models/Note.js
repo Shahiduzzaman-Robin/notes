@@ -6,7 +6,9 @@ const noteSchema = new mongoose.Schema({
   content: { type: String, default: '' },
   isPinned: { type: Boolean, default: false },
   tags: [{ type: String }],
-  folder: { type: mongoose.Schema.Types.ObjectId, ref: 'Folder', default: null }
+  folder: { type: mongoose.Schema.Types.ObjectId, ref: 'Folder', default: null },
+  isPublic: { type: Boolean, default: false },
+  shareSlug: { type: String, unique: true, sparse: true }
 }, { timestamps: true });
 
 noteSchema.index({ user: 1 });

@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import useStore from '../store/useStore';
 import Modal from './Modal';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { Plus, MoreVertical, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2, Check, X, Settings, Kanban, Folder, Layout, Clock } from 'lucide-react';
+import { Plus, MoreVertical, MoreHorizontal, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2, Check, X, Settings, Kanban, Folder, Layout, Clock, Share2, Globe, Link } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 
@@ -35,6 +35,8 @@ export default function KanbanBoard() {
   const [isDescFocused, setIsDescFocused] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [boardToDelete, setBoardToDelete] = useState(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
 
 
@@ -363,6 +365,20 @@ export default function KanbanBoard() {
     setBoardToDelete({ id, name });
     setShowBoardMenu(null);
   };
+
+  const handleToggleShare = async () => {
+    if (!activeBoard) return;
+    await updateBoard(activeBoard._id, { isPublic: !activeBoard.isPublic });
+  };
+
+  const copyShareLink = () => {
+    if (!activeBoard) return;
+    const baseUrl = window.location.origin;
+    const shareUrl = `${baseUrl}/share/board/${activeBoard.shareSlug}`;
+    navigator.clipboard.writeText(shareUrl);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
+  };
   return (
     <div className="animate-fade-in kanban-root-wrapper">
       {/* Breadcrumbs for Board */}
@@ -614,6 +630,16 @@ export default function KanbanBoard() {
               className="new-board-btn"
             >
               <Plus size={18} /> New Board
+            </button>
+          )}
+
+          {activeBoard && (
+            <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="new-board-btn"
+              style={{ background: activeBoard.isPublic ? 'rgba(16, 185, 129, 0.1)' : 'var(--hover-bg)', borderColor: activeBoard.isPublic ? 'rgba(16, 185, 129, 0.2)' : 'var(--border-color)', color: activeBoard.isPublic ? '#10b981' : 'var(--text-secondary)' }}
+            >
+              <Share2 size={18} /> {activeBoard.isPublic ? 'Sharing On' : 'Share'}
             </button>
           )}
         </div>
@@ -1087,6 +1113,74 @@ export default function KanbanBoard() {
         }
       >
         <p>Are you sure you want to delete "{boardToDelete?.name}"? All tasks will be permanently lost. This action cannot be undone.</p>
+      <Modal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title="Share Workflow to Web"
+      >
+        <div className="share-modal-content">
+          <div className="share-header">
+            <div className="share-icon-wrapper">
+              <Globe size={24} />
+            </div>
+            <div className="share-info">
+              <h4>Publish to web</h4>
+              <p>Anyone with the secret link can view this workflow.</p>
+            </div>
+            <div className="share-toggle-container">
+              <label className="switch">
+                <input 
+                  type="checkbox" 
+                  checked={activeBoard?.isPublic || false} 
+                  onChange={handleToggleShare}
+                />
+                <span className="slider round"></span>
+              </label>
+            </div>
+          </div>
+
+          {activeBoard?.isPublic && (
+            <div className="share-link-section animate-fade-in">
+              <div className="link-box">
+                <Link size={16} className="link-icon" />
+                <input 
+                  readOnly 
+                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/board/${activeBoard.shareSlug}`}
+                  className="link-input"
+                />
+                <button className={`copy-btn ${copySuccess ? 'success' : ''}`} onClick={copyShareLink}>
+                  {copySuccess ? <Check size={16} /> : 'Copy'}
+                </button>
+              </div>
+              <p className="share-tip">This link is unique and unguessable. Unshare anytime to revoke access.</p>
+            </div>
+          )}
+
+          <style jsx>{`
+            .share-modal-content { padding: 8px 0; }
+            .share-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+            .share-icon-wrapper { width: 48px; height: 48px; border-radius: 12px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; }
+            .share-info { flex: 1; }
+            .share-info h4 { margin: 0 0 4px 0; font-size: 16px; font-weight: 600; }
+            .share-info p { margin: 0; font-size: 13px; color: var(--text-secondary); }
+            
+            .share-link-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color); }
+            .link-box { display: flex; align-items: center; gap: 10px; background: var(--hover-bg); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 10px; }
+            .link-icon { color: var(--text-secondary); }
+            .link-input { flex: 1; background: transparent; border: none; color: var(--text-color); font-size: 13px; outline: none; text-overflow: ellipsis; }
+            .copy-btn { padding: 6px 12px; border-radius: 6px; background: var(--primary); color: white; border: none; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; min-width: 60px; }
+            .copy-btn.success { background: #10b981; }
+            .share-tip { margin-top: 12px; font-size: 12px; color: var(--text-secondary); opacity: 0.7; font-style: italic; }
+
+            /* Switch Style */
+            .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+            .switch input { opacity: 0; width: 0; height: 0; }
+            .slider { position: absolute; cursor: pointer; inset: 0; background-color: var(--border-color); transition: .4s; border-radius: 24px; }
+            .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+            input:checked + .slider { background-color: var(--primary); }
+            input:checked + .slider:before { transform: translateX(22px); }
+          `}</style>
+        </div>
       </Modal>
 
       <style jsx>{`

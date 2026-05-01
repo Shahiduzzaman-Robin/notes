@@ -11,13 +11,19 @@ export async function PUT(req, { params }) {
     if (!user) return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
 
     const { id } = await params;
-    const { name, folderId } = await req.json();
+    const updates = await req.json();
+
+    // If sharing is being turned on and no slug exists, generate one
+    if (updates.isPublic && !updates.shareSlug) {
+      const { crypto } = await import('crypto');
+      updates.shareSlug = crypto.randomBytes(5).toString('hex');
+    }
 
     await dbConnect();
     const board = await Board.findOneAndUpdate(
       { _id: id, user: user._id },
-      { name, folder: folderId },
-      { new: true }
+      { $set: updates },
+      { new: true, runValidators: true }
     );
 
     if (!board) return NextResponse.json({ message: 'Board not found' }, { status: 404 });

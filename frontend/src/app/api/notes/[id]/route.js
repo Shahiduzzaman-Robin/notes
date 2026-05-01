@@ -11,6 +11,12 @@ export async function PUT(req, { params }) {
     const { id } = await params;
     const updates = await req.json();
 
+    // If sharing is being turned on and no slug exists, generate one
+    if (updates.isPublic && !updates.shareSlug) {
+      const { crypto } = await import('crypto');
+      updates.shareSlug = crypto.randomBytes(5).toString('hex'); // 10 char random hex
+    }
+
     await dbConnect();
     const updatedNote = await Note.findOneAndUpdate(
       { _id: id, user: user._id },

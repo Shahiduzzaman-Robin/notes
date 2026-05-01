@@ -8,7 +8,9 @@ const boardSchema = new mongoose.Schema({
     title: { type: String, required: true },
     order: { type: Number, default: 0 }
   }],
-  folder: { type: mongoose.Schema.Types.ObjectId, ref: 'Folder', default: null }
+  folder: { type: mongoose.Schema.Types.ObjectId, ref: 'Folder', default: null },
+  isPublic: { type: Boolean, default: false },
+  shareSlug: { type: String, unique: true, sparse: true }
 }, { timestamps: true });
 
 boardSchema.index({ user: 1 });
