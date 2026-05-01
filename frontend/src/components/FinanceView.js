@@ -574,6 +574,7 @@ export default function FinanceView() {
           margin: 0 auto;
           padding: 40px 20px;
           animation: fadeIn 0.4s ease-out;
+          overflow-x: hidden; /* Prevent horizontal drift */
         }
 
         @keyframes fadeIn {
@@ -1047,6 +1048,8 @@ export default function FinanceView() {
         @media (max-width: 768px) {
           .finance-container {
             padding: 20px 12px;
+            width: 100%;
+            overflow-x: hidden;
           }
 
           .stats-grid {
