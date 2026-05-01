@@ -351,20 +351,32 @@ export default function FinanceView() {
           </div>
 
           <div className="filter-bar">
-            <CustomSelect 
-              value={filterRange} 
-              onChange={setFilterRange}
-              icon={Calendar}
-              options={[
-                { value: 'all', label: 'All Time' },
-                { value: 'today', label: 'Today' },
-                { value: 'last30', label: 'Last 30 Days' },
-                { value: 'last50', label: 'Last 50 Days' },
-                { value: 'month', label: 'This Month' },
-                { value: 'year', label: 'This Year' },
-                { value: 'custom', label: 'Custom Range' },
-              ]}
-            />
+            <div className="filter-row-top">
+              <CustomSelect 
+                value={filterRange} 
+                onChange={setFilterRange}
+                icon={Calendar}
+                options={[
+                  { value: 'all', label: 'All Time' },
+                  { value: 'today', label: 'Today' },
+                  { value: 'last30', label: 'Last 30 Days' },
+                  { value: 'last50', label: 'Last 50 Days' },
+                  { value: 'month', label: 'This Month' },
+                  { value: 'year', label: 'This Year' },
+                  { value: 'custom', label: 'Custom Range' },
+                ]}
+              />
+
+              <CustomSelect 
+                value={filterCategory} 
+                onChange={setFilterCategory}
+                icon={TagIcon}
+                options={[
+                  { value: 'all', label: 'All Categories' },
+                  ...categories.map(c => ({ value: c, label: c }))
+                ]}
+              />
+            </div>
 
             {filterRange === 'custom' && (
               <div className="custom-date-range">
@@ -385,16 +397,6 @@ export default function FinanceView() {
                 />
               </div>
             )}
-
-            <CustomSelect 
-              value={filterCategory} 
-              onChange={setFilterCategory}
-              icon={TagIcon}
-              options={[
-                { value: 'all', label: 'All Categories' },
-                ...categories.map(c => ({ value: c, label: c }))
-              ]}
-            />
 
             <CustomSelect 
               value={filterType} 
@@ -1080,13 +1082,20 @@ export default function FinanceView() {
 
           .filter-bar {
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
             padding-bottom: 12px;
             align-items: stretch;
           }
 
-          .custom-select-container {
+          .filter-row-top {
+            display: flex;
+            gap: 8px;
             width: 100%;
+          }
+
+          .filter-row-top .custom-select-container {
+            flex: 1;
+            min-width: 0; /* Allow shrinking */
           }
 
           .custom-select-trigger {
@@ -1095,6 +1104,14 @@ export default function FinanceView() {
             background: var(--hover-bg);
             border: 1px solid var(--border-color);
             height: 38px;
+            padding: 6px 8px;
+            font-size: 12px;
+          }
+
+          .custom-select-trigger .trigger-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
           }
 
           .form-main {
