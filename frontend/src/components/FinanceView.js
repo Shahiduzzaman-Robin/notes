@@ -18,6 +18,151 @@ import useStore from '../store/useStore';
 import { format } from 'date-fns';
 import Modal from './Modal';
 
+// Custom Dropdown Component
+function CustomSelect({ value, onChange, options, icon: Icon, labelPrefix = "" }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const { theme } = useTheme();
+
+  const selectedOption = options.find(opt => opt.value === value) || options[0];
+
+  return (
+    <div className="custom-select-container">
+      <button 
+        type="button" 
+        className={`custom-select-trigger ${isOpen ? 'active' : ''}`}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {Icon && <Icon size={14} className="trigger-icon" />}
+        <span className="trigger-text">{labelPrefix}{selectedOption.label}</span>
+        <ChevronRight size={14} className={`chevron ${isOpen ? 'open' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="select-overlay" onClick={() => setIsOpen(false)} />
+          <div className="select-menu">
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className={`select-item ${value === opt.value ? 'selected' : ''}`}
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+              >
+                {opt.label}
+                {value === opt.value && <div className="selected-dot" />}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      <style jsx>{`
+        .custom-select-container {
+          position: relative;
+          display: inline-block;
+        }
+
+        .custom-select-trigger {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: transparent;
+          border: 1px solid transparent;
+          color: var(--text-color);
+          font-size: 13px;
+          font-weight: 600;
+          padding: 6px 10px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .custom-select-trigger:hover, .custom-select-trigger.active {
+          background: var(--hover-bg);
+        }
+
+        .trigger-icon {
+          color: var(--text-secondary);
+          opacity: 0.7;
+        }
+
+        .chevron {
+          color: var(--text-secondary);
+          opacity: 0.5;
+          transition: transform 0.2s;
+        }
+
+        .chevron.open {
+          transform: rotate(90deg);
+        }
+
+        .select-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 1000;
+        }
+
+        .select-menu {
+          position: absolute;
+          top: calc(100% + 4px);
+          left: 0;
+          min-width: 180px;
+          background: var(--sidebar-bg);
+          border: 1px solid var(--border-color);
+          border-radius: 10px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+          padding: 6px;
+          z-index: 1001;
+          animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes popIn {
+          from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .select-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          padding: 8px 12px;
+          border: none;
+          background: transparent;
+          color: var(--text-color);
+          font-size: 13px;
+          text-align: left;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: background 0.1s;
+        }
+
+        .select-item:hover {
+          background: var(--hover-bg);
+        }
+
+        .select-item.selected {
+          font-weight: 600;
+          color: var(--primary);
+        }
+
+        .selected-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: var(--primary);
+        }
+      `}</style>
+    </div>
+  );
+}
+
 export default function FinanceView() {
   const { theme } = useTheme();
   const { transactions = [], addTransaction, deleteTransaction } = useStore();
@@ -179,18 +324,20 @@ export default function FinanceView() {
           </div>
 
           <div className="filter-bar">
-            <div className="filter-group">
-              <Calendar size={14} />
-              <select value={filterRange} onChange={(e) => setFilterRange(e.target.value)}>
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="last30">Last 30 Days</option>
-                <option value="last50">Last 50 Days</option>
-                <option value="month">This Month</option>
-                <option value="year">This Year</option>
-                <option value="custom">Custom Range</option>
-              </select>
-            </div>
+            <CustomSelect 
+              value={filterRange} 
+              onChange={setFilterRange}
+              icon={Calendar}
+              options={[
+                { value: 'all', label: 'All Time' },
+                { value: 'today', label: 'Today' },
+                { value: 'last30', label: 'Last 30 Days' },
+                { value: 'last50', label: 'Last 50 Days' },
+                { value: 'month', label: 'This Month' },
+                { value: 'year', label: 'This Year' },
+                { value: 'custom', label: 'Custom Range' },
+              ]}
+            />
 
             {filterRange === 'custom' && (
               <div className="custom-date-range">
@@ -212,22 +359,26 @@ export default function FinanceView() {
               </div>
             )}
 
-            <div className="filter-group">
-              <TagIcon size={14} />
-              <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-                <option value="all">All Categories</option>
-                {categories.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
+            <CustomSelect 
+              value={filterCategory} 
+              onChange={setFilterCategory}
+              icon={TagIcon}
+              options={[
+                { value: 'all', label: 'All Categories' },
+                ...categories.map(c => ({ value: c, label: c }))
+              ]}
+            />
 
-            <div className="filter-group">
-              <Filter size={14} />
-              <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-                <option value="all">All Types</option>
-                <option value="income">Income Only</option>
-                <option value="expense">Expense Only</option>
-              </select>
-            </div>
+            <CustomSelect 
+              value={filterType} 
+              onChange={setFilterType}
+              icon={Filter}
+              options={[
+                { value: 'all', label: 'All Types' },
+                { value: 'income', label: 'Income Only' },
+                { value: 'expense', label: 'Expense Only' },
+              ]}
+            />
           </div>
 
           <div className="form-wrapper">
@@ -253,9 +404,11 @@ export default function FinanceView() {
                   onChange={(e) => setDate(e.target.value)}
                   className="date-input"
                 />
-                <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <CustomSelect 
+                  value={category} 
+                  onChange={setCategory}
+                  options={categories.map(c => ({ value: c, label: c }))}
+                />
                 <div className="type-toggle-wrapper">
                   <div className="type-toggle">
                     <button 
