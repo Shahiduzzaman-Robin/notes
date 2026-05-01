@@ -410,10 +410,17 @@ h1, h2, h3, h4 {
   background: var(--hover-bg);
   font-weight: 600;
   text-align: left;
+  color: var(--text-color);
+  border-bottom: 2px solid var(--border-color);
 }
 
 .tiptap-wrapper .tiptap table td {
   background: transparent;
+  color: var(--text-color);
+}
+
+.dark-theme .tiptap-wrapper .tiptap table td {
+  background: rgba(255, 255, 255, 0.02); /* Subtle lift for cell readability */
 }
 
 .tiptap-wrapper .tiptap table td > p,
@@ -521,6 +528,22 @@ h1, h2, h3, h4 {
 .tiptap-wrapper .tiptap pre code {
   background: none;
   padding: 0;
+}
+
+/* Links inside editor */
+.tiptap-wrapper .tiptap a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 0.2s;
+}
+
+.tiptap-wrapper .tiptap a:hover {
+  opacity: 0.8;
+}
+
+.dark-theme .tiptap-wrapper .tiptap a {
+  color: #58a6ff; /* Brighter, high-contrast blue for dark mode */
 }
 
 /* Tiptap Horizontal Rule */
