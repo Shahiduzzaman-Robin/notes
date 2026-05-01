@@ -41,7 +41,7 @@ export default function PublicBoardView() {
           </div>
           <h1>Workflow Private or Missing</h1>
           <p>This workflow is either not available or public sharing has been disabled by the owner.</p>
-          <div className="brand-footer">Notes by Robin</div>
+          <div className="brand-footer">Notes by <a href="https://facebook.com/mds.zamanrobin/" target="_blank" rel="noopener noreferrer" className="dev-link">Robin</a></div>
         </div>
 
         <style jsx>{`
@@ -152,7 +152,7 @@ export default function PublicBoardView() {
         </div>
 
         <footer className="public-footer">
-          <p>Shared via Notes by Robin • Professional Workflow Tracking</p>
+          <p>Shared via Notes by <a href="https://facebook.com/mds.zamanrobin/" target="_blank" rel="noopener noreferrer" className="dev-link">Robin</a> • Professional Workflow Tracking</p>
         </footer>
       </div>
 
@@ -275,6 +275,19 @@ export default function PublicBoardView() {
           font-size: 12px;
           color: var(--text-secondary);
           opacity: 0.6;
+        }
+
+        .dev-link {
+          color: inherit;
+          text-decoration: none;
+          font-weight: 700;
+          transition: all 0.2s;
+          border-bottom: 1px solid transparent;
+        }
+
+        .dev-link:hover {
+          color: #2383e2;
+          border-bottom-color: #2383e2;
         }
 
         .error-card { padding: 40px; text-align: center; border-radius: 20px; }

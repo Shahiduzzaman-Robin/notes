@@ -41,7 +41,7 @@ export default function PublicNoteView() {
           </div>
           <h1>Note Private or Missing</h1>
           <p>This note is either not available or public sharing has been disabled by the owner.</p>
-          <div className="brand-footer">Notes by Robin</div>
+          <div className="brand-footer">Notes by <a href="https://facebook.com/mds.zamanrobin/" target="_blank" rel="noopener noreferrer" className="dev-link">Robin</a></div>
         </div>
 
         <style jsx>{`
@@ -113,7 +113,7 @@ export default function PublicNoteView() {
         <div className="note-content prose" dangerouslySetInnerHTML={{ __html: note.content }} />
         
         <footer className="public-footer">
-          <p>Shared via Notes by Robin</p>
+          <p>Shared via Notes by <a href="https://facebook.com/mds.zamanrobin/" target="_blank" rel="noopener noreferrer" className="dev-link">Robin</a></p>
         </footer>
       </div>
 
@@ -232,6 +232,19 @@ export default function PublicNoteView() {
           font-size: 12px;
           color: var(--text-secondary);
           opacity: 0.6;
+        }
+
+        .dev-link {
+          color: inherit;
+          text-decoration: none;
+          font-weight: 700;
+          transition: all 0.2s;
+          border-bottom: 1px solid transparent;
+        }
+
+        .dev-link:hover {
+          color: var(--primary);
+          border-bottom-color: var(--primary);
         }
 
         .error-card {
