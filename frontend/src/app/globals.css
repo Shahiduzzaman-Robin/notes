@@ -570,13 +570,15 @@ h1, h2, h3, h4 {
 
 
 .tiptap mark {
-  color: inherit;
-  padding: 0;
-  border-radius: 0;
+  background-color: #ffeb3b;
+  color: #1a1a1a !important; /* Force high-contrast dark text */
+  padding: 0.1em 0.2em;
+  border-radius: 2px;
 }
 
-[data-theme='dark'] .tiptap mark {
-  color: inherit;
+.dark-theme .tiptap mark {
+  background-color: #f5d90a; /* Slightly warmer yellow for dark mode */
+  color: #1a1a1a !important;
 }
 
 @media (max-width: 768px) {
