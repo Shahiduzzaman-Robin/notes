@@ -643,7 +643,7 @@ export default function KanbanBoard() {
         <div className="kanban-board-container">
           {columns.map((col, cIndex) => (
             <div key={col.id} className="kanban-column" style={{
-              background: cIndex === 0 ? 'rgba(239, 68, 68, 0.03)' : cIndex === 1 ? 'rgba(245, 158, 11, 0.03)' : 'rgba(16, 185, 129, 0.03)',
+              background: 'transparent',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', padding: '0 4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
