@@ -380,7 +380,7 @@ export default function Home() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <FileText size={18} />
-              <span>Personal Notes</span>
+              <span>Notes</span>
             </div>
             {activeTab === 'notes' && (
               <div style={{ display: 'flex', gap: '4px' }}>

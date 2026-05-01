@@ -13,7 +13,7 @@ export default function FolderView({ folderId, type }) {
   const allFolders = (type === 'notes' ? noteFolders : boardFolders) || [];
   const currentFolder = folderId 
     ? allFolders.find(f => f._id === folderId) 
-    : { name: type === 'notes' ? 'Personal Notes' : 'Workflow Tracker', _id: null };
+    : { name: type === 'notes' ? 'Notes' : 'Workflow Tracker', _id: null };
 
   const subFolders = allFolders.filter(f => !f.parentFolder && !folderId || f.parentFolder === folderId);
   const currentNotes = notes.filter(n => !n.folder && !folderId || n.folder === folderId);
@@ -30,7 +30,7 @@ export default function FolderView({ folderId, type }) {
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px', opacity: 0.6, fontSize: '14px', color: 'var(--text-secondary)' }}>
         <Folder size={14} />
-        <span style={{ cursor: 'pointer' }} onClick={() => setActiveFolderId(null, type)}>{type === 'notes' ? 'Personal Notes' : 'Workflow Tracker'}</span>
+        <span style={{ cursor: 'pointer' }} onClick={() => setActiveFolderId(null, type)}>{type === 'notes' ? 'Notes' : 'Workflow Tracker'}</span>
         {folderId && (
           <>
             <span style={{ opacity: 0.4 }}>&gt;</span>
