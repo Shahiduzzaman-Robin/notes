@@ -31,11 +31,25 @@ export default function Notes() {
       const contentArrived = currentNote._id === activeNoteId && !currentNote.content && note.content;
       const metaChanged = currentNote._id === activeNoteId && (currentNote.isPublic !== note.isPublic || currentNote.shareSlug !== note.shareSlug);
 
-      if (isNewNote || contentArrived || metaChanged) {
+      if (isNewNote) {
+        // Full reset for new note to prevent state leakage from previous note
         lastSyncedNoteIdRef.current = activeNoteId;
-        setCurrentNote(prev => ({ ...prev, ...note })); // Merge to keep any unsaved local edits if necessary, but update meta
+        setCurrentNote({
+          ...note,
+          isPublic: note.isPublic || false,
+          shareSlug: note.shareSlug || ''
+        });
         setLastSavedNote(note);
         setIsLoading(false);
+      } else if (contentArrived || metaChanged) {
+        // Update specific fields for the current note
+        setCurrentNote(prev => ({ 
+          ...prev, 
+          content: note.content,
+          isPublic: note.isPublic || false,
+          shareSlug: note.shareSlug || ''
+        }));
+        setLastSavedNote(note);
       }
     } else {
       lastSyncedNoteIdRef.current = null;
