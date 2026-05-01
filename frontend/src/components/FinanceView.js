@@ -463,7 +463,7 @@ export default function FinanceView() {
               </div>
               <div className="form-details">
                 <textarea 
-                  placeholder="Add more details or notes... (optional)"
+                  placeholder="Add more details"
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
                   rows={1}
@@ -1118,6 +1118,11 @@ export default function FinanceView() {
           .form-main {
             flex-direction: column;
             gap: 10px;
+          }
+
+          .form-main .custom-select-container {
+            width: 100%;
+            display: block;
           }
 
           .form-main input, .form-main select, .type-toggle {
