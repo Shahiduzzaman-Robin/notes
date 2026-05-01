@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { verifyAuth } from '@/lib/db/auth';
 import Board from '@/models/Board';
+import crypto from 'crypto';
 
 // PUT (Update) a board
 export async function PUT(req, { params }) {
@@ -13,13 +14,16 @@ export async function PUT(req, { params }) {
     const { id } = await params;
     const updates = await req.json();
 
-    // If sharing is being turned on and no slug exists, generate one
-    if (updates.isPublic && !updates.shareSlug) {
-      const { crypto } = await import('crypto');
-      updates.shareSlug = crypto.randomBytes(5).toString('hex');
+    // If sharing is being turned on, ensure a slug exists
+    if (updates.isPublic) {
+      await dbConnect();
+      const existing = await Board.findOne({ _id: id, user: user._id });
+      if (existing && !existing.shareSlug) {
+        updates.shareSlug = crypto.randomBytes(5).toString('hex');
+      }
+    } else {
+      await dbConnect();
     }
-
-    await dbConnect();
     const board = await Board.findOneAndUpdate(
       { _id: id, user: user._id },
       { $set: updates },
