@@ -403,11 +403,7 @@ export default function Home() {
           </div>
 
           <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
-            {isLoading ? (
-              <div style={{ padding: '8px', fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.6 }}>Syncing...</div>
-            ) : (
-              <FolderTree folders={noteFolders} notes={notes} boards={boards} type="notes" />
-            )}
+            <FolderTree folders={noteFolders} notes={notes} boards={boards} type="notes" />
           </div>
 
           <div className={styles.sidebarDivider} />
@@ -443,11 +439,7 @@ export default function Home() {
           </div>
 
           <div style={{ marginLeft: '12px', marginTop: '4px', marginBottom: '8px' }}>
-            {isLoading ? (
-              <div style={{ padding: '8px', fontSize: '12px', color: 'var(--text-secondary)', opacity: 0.6 }}>Syncing...</div>
-            ) : (
-              <FolderTree folders={boardFolders} notes={notes} boards={boards} type="boards" />
-            )}
+            <FolderTree folders={boardFolders} notes={notes} boards={boards} type="boards" />
           </div>
 
           <div className={styles.sidebarDivider} />
