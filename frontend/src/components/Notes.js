@@ -229,7 +229,7 @@ export default function Notes() {
                   <span className="breadcrumb-item" onClick={() => { setActiveNoteId(null); setActiveFolderId(null); }}>Notes</span>
                   {folderPath.map((folder) => (
                     <React.Fragment key={folder._id}>
-                      <span className="breadcrumb-separator">/</span>
+                      <span className="breadcrumb-separator">&gt;</span>
                       <span 
                         className="breadcrumb-item"
                         onClick={() => setActiveFolderId(folder._id, 'notes')}
@@ -238,6 +238,8 @@ export default function Notes() {
                       </span>
                     </React.Fragment>
                   ))}
+                  <span className="breadcrumb-separator">&gt;</span>
+                  <span className="breadcrumb-item current">{currentNote.title || 'Untitled Note'}</span>
                 </div>
                 <input
                   type="text"

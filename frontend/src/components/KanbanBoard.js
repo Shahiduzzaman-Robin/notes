@@ -455,17 +455,23 @@ export default function KanbanBoard() {
               depth++;
             } else break;
           }
-          return path.map(f => (
-            <React.Fragment key={f._id}>
-              <span className="breadcrumb-separator">/</span>
-              <span 
-                className="breadcrumb-item"
-                onClick={() => useStore.getState().setActiveFolderId(f._id, 'boards')}
-              >
-                {f.name}
-              </span>
-            </React.Fragment>
-          ));
+          return (
+            <>
+              {path.map(f => (
+                <React.Fragment key={f._id}>
+                  <span className="breadcrumb-separator">&gt;</span>
+                  <span 
+                    className="breadcrumb-item"
+                    onClick={() => useStore.getState().setActiveFolderId(f._id, 'boards')}
+                  >
+                    {f.name}
+                  </span>
+                </React.Fragment>
+              ))}
+              <span className="breadcrumb-separator">&gt;</span>
+              <span className="breadcrumb-item current">{activeBoard.name}</span>
+            </>
+          );
         })()}
       </div>
 

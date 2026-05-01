@@ -37,4 +37,9 @@ const transactionSchema = new mongoose.Schema({
   timestamps: true
 });
 
-export default mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
+// Force re-registration of the model to avoid schema caching issues in Next.js dev mode
+if (mongoose.models.Transaction) {
+  delete mongoose.models.Transaction;
+}
+
+export default mongoose.model('Transaction', transactionSchema);

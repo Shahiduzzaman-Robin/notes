@@ -28,12 +28,12 @@ export default function FolderView({ folderId, type }) {
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px', opacity: 0.5, fontSize: '14px' }}>
-        <span>{type === 'notes' ? 'Personal Notes' : 'Workflow Tracker'}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px', opacity: 0.6, fontSize: '14px', color: 'var(--text-secondary)' }}>
+        <span style={{ cursor: 'pointer' }} onClick={() => setActiveFolderId(null, type)}>{type === 'notes' ? 'Personal Notes' : 'Workflow Tracker'}</span>
         {folderId && (
           <>
-            <ChevronRight size={14} />
-            <span>{currentFolder.name}</span>
+            <span style={{ opacity: 0.4 }}>&gt;</span>
+            <span style={{ color: 'var(--text-color)', fontWeight: 500 }}>{currentFolder.name}</span>
           </>
         )}
       </div>
