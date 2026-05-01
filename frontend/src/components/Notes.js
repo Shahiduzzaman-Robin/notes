@@ -17,6 +17,7 @@ export default function Notes() {
   const [lastSavedNote, setLastSavedNote] = useState({ title: '', content: '', tags: [], folder: null });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [showMobileMeta, setShowMobileMeta] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const lastSyncedNoteIdRef = useRef(null);
 
@@ -210,17 +211,40 @@ export default function Notes() {
         .breadcrumb-separator { opacity: 0.4; }
 
         @media (max-width: 1024px) {
+          .notes-metadata-panel { 
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            background: var(--bg-color);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+            transform: translateX(${showMobileMeta ? '0' : '100%'});
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex !important;
+            width: 280px;
+          }
+          .mobile-meta-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(4px);
+            z-index: 99;
+            opacity: ${showMobileMeta ? 1 : 0};
+            pointer-events: ${showMobileMeta ? 'auto' : 'none'};
+            transition: opacity 0.3s ease;
+          }
           .notes-editor-inner { padding: 40px; }
-          .notes-metadata-panel { width: 260px; }
+          .mobile-only-meta-toggle { display: block !important; }
         }
 
         @media (max-width: 768px) {
           .notes-layout { flex-direction: column; overflow-x: hidden; }
-          .notes-metadata-panel { display: none; }
           .notes-editor-inner { padding: 20px 15px; width: 100%; box-sizing: border-box; }
           .note-title-input { font-size: 24px !important; }
         }
 
+        .mobile-only-meta-toggle { display: none; }
         .meta-group { display: flex; flex-direction: column; gap: 16px; }
         .meta-item { display: flex; align-items: center; gap: 12px; }
         .meta-icon { color: var(--text-secondary); opacity: 0.7; }
@@ -285,6 +309,15 @@ export default function Notes() {
                   ))}
                   <span className="breadcrumb-separator">&gt;</span>
                   <span className="breadcrumb-item current">{currentNote.title || 'Untitled Note'}</span>
+                  
+                  <div className="mobile-only-meta-toggle" style={{ marginLeft: 'auto', display: 'none' }}>
+                    <button 
+                      onClick={() => setShowMobileMeta(true)}
+                      style={{ padding: '8px', borderRadius: '8px', background: 'var(--hover-bg)', border: 'none', color: 'var(--text-color)' }}
+                    >
+                      <Share2 size={20} />
+                    </button>
+                  </div>
                 </div>
                 <input
                   type="text"
@@ -383,6 +416,7 @@ export default function Notes() {
         </div>
       </div>
 
+      <div className="mobile-meta-overlay" onClick={() => setShowMobileMeta(false)} />
       <div className="notes-metadata-panel">
         <div style={{ padding: '24px', flex: 1, overflowY: 'auto' }}>
           <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>

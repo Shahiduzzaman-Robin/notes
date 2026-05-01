@@ -36,6 +36,7 @@ export default function KanbanBoard() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [boardToDelete, setBoardToDelete] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [showMobileMeta, setShowMobileMeta] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
 
@@ -464,7 +465,39 @@ export default function KanbanBoard() {
         @media (max-width: 1024px) {
           .kanban-board-container { gap: 20px; }
           .kanban-column { min-width: 280px; width: 280px; }
+          
+          .board-properties-sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            background: var(--bg-color);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+            transform: translateX(${showMobileMeta ? '0' : '100%'});
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex !important;
+            flex-direction: column !important;
+            width: 280px;
+            padding: 24px !important;
+            height: 100vh;
+            gap: 24px !important;
+          }
+          .mobile-meta-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: ${showMobileMeta ? 1 : 0};
+            pointer-events: ${showMobileMeta ? 'auto' : 'none'};
+            transition: opacity 0.3s ease;
+          }
+          .mobile-meta-toggle { display: block !important; }
         }
+
+        .mobile-meta-toggle { display: none; }
+        .board-properties-sidebar { display: flex; align-items: center; gap: 20px; }
 
         @media (max-width: 768px) {
           .kanban-root-wrapper {
@@ -669,57 +702,79 @@ export default function KanbanBoard() {
           )}
         </div>
 
-        {(() => {
-          const totalTasks = columns.reduce((acc, col) => acc + getFilteredTasksByColumn(col.id).length, 0);
-          const doneColumn = columns.find(c => c.title && (c.title.toLowerCase() === 'done' || c.title.toLowerCase() === 'completed')) || columns[columns.length - 1];
-          const inProgressColumn = columns.find(c => c.title && (c.title.toLowerCase() === 'in progress' || c.title.toLowerCase() === 'doing' || c.title.toLowerCase() === 'progress'));
-          const doneTasksCount = doneColumn ? getFilteredTasksByColumn(doneColumn.id).length : 0;
-          const inProgressTasksCount = inProgressColumn ? getFilteredTasksByColumn(inProgressColumn.id).length : 0;
-          const percentDone = totalTasks === 0 ? 0 : Math.round((doneTasksCount / totalTasks) * 100);
+        <div className="mobile-meta-toggle">
+          <button 
+            onClick={() => setShowMobileMeta(true)}
+            style={{ padding: '8px', borderRadius: '10px', background: 'var(--hover-bg)', border: 'none', color: 'var(--text-color)' }}
+          >
+            <Settings size={22} />
+          </button>
+        </div>
 
-          if (totalTasks === 0) return null;
-
-          return (
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              style={{ display: 'flex', alignItems: 'center', gap: '24px', padding: '10px 20px', background: 'var(--hover-bg)', borderRadius: '100px', border: '1px solid var(--border-color)' }}
+        <div className="mobile-meta-overlay" onClick={() => setShowMobileMeta(false)} />
+        <div className="board-properties-sidebar">
+          {activeBoard && (
+            <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="new-board-btn"
+              style={{ background: activeBoard.isPublic ? 'rgba(16, 185, 129, 0.1)' : 'var(--hover-bg)', borderColor: activeBoard.isPublic ? 'rgba(16, 185, 129, 0.2)' : 'var(--border-color)', color: activeBoard.isPublic ? '#10b981' : 'var(--text-secondary)', width: '100%' }}
             >
-              <div style={{ display: 'flex', gap: '16px', fontSize: '13px', fontWeight: 500 }}>
-                <span className="progress-stat">
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--text-secondary)', opacity: 0.4 }} />
-                  {totalTasks - doneTasksCount - inProgressTasksCount}
-                </span>
-                {inProgressColumn && (
+              <Share2 size={18} /> {activeBoard.isPublic ? 'Sharing On' : 'Share'}
+            </button>
+          )}
+
+          {(() => {
+            const totalTasks = columns.reduce((acc, col) => acc + getFilteredTasksByColumn(col.id).length, 0);
+            const doneColumn = columns.find(c => c.title && (c.title.toLowerCase() === 'done' || c.title.toLowerCase() === 'completed')) || columns[columns.length - 1];
+            const inProgressColumn = columns.find(c => c.title && (c.title.toLowerCase() === 'in progress' || c.title.toLowerCase() === 'doing' || c.title.toLowerCase() === 'progress'));
+            const doneTasksCount = doneColumn ? getFilteredTasksByColumn(doneColumn.id).length : 0;
+            const inProgressTasksCount = inProgressColumn ? getFilteredTasksByColumn(inProgressColumn.id).length : 0;
+            const percentDone = totalTasks === 0 ? 0 : Math.round((doneTasksCount / totalTasks) * 100);
+
+            if (totalTasks === 0) return null;
+
+            return (
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '10px 20px', background: 'var(--hover-bg)', borderRadius: '20px', border: '1px solid var(--border-color)', flexDirection: 'column', width: '100%', boxSizing: 'border-box' }}
+              >
+                <div style={{ display: 'flex', gap: '16px', fontSize: '13px', fontWeight: 500, width: '100%', justifyContent: 'space-between' }}>
                   <span className="progress-stat">
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b' }} />
-                    {inProgressTasksCount}
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--text-secondary)', opacity: 0.4 }} />
+                    {totalTasks - doneTasksCount - inProgressTasksCount} Todo
                   </span>
-                )}
-                <span className="progress-stat">
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
-                  {doneTasksCount}
-                </span>
-              </div>
-
-              <div style={{ width: '1px', height: '20px', background: 'var(--border-color)' }} />
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '80px', height: '6px', borderRadius: '3px', background: 'rgba(0,0,0,0.05)', overflow: 'hidden', position: 'relative' }}>
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${percentDone}%` }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    style={{ height: '100%', background: 'linear-gradient(90deg, #10b981, #34d399)' }} 
-                  />
+                  {inProgressColumn && (
+                    <span className="progress-stat">
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b' }} />
+                      {inProgressTasksCount} Doing
+                    </span>
+                  )}
+                  <span className="progress-stat">
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
+                    {doneTasksCount} Done
+                  </span>
                 </div>
-                <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-color)', width: '40px' }}>
-                  {percentDone}%
-                </span>
-              </div>
-            </motion.div>
-          );
-        })()}
+
+                <div style={{ width: '100%', height: '1px', background: 'var(--border-color)' }} />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
+                  <div style={{ flex: 1, height: '8px', borderRadius: '4px', background: 'rgba(0,0,0,0.05)', overflow: 'hidden', position: 'relative' }}>
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${percentDone}%` }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                      style={{ height: '100%', background: 'linear-gradient(90deg, #10b981, #34d399)' }} 
+                    />
+                  </div>
+                  <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-color)' }}>
+                    {percentDone}%
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })()}
+        </div>
       </div>
 
       <DragDropContext onDragEnd={handleDragEnd}>
