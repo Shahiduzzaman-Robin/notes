@@ -441,7 +441,8 @@ export default function KanbanBoard() {
         }
       `}</style>
 
-      <div className="breadcrumbs" style={{ padding: '0 4px', marginBottom: '16px' }}>
+      <div className="breadcrumbs" style={{ padding: '0 4px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Kanban size={14} style={{ opacity: 0.6 }} />
         <span className="breadcrumb-item" onClick={() => { setActiveBoardId(null); useStore.getState().setActiveFolderId(null, 'boards'); }}>Workflow</span>
         {(() => {
           const path = [];

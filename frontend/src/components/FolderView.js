@@ -29,6 +29,7 @@ export default function FolderView({ folderId, type }) {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px', opacity: 0.6, fontSize: '14px', color: 'var(--text-secondary)' }}>
+        {type === 'notes' ? <FileText size={14} /> : <Kanban size={14} />}
         <span style={{ cursor: 'pointer' }} onClick={() => setActiveFolderId(null, type)}>{type === 'notes' ? 'Personal Notes' : 'Workflow Tracker'}</span>
         {folderId && (
           <>

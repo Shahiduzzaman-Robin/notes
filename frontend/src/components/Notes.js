@@ -226,6 +226,7 @@ export default function Notes() {
             ) : (
               <>
                 <div className="breadcrumbs">
+                  <FileText size={14} style={{ opacity: 0.6 }} />
                   <span className="breadcrumb-item" onClick={() => { setActiveNoteId(null); setActiveFolderId(null); }}>Notes</span>
                   {folderPath.map((folder) => (
                     <React.Fragment key={folder._id}>
