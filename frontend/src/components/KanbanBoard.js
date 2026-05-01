@@ -22,7 +22,7 @@ function debounce(func, wait) {
 }
 
 export default function KanbanBoard() {
-  const { boards, tasks, activeBoardId, fetchBoards, createBoard, updateBoard, deleteBoard, setActiveBoardId, addTask, updateTask, deleteTask, reorderTasks, globalSearchQuery, isLoadingBoards, boardFolders } = useStore();
+  const { boards, tasks, activeBoardId, fetchBoards, createBoard, updateBoard, deleteBoard, setActiveBoardId, addTask, updateTask, deleteTask, reorderTasks, globalSearchQuery, isLoadingBoards, boardFolders, setActiveFolderId } = useStore();
   const [newTaskText, setNewTaskText] = useState({});
   const [editingBoardId, setEditingBoardId] = useState(null);
   const [editingBoardName, setEditingBoardName] = useState('');
@@ -443,7 +443,7 @@ export default function KanbanBoard() {
 
       <div className="breadcrumbs" style={{ padding: '0 4px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Folder size={14} style={{ opacity: 0.6 }} />
-        <span className="breadcrumb-item" onClick={() => { setActiveBoardId(null); useStore.getState().setActiveFolderId(null, 'boards'); }}>Workflow</span>
+        <span className="breadcrumb-item" onClick={() => { setActiveBoardId(null); setActiveFolderId(null, 'boards'); }}>Workflow</span>
         {(() => {
           const path = [];
           let currentId = activeBoard.folder;
@@ -463,7 +463,7 @@ export default function KanbanBoard() {
                   <span className="breadcrumb-separator">&gt;</span>
                   <span 
                     className="breadcrumb-item"
-                    onClick={() => useStore.getState().setActiveFolderId(f._id, 'boards')}
+                    onClick={() => setActiveFolderId(f._id, 'boards')}
                   >
                     {f.name}
                   </span>

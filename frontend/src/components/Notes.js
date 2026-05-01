@@ -8,7 +8,7 @@ import dynamic from 'next/dynamic';
 const TiptapEditor = dynamic(() => import('./TiptapEditor'), { ssr: false });
 
 export default function Notes() {
-  const { notes, updateNote, deleteNote, activeNoteId, setActiveNoteId, noteFolders } = useStore();
+  const { notes, updateNote, deleteNote, activeNoteId, setActiveNoteId, noteFolders, setActiveFolderId } = useStore();
   const [isLoading, setIsLoading] = useState(false);
   const [currentNote, setCurrentNote] = useState({ title: '', content: '', tags: [], folder: null });
   const [tagInput, setTagInput] = useState('');
