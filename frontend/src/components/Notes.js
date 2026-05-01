@@ -28,12 +28,13 @@ export default function Notes() {
 
       const isNewNote = lastSyncedNoteIdRef.current !== activeNoteId;
       const contentArrived = currentNote._id === activeNoteId && !currentNote.content && note.content;
+      const metaChanged = currentNote._id === activeNoteId && (currentNote.isPublic !== note.isPublic || currentNote.shareSlug !== note.shareSlug);
 
-      if (isNewNote || contentArrived) {
+      if (isNewNote || contentArrived || metaChanged) {
         lastSyncedNoteIdRef.current = activeNoteId;
-        setCurrentNote(note);
+        setCurrentNote(prev => ({ ...prev, ...note })); // Merge to keep any unsaved local edits if necessary, but update meta
         setLastSavedNote(note);
-        setIsLoading(false); // Turn off loading immediately once we have the note
+        setIsLoading(false);
       }
     } else {
       lastSyncedNoteIdRef.current = null;
@@ -109,6 +110,8 @@ export default function Notes() {
 
   const handleToggleShare = async (e) => {
     const newVal = e.target.checked;
+    // Optimistic local update for instant feedback
+    setCurrentNote(prev => ({ ...prev, isPublic: newVal }));
     await updateNote(currentNote._id, { isPublic: newVal });
   };
 
