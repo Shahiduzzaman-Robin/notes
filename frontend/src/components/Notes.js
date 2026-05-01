@@ -180,10 +180,10 @@ export default function Notes() {
   return (
     <div className="notes-layout">
       <style jsx>{`
-        .notes-layout { display: flex; height: 100%; overflow: hidden; width: 100%; }
-        .notes-editor-container { flex: 1; display: flex; background: var(--bg-color); overflow: hidden; }
-        #editor-scroll-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-        .notes-editor-inner { max-width: 900px; width: 100%; padding: 60px 80px; margin: 0 auto; }
+        .notes-layout { display: flex; height: 100%; overflow-x: hidden; width: 100%; }
+        .notes-editor-container { flex: 1; display: flex; background: var(--bg-color); overflow-x: hidden; }
+        #editor-scroll-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; overflow-x: hidden; }
+        .notes-editor-inner { max-width: 900px; width: 100%; padding: 60px 80px; margin: 0 auto; box-sizing: border-box; }
         .notes-metadata-panel { width: 300px; border-left: 1px solid var(--border-color); background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; }
         
         .breadcrumbs { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--text-secondary); font-size: 13px; opacity: 0.8; }
@@ -197,8 +197,9 @@ export default function Notes() {
         }
 
         @media (max-width: 768px) {
+          .notes-layout { flex-direction: column; overflow-x: hidden; }
           .notes-metadata-panel { display: none; }
-          .notes-editor-inner { padding: 20px 15px; }
+          .notes-editor-inner { padding: 20px 15px; width: 100%; box-sizing: border-box; }
           .note-title-input { font-size: 24px !important; }
         }
 
