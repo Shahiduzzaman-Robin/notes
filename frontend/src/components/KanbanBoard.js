@@ -708,7 +708,7 @@ export default function KanbanBoard() {
                                     position: 'relative',
                                     padding: '16px',
                                     borderRadius: '16px',
-                                    background: 'rgba(255, 255, 255, 0.95)',
+                                    background: 'var(--card-bg)',
                                     backdropFilter: 'blur(12px)',
                                     border: '1px solid var(--border-color)',
                                     boxShadow: snapshot.isDragging ? '0 20px 40px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.03)',
@@ -820,7 +820,7 @@ export default function KanbanBoard() {
                         color: 'var(--text-secondary)',
                         fontSize: '14px',
                         fontWeight: 500,
-                        background: 'rgba(255,255,255,0.2)',
+                        background: 'var(--hover-bg)',
                         transition: 'all 0.2s',
                         cursor: 'text'
                       }}>
