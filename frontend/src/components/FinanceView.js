@@ -832,9 +832,91 @@ export default function FinanceView() {
         .preview-amount.income { color: #10b981; font-weight: 700; }
         .preview-amount.expense { color: #f43f5e; font-weight: 700; }
 
+        /* Mobile Responsiveness */
         @media (max-width: 768px) {
-          .quick-add-form { flex-direction: column; }
-          .stats-grid { grid-template-columns: 1fr; }
+          .finance-container {
+            padding: 20px 12px;
+          }
+
+          .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+
+          .stat-card {
+            padding: 16px;
+          }
+
+          .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+          }
+
+          .search-box {
+            width: 100%;
+          }
+
+          .filter-bar {
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-bottom: 12px;
+          }
+
+          .form-main {
+            flex-direction: column;
+            gap: 10px;
+          }
+
+          .form-main input, .form-main select, .type-toggle {
+            width: 100%;
+          }
+
+          .add-btn {
+            width: 100%;
+            height: 44px;
+            margin-top: 4px;
+          }
+
+          .transaction-item {
+            gap: 12px;
+            padding: 12px;
+          }
+
+          .tx-icon {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+          }
+
+          .tx-desc {
+            font-size: 13px;
+          }
+
+          .tx-details-preview {
+            display: none; /* Hide preview on mobile to save space */
+          }
+
+          .tx-meta {
+            font-size: 10px;
+          }
+
+          .tx-amount {
+            font-size: 14px;
+          }
+
+          .tx-details-expanded {
+            padding-left: 12px;
+          }
+
+          .delete-tx {
+            opacity: 0.6; /* Always show a bit on mobile since no hover */
+          }
+          
+          .custom-date-range {
+            width: 100%;
+            justify-content: space-between;
+          }
         }
       `}</style>
     </div>
