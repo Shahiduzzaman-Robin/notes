@@ -195,23 +195,25 @@ export default function PublicNoteView() {
 
         .note-content :global(table) {
           border-collapse: collapse;
-          table-layout: fixed;
           width: 100%;
-          margin: 0;
-          overflow: hidden;
+          margin: 1.5em 0;
+          overflow-x: auto;
+          display: block;
+          -webkit-overflow-scrolling: touch;
           border: 1px solid #e2e8f0;
           border-radius: 8px;
         }
 
         .note-content :global(table td),
         .note-content :global(table th) {
-          min-width: 1em;
+          min-width: 120px;
           border: 1px solid #e2e8f0;
           padding: 12px 15px;
           vertical-align: top;
           box-sizing: border-box;
           position: relative;
           text-align: left;
+          word-break: normal;
         }
 
         .note-content :global(table th) {
