@@ -205,7 +205,7 @@ export default function FinanceView() {
   const [showSavedToast, setShowSavedToast] = useState(false);
 
   // Categories list
-  const categories = ['General', 'Food', 'Transport', 'Salary', 'Shopping', 'Rent', 'Entertainment', 'Health', 'Travel'];
+  const categories = ['General', 'Food', 'Transport', 'Salary', 'Shopping', 'Rent', 'Entertainment', 'Health', 'Travel', 'Habits'];
 
   // Apply filters to transactions
   const filteredTransactions = useMemo(() => {
