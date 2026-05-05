@@ -12,7 +12,8 @@ import {
   Filter,
   PieChart,
   Calendar,
-  Tag as TagIcon
+  Tag as TagIcon,
+  AlignLeft
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import useStore from '../store/useStore';
@@ -203,6 +204,7 @@ export default function FinanceView() {
   const [editingDetails, setEditingDetails] = useState('');
   const [isSavingDetails, setIsSavingDetails] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
+  const [showDetailsForm, setShowDetailsForm] = useState(false);
 
   // Categories list
   const categories = ['General', 'Food', 'Transport', 'Salary', 'Shopping', 'Rent', 'Entertainment', 'Health', 'Travel', 'Habits'];
@@ -452,15 +454,26 @@ export default function FinanceView() {
                     </button>
                   </div>
                 </div>
+                <button 
+                  type="button"
+                  className={`details-toggle-btn ${showDetailsForm ? 'active' : ''}`}
+                  onClick={() => setShowDetailsForm(!showDetailsForm)}
+                  title="Add more details"
+                >
+                  <AlignLeft size={16} />
+                </button>
               </div>
-              <div className="form-details">
-                <textarea 
-                  placeholder="Add more details"
-                  value={details}
-                  onChange={(e) => setDetails(e.target.value)}
-                  rows={1}
-                />
-              </div>
+
+              {showDetailsForm && (
+                <div className="form-details animate-fade-in">
+                  <textarea 
+                    placeholder="Add more details (notes, locations, etc.)"
+                    value={details}
+                    onChange={(e) => setDetails(e.target.value)}
+                    rows={1}
+                  />
+                </div>
+              )}
               <button type="submit" className="add-btn"><Plus size={18} /> Add Transaction</button>
             </form>
           </div>
@@ -746,6 +759,30 @@ export default function FinanceView() {
         .form-main {
           display: flex;
           gap: 12px;
+        }
+
+        .details-toggle-btn {
+          width: 38px;
+          height: 38px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--bg-color);
+          border: 1px solid var(--border-color);
+          color: var(--text-secondary);
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .details-toggle-btn:hover, .details-toggle-btn.active {
+          background: var(--hover-bg);
+          color: var(--primary);
+          border-color: var(--primary);
+        }
+
+        .form-details {
+          width: 100%;
         }
 
         .form-details textarea {
