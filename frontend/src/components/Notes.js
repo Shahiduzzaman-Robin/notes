@@ -22,6 +22,9 @@ export default function Notes() {
   const [copySuccess, setCopySuccess] = useState(false);
   const lastSyncedNoteIdRef = useRef(null);
 
+  const currentNoteRef = useRef(currentNote);
+  useEffect(() => { currentNoteRef.current = currentNote; }, [currentNote]);
+
   // Sync state with store
   useEffect(() => {
     if (activeNoteId) {
@@ -29,6 +32,7 @@ export default function Notes() {
       if (!note) return;
 
       const isNoteSwitch = lastSyncedNoteIdRef.current !== activeNoteId;
+      const localNote = currentNoteRef.current;
       
       if (isNoteSwitch) {
         // Switching to a completely different note: Full Reset
@@ -43,9 +47,9 @@ export default function Notes() {
       } else {
         // Same note: only update metadata (isPublic, shareSlug, etc.) 
         // NEVER overwrite content if the user has already started typing/loading
-        const metaChanged = currentNote.isPublic !== note.isPublic || 
-                            currentNote.shareSlug !== note.shareSlug ||
-                            currentNote.title !== note.title && !currentNote.title; // Only sync title if local is empty
+        const metaChanged = localNote.isPublic !== note.isPublic || 
+                            localNote.shareSlug !== note.shareSlug ||
+                            (localNote.title !== note.title && !localNote.title);
 
         if (metaChanged) {
           setCurrentNote(prev => ({ 
@@ -57,7 +61,7 @@ export default function Notes() {
         }
 
         // Lazy load content ONLY if the current local content is empty and store has it
-        const shouldLazyLoad = !currentNote.content && note.content;
+        const shouldLazyLoad = !localNote.content && note.content;
         if (shouldLazyLoad) {
           setCurrentNote(prev => ({ ...prev, content: note.content }));
           setLastSavedNote(note);
@@ -68,36 +72,38 @@ export default function Notes() {
       setCurrentNote({ title: '', content: '', tags: [], folder: null });
       setIsLoading(false);
     }
-  }, [activeNoteId, notes, currentNote.content, currentNote.isPublic, currentNote.shareSlug]);
+  }, [activeNoteId, notes]); // Stable dependency array
 
   // Force save helper for redundancy
   const forceSave = useCallback(() => {
-    if (!currentNote._id || isLoading) return;
+    const noteToSave = currentNoteRef.current;
+    if (!noteToSave._id || isLoading) return;
     
-    updateNote(currentNote._id, {
-      title: currentNote.title,
-      content: currentNote.content,
-      tags: currentNote.tags,
-      folder: currentNote.folder
+    updateNote(noteToSave._id, {
+      title: noteToSave.title,
+      content: noteToSave.content,
+      tags: noteToSave.tags,
+      folder: noteToSave.folder
     });
-    setLastSavedNote(currentNote);
-  }, [currentNote, updateNote, isLoading]);
+    setLastSavedNote(noteToSave);
+  }, [updateNote, isLoading]);
 
   // Auto-save logic
   useEffect(() => {
     if (!currentNote._id || isLoading) return;
     
     const timer = setTimeout(() => {
+      const localNote = currentNoteRef.current;
       // Logic for determining if content is TRULY empty (not just whitespace/formatting)
-      const isContentEmpty = !currentNote.content || 
-                             currentNote.content === '<p></p>' || 
-                             currentNote.content === '<p style="text-align: right;"></p>' ||
-                             currentNote.content === '<p style="text-align: center;"></p>';
+      const isContentEmpty = !localNote.content || 
+                             localNote.content === '<p></p>' || 
+                             localNote.content === '<p style="text-align: right;"></p>' ||
+                             localNote.content === '<p style="text-align: center;"></p>';
       
-      const hasTitleChange = currentNote.title !== lastSavedNote.title;
-      const hasContentChange = currentNote.content !== lastSavedNote.content && !isContentEmpty;
-      const hasTagChange = JSON.stringify(currentNote.tags) !== JSON.stringify(lastSavedNote.tags);
-      const hasFolderChange = currentNote.folder !== lastSavedNote.folder;
+      const hasTitleChange = localNote.title !== lastSavedNote.title;
+      const hasContentChange = localNote.content !== lastSavedNote.content && !isContentEmpty;
+      const hasTagChange = JSON.stringify(localNote.tags) !== JSON.stringify(lastSavedNote.tags);
+      const hasFolderChange = localNote.folder !== lastSavedNote.folder;
 
       if (hasTitleChange || hasContentChange || hasTagChange || hasFolderChange) {
         forceSave();
@@ -105,7 +111,7 @@ export default function Notes() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [currentNote, lastSavedNote, forceSave, isLoading]);
+  }, [currentNote._id, lastSavedNote, forceSave, isLoading]);
 
   const handleAddTag = (e) => {
     if (e.key === 'Enter' && tagInput.trim()) {
