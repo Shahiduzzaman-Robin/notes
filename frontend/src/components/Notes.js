@@ -59,34 +59,42 @@ export default function Notes() {
     }
   }, [activeNoteId, notes, currentNote._id, currentNote.content]);
 
+  // Force save helper for redundancy
+  const forceSave = useCallback(() => {
+    if (!currentNote._id || isLoading) return;
+    
+    updateNote(currentNote._id, {
+      title: currentNote.title,
+      content: currentNote.content,
+      tags: currentNote.tags,
+      folder: currentNote.folder
+    });
+    setLastSavedNote(currentNote);
+  }, [currentNote, updateNote, isLoading]);
+
   // Auto-save logic
   useEffect(() => {
     if (!currentNote._id || isLoading) return;
     
     const timer = setTimeout(() => {
-      // Hard Safety Guard: Never save empty content if we are editing an existing note.
-      // This prevents the '0 words' overwrite during initialization glitches.
-      const isContentEmpty = !currentNote.content || currentNote.content === '<p></p>' || currentNote.content === '<p style="text-align: right;"></p>';
+      // Logic for determining if content is TRULY empty (not just whitespace/formatting)
+      const isContentEmpty = !currentNote.content || 
+                             currentNote.content === '<p></p>' || 
+                             currentNote.content === '<p style="text-align: right;"></p>' ||
+                             currentNote.content === '<p style="text-align: center;"></p>';
       
-      const hasChanges = 
-        currentNote.title !== lastSavedNote.title || 
-        (currentNote.content !== lastSavedNote.content && !isContentEmpty) ||
-        JSON.stringify(currentNote.tags) !== JSON.stringify(lastSavedNote.tags) ||
-        currentNote.folder !== lastSavedNote.folder;
+      const hasTitleChange = currentNote.title !== lastSavedNote.title;
+      const hasContentChange = currentNote.content !== lastSavedNote.content && !isContentEmpty;
+      const hasTagChange = JSON.stringify(currentNote.tags) !== JSON.stringify(lastSavedNote.tags);
+      const hasFolderChange = currentNote.folder !== lastSavedNote.folder;
 
-      if (hasChanges) {
-        updateNote(currentNote._id, {
-          title: currentNote.title,
-          content: currentNote.content,
-          tags: currentNote.tags,
-          folder: currentNote.folder
-        });
-        setLastSavedNote(currentNote);
+      if (hasTitleChange || hasContentChange || hasTagChange || hasFolderChange) {
+        forceSave();
       }
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [currentNote, lastSavedNote, updateNote, isLoading]);
+  }, [currentNote, lastSavedNote, forceSave, isLoading]);
 
   const handleAddTag = (e) => {
     if (e.key === 'Enter' && tagInput.trim()) {
@@ -364,6 +372,7 @@ export default function Notes() {
                   noteId={currentNote._id}
                   initialContent={currentNote.content || ''}
                   onChange={(content) => setCurrentNote(prev => ({ ...prev, content }))}
+                  onSave={forceSave}
                 />
 
                 <Modal
