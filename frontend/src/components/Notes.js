@@ -28,12 +28,10 @@ export default function Notes() {
       const note = notes.find(n => n._id === activeNoteId);
       if (!note) return;
 
-      const isNewNote = lastSyncedNoteIdRef.current !== activeNoteId;
-      const contentArrived = currentNote._id === activeNoteId && !currentNote.content && note.content;
-      const metaChanged = currentNote._id === activeNoteId && (currentNote.isPublic !== note.isPublic || currentNote.shareSlug !== note.shareSlug);
-
-      if (isNewNote) {
-        // Full reset for new note to prevent state leakage from previous note
+      const isNoteSwitch = lastSyncedNoteIdRef.current !== activeNoteId;
+      
+      if (isNoteSwitch) {
+        // Switching to a completely different note: Full Reset
         lastSyncedNoteIdRef.current = activeNoteId;
         setCurrentNote({
           ...note,
@@ -42,22 +40,35 @@ export default function Notes() {
         });
         setLastSavedNote(note);
         setIsLoading(false);
-      } else if (contentArrived || metaChanged) {
-        // Update specific fields for the current note
-        setCurrentNote(prev => ({ 
-          ...prev, 
-          content: note.content,
-          isPublic: note.isPublic || false,
-          shareSlug: note.shareSlug || ''
-        }));
-        setLastSavedNote(note);
+      } else {
+        // Same note: only update metadata (isPublic, shareSlug, etc.) 
+        // NEVER overwrite content if the user has already started typing/loading
+        const metaChanged = currentNote.isPublic !== note.isPublic || 
+                            currentNote.shareSlug !== note.shareSlug ||
+                            currentNote.title !== note.title && !currentNote.title; // Only sync title if local is empty
+
+        if (metaChanged) {
+          setCurrentNote(prev => ({ 
+            ...prev, 
+            title: prev.title || note.title,
+            isPublic: note.isPublic || false,
+            shareSlug: note.shareSlug || ''
+          }));
+        }
+
+        // Lazy load content ONLY if the current local content is empty and store has it
+        const shouldLazyLoad = !currentNote.content && note.content;
+        if (shouldLazyLoad) {
+          setCurrentNote(prev => ({ ...prev, content: note.content }));
+          setLastSavedNote(note);
+        }
       }
     } else {
       lastSyncedNoteIdRef.current = null;
       setCurrentNote({ title: '', content: '', tags: [], folder: null });
       setIsLoading(false);
     }
-  }, [activeNoteId, notes, currentNote._id, currentNote.content]);
+  }, [activeNoteId, notes, currentNote.content, currentNote.isPublic, currentNote.shareSlug]);
 
   // Force save helper for redundancy
   const forceSave = useCallback(() => {
