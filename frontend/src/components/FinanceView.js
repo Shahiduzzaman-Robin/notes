@@ -18,6 +18,14 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import useStore from '../store/useStore';
 import { format } from 'date-fns';
+import { 
+  PieChart as RePieChart, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer, 
+  Tooltip as ReTooltip, 
+  Legend as ReLegend 
+} from 'recharts';
 import Modal from './Modal';
 
 // Custom Dropdown Component
@@ -268,6 +276,27 @@ export default function FinanceView() {
     };
   }, [filteredTransactions]);
 
+  // Category breakdown calculation
+  const categoryBreakdown = useMemo(() => {
+    const breakdown = {};
+    const totalExpense = stats.expenses;
+    
+    filteredTransactions.filter(t => t.type === 'expense').forEach(t => {
+      if (!breakdown[t.category]) {
+        breakdown[t.category] = { name: t.category, value: 0, count: 0 };
+      }
+      breakdown[t.category].value += t.amount;
+      breakdown[t.category].count += 1;
+    });
+
+    return Object.values(breakdown).map(c => ({
+      ...c,
+      percentage: totalExpense > 0 ? (c.value / totalExpense) * 100 : 0
+    })).sort((a, b) => b.value - a.value);
+  }, [filteredTransactions, stats.expenses]);
+
+  const COLORS = ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#64748b'];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!description || !amount) return;
@@ -403,6 +432,78 @@ export default function FinanceView() {
                 { value: 'expense', label: 'Expense Only' },
               ]}
             />
+          </div>
+
+          {/* Analytics Section */}
+          <div className="analytics-grid">
+            <div className="analytics-card pie-chart-card">
+              <div className="card-header">
+                <PieChart size={18} />
+                <h4>Expense Breakdown</h4>
+              </div>
+              <div className="chart-container">
+                <ResponsiveContainer width="100%" height={280}>
+                  <RePieChart>
+                    <Pie
+                      data={categoryBreakdown}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {categoryBreakdown.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <ReTooltip 
+                      contentStyle={{ 
+                        background: 'var(--sidebar-bg)', 
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '8px',
+                        fontSize: '12px'
+                      }}
+                      itemStyle={{ color: 'var(--text-color)' }}
+                      formatter={(value) => `৳${value.toLocaleString()}`}
+                    />
+                    <ReLegend />
+                  </RePieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="analytics-card list-card">
+              <div className="card-header">
+                <TagIcon size={18} />
+                <h4>Category Details</h4>
+              </div>
+              <div className="category-list">
+                {categoryBreakdown.length === 0 ? (
+                  <div className="empty-analytics">Add expenses to see breakdown</div>
+                ) : (
+                  categoryBreakdown.map((item, index) => (
+                    <div key={item.name} className="category-list-item">
+                      <div className="item-main">
+                        <div className="item-color" style={{ background: COLORS[index % COLORS.length] }} />
+                        <span className="item-name">{item.name}</span>
+                        <span className="item-count">{item.count} items</span>
+                      </div>
+                      <div className="item-values">
+                        <span className="item-amount">৳{item.value.toLocaleString()}</span>
+                        <div className="item-progress-bg">
+                          <div className="item-progress-fill" style={{ 
+                            width: `${item.percentage}%`,
+                            background: COLORS[index % COLORS.length]
+                          }} />
+                        </div>
+                        <span className="item-percent">{item.percentage.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="form-wrapper">
@@ -703,6 +804,137 @@ export default function FinanceView() {
           margin-bottom: 24px;
           padding-bottom: 16px;
           border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Analytics Section Styles */
+        .analytics-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin-bottom: 32px;
+          animation: slideUp 0.4s ease-out;
+        }
+
+        .analytics-card {
+          background: var(--sidebar-bg);
+          border: 1px solid var(--border-color);
+          border-radius: 16px;
+          padding: 20px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 20px;
+          color: var(--text-color);
+        }
+
+        .card-header h4 {
+          margin: 0;
+          font-size: 15px;
+          font-weight: 600;
+        }
+
+        .chart-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .category-list {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          max-height: 280px;
+          overflow-y: auto;
+          padding-right: 8px;
+        }
+
+        .category-list-item {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .item-main {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .item-color {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+        }
+
+        .item-name {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-color);
+        }
+
+        .item-count {
+          font-size: 11px;
+          color: var(--text-secondary);
+        }
+
+        .item-values {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .item-amount {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-color);
+          min-width: 80px;
+        }
+
+        .item-progress-bg {
+          flex: 1;
+          height: 6px;
+          background: var(--hover-bg);
+          border-radius: 3px;
+          overflow: hidden;
+        }
+
+        .item-progress-fill {
+          height: 100%;
+          border-radius: 3px;
+          transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .item-percent {
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--text-secondary);
+          min-width: 35px;
+          text-align: right;
+        }
+
+        .empty-analytics {
+          height: 200px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-secondary);
+          font-size: 13px;
+          font-style: italic;
+        }
+
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+          .analytics-grid {
+            grid-template-columns: 1fr;
+          }
         }
 
         .filter-group {
