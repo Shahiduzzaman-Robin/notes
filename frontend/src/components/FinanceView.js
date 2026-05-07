@@ -250,7 +250,7 @@ export default function FinanceView() {
         return txDate >= start && txDate <= end;
       }
       return true;
-    });
+    }).sort((a, b) => new Date(b.date) - new Date(a.date) || new Date(b.createdAt) - new Date(a.createdAt));
   }, [transactions, searchQuery, globalSearchQuery, filterRange, filterCategory, filterType, startDate, endDate]);
 
   // Analytics based on FILTERED transactions
