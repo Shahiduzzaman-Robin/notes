@@ -210,6 +210,7 @@ export default function FinanceView() {
   const [details, setDetails] = useState('');
   const [expandedTx, setExpandedTx] = useState(null);
   const [editingDetails, setEditingDetails] = useState('');
+  const [editingCategory, setEditingCategory] = useState('');
   const [isSavingDetails, setIsSavingDetails] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
   const [showDetailsForm, setShowDetailsForm] = useState(false);
@@ -316,15 +317,18 @@ export default function FinanceView() {
     setDate(new Date().toISOString().split('T')[0]);
   };
 
-  const handleUpdateDetails = async (txId) => {
+  const handleUpdateTransaction = async (txId) => {
     setIsSavingDetails(true);
     try {
-      await useStore.getState().updateTransaction(txId, { details: editingDetails });
+      await useStore.getState().updateTransaction(txId, { 
+        details: editingDetails,
+        category: editingCategory
+      });
       setIsSavingDetails(false);
       setShowSavedToast(true);
       setTimeout(() => setShowSavedToast(false), 3000);
     } catch (error) {
-      console.error('Failed to update details:', error);
+      console.error('Failed to update transaction:', error);
       setIsSavingDetails(false);
     }
   };
@@ -594,6 +598,7 @@ export default function FinanceView() {
                     } else {
                       setExpandedTx(tx._id);
                       setEditingDetails(tx.details || '');
+                      setEditingCategory(tx.category || 'General');
                     }
                   }}>
                     <div className={`tx-icon ${tx.type}`}>
@@ -647,12 +652,23 @@ export default function FinanceView() {
                           value={editingDetails}
                           onChange={(e) => setEditingDetails(e.target.value)}
                         />
+                        
+                        <div className="category-editor">
+                          <h6>Category</h6>
+                          <CustomSelect 
+                            value={editingCategory} 
+                            onChange={setEditingCategory}
+                            variant="input"
+                            options={categories.map(c => ({ value: c, label: c }))}
+                          />
+                        </div>
+
                         <div className="editor-footer">
                           {showSavedToast && <span className="save-success-msg">Changes saved!</span>}
                           <button 
                             className="save-details-btn"
-                            disabled={isSavingDetails || editingDetails === (tx.details || '')}
-                            onClick={() => handleUpdateDetails(tx._id)}
+                            disabled={isSavingDetails || (editingDetails === (tx.details || '') && editingCategory === tx.category)}
+                            onClick={() => handleUpdateTransaction(tx._id)}
                           >
                             {isSavingDetails ? 'Saving...' : 'Save Notes'}
                           </button>
@@ -1228,10 +1244,16 @@ export default function FinanceView() {
           border-left: 3px solid var(--primary);
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 16px;
         }
 
-        .details-editor h6 {
+        .category-editor {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .details-editor h6, .category-editor h6 {
           margin: 0;
           font-size: 10px;
           text-transform: uppercase;
