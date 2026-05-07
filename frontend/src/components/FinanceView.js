@@ -506,7 +506,7 @@ export default function FinanceView() {
                       <div className="tx-meta">
                         <span className="tx-category">{tx.category}</span>
                         <span className="meta-dot">•</span>
-                        <span className="tx-date">{format(new Date(tx.date), 'MMM d, yyyy')}</span>
+                        <span className="tx-date">{format(new Date(tx.date), 'MMM d, yyyy')} • {format(new Date(tx.createdAt), 'h:mm a')}</span>
                         {tx.details && <span className="meta-dot">•</span>}
                         {tx.details && <span className="tx-has-details">Has notes</span>}
                       </div>
