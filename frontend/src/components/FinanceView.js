@@ -506,7 +506,19 @@ export default function FinanceView() {
                       <div className="tx-meta">
                         <span className="tx-category">{tx.category}</span>
                         <span className="meta-dot">•</span>
-                        <span className="tx-date">{format(new Date(tx.date), 'MMM d, yyyy')} • {format(new Date(tx.createdAt), 'h:mm a')}</span>
+                        <span className="tx-date">
+                          {(() => {
+                            try {
+                              const d = new Date(tx.date);
+                              const c = tx.createdAt ? new Date(tx.createdAt) : null;
+                              const dateStr = !isNaN(d) ? format(d, 'MMM d, yyyy') : 'Unknown Date';
+                              const timeStr = (c && !isNaN(c)) ? ` • ${format(c, 'h:mm a')}` : '';
+                              return dateStr + timeStr;
+                            } catch (e) {
+                              return 'Invalid Date';
+                            }
+                          })()}
+                        </span>
                         {tx.details && <span className="meta-dot">•</span>}
                         {tx.details && <span className="tx-has-details">Has notes</span>}
                       </div>
