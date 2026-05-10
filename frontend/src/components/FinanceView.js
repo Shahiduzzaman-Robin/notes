@@ -298,23 +298,30 @@ export default function FinanceView() {
 
   const COLORS = ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#64748b'];
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!description || !amount) return;
+    if (!description || !amount || isSubmitting) return;
 
-    await addTransaction({
-      description,
-      amount: parseFloat(amount),
-      type,
-      category,
-      date: new Date(date),
-      details
-    });
+    setIsSubmitting(true);
+    try {
+      await addTransaction({
+        description,
+        amount: parseFloat(amount),
+        type,
+        category,
+        date: new Date(date),
+        details
+      });
 
-    setDescription('');
-    setAmount('');
-    setDetails('');
-    setDate(new Date().toISOString().split('T')[0]);
+      setDescription('');
+      setAmount('');
+      setDetails('');
+      setDate(new Date().toISOString().split('T')[0]);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleUpdateTransaction = async (txId) => {
@@ -579,7 +586,9 @@ export default function FinanceView() {
                   />
                 </div>
               )}
-              <button type="submit" className="add-btn"><Plus size={18} /> Add Transaction</button>
+              <button type="submit" className="add-btn" disabled={isSubmitting}>
+                <Plus size={18} /> {isSubmitting ? 'Adding...' : 'Add Transaction'}
+              </button>
             </form>
           </div>
 
